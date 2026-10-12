@@ -7,9 +7,13 @@ import { BUILTIN_LIFE_EVENTS } from '../data/lifeEvents'
 import {
   rand, shuffle, newId, getCash, getHoldings, getNetWorth, syncWealth, addCash, applyLoss, addHolding,
   shiftMarketHoldings, rollMarket, applyMarketToPlayer, applyInflation, formatINR,
-  INVEST_FRACTION, MIN_INVEST_CASH,
+  INVEST_FRACTION, MIN_INVEST_CASH, MARKET_ASSETS,
 } from './economy'
-import type { LossResult } from './economy'
+import type { LossResult, ForcedSale } from './economy'
+import type { ConceptId, PlayerGameStats } from '../types/learning'
+import {
+  emptyStats, addConcepts, conceptsFromText, assetConcepts, categoryConcepts, speculativeValue, cashShare,
+} from './learning'
 
 export {
   getCash, getHoldings, getNetWorth, syncWealth, applyLoss, setRng, seededRng, rand,
@@ -59,9 +63,134 @@ function createPlayer(id: string, name: string, isBot: boolean, rankPoints?: num
     greedIndex: 0,
     emiDamageTaken: false,
     diffMultiplier,
+    stats: emptyStats(startWealth),
     profile: isBot ? { rank_points: rankPoints ?? 1500, avatar_url: null } : { rank_points: 0, avatar_url: avatarUrl ?? null },
   }
 }
+
+// ---------------------------------------------------------------------------
+// Phase 4 stats (docs/phase4-design.md §1–2). Optional-safe: states without
+// `stats` (old saves, multiplayer) get them created lazily on first touch.
+// ---------------------------------------------------------------------------
+
+/** Return the player with `stats`, creating them (from the game's starting wealth) if missing. */
+export function ensureStats(player: PlayerState, state: GameState): PlayerState {
+  if (player.stats) return player
+  const start = getStartingWealth(state)
+  const stats = emptyStats(start)
+  return { ...player, stats: { ...stats, peakNetWorth: Math.max(start, getNetWorth(player)) } }
+}
+
+/** Update a player's stats (creating them first if needed). */
+function patchStats(player: PlayerState, state: GameState, fn: (s: PlayerGameStats, p: PlayerState) => PlayerGameStats): PlayerState {
+  const p = ensureStats(player, state)
+  return { ...p, stats: fn(p.stats!, p) }
+}
+
+function withConcepts(s: PlayerGameStats, ids: ConceptId[]): PlayerGameStats {
+  return ids.length ? addConcepts(s, ids) : s
+}
+
+/** Record forced sales (count, penalties, log) + the emergency-fund / liquidity concepts. */
+function recordForcedSales(s: PlayerGameStats, sales: ForcedSale[], round: number): PlayerGameStats {
+  if (!sales.length) return s
+  const next: PlayerGameStats = {
+    ...s,
+    forcedSales: s.forcedSales + sales.length,
+    exitPenaltiesPaid: s.exitPenaltiesPaid + sales.reduce((sum, x) => sum + x.penalty, 0),
+    forcedSaleLog: [...(s.forcedSaleLog ?? []), ...sales.map(x => ({ asset: x.asset, round, sold: x.sold, penalty: x.penalty, penaltyPct: x.penaltyPct }))],
+  }
+  const ids: ConceptId[] = ['emergency_fund', 'liquidity']
+  if (sales.some(x => x.asset === 'realestate')) ids.push('real_estate')
+  return addConcepts(next, ids)
+}
+
+/** Diversification: 3+ asset classes held at once. */
+function diversificationConcepts(p: PlayerState): ConceptId[] {
+  return new Set(getHoldings(p).map(h => h.asset)).size >= 3 ? ['diversification'] : []
+}
+
+/** Keep peakNetWorth current for every player. */
+function trackPeaks(state: GameState): GameState {
+  let changed = false
+  const players = state.players.map(p => {
+    const q = ensureStats(p, state)
+    const nw = getNetWorth(q)
+    if (q === p && nw <= q.stats!.peakNetWorth) return p
+    changed = true
+    return { ...q, stats: { ...q.stats!, peakNetWorth: Math.max(q.stats!.peakNetWorth, nw) } }
+  })
+  return changed ? { ...state, players } : state
+}
+
+/** Push this year's net worth / cash share for every active player (round end). */
+function recordRoundEnd(state: GameState): GameState {
+  return {
+    ...state,
+    players: state.players.map(p => {
+      if (p.hasForfeited) return p
+      return patchStats(p, state, s => {
+        const nw = getNetWorth(p)
+        return {
+          ...s,
+          netWorthByRound: [...s.netWorthByRound, nw],
+          cashShareByRound: [...(s.cashShareByRound ?? []), cashShare(p)],
+          peakNetWorth: Math.max(s.peakNetWorth, nw),
+        }
+      })
+    }),
+  }
+}
+
+/** Game ended mid-year (goal, forfeits, time): record the final net worth once. */
+function recordFinal(state: GameState): GameState {
+  const round = state.round ?? 1
+  return {
+    ...state,
+    players: state.players.map(p => {
+      const q = ensureStats(p, state)
+      if (q.stats!.netWorthByRound.length > round) return q
+      return patchStats(q, state, s => ({
+        ...s,
+        netWorthByRound: [...s.netWorthByRound, getNetWorth(q)],
+        cashShareByRound: [...(s.cashShareByRound ?? []), cashShare(q)],
+      }))
+    }),
+  }
+}
+
+/**
+ * Stats for a harmful card (rival attack or life event) reaching one player.
+ * `lost` = net-worth drop; forced-sale penalties are subtracted so lossesTaken is "before penalties".
+ */
+function recordHit(
+  s: PlayerGameStats, card: GameCard, round: number,
+  o: { blocked: boolean; lost: number; sales: ForcedSale[]; specLost: number; skipped?: boolean; lured?: boolean; heldMarket: boolean },
+): PlayerGameStats {
+  const penalties = o.sales.reduce((sum, x) => sum + x.penalty, 0)
+  const lossBefore = Math.max(0, o.lost - penalties)
+  let next = recordForcedSales(s, o.sales, round)
+  const ids: ConceptId[] = [...categoryConcepts(card), ...conceptsFromText(`${card.name} ${card.flavor ?? ''}`)]
+  if (card.category === 'market' && o.heldMarket) ids.push('market_patience')
+  if (card.lureAsset) ids.push(...assetConcepts(card.lureAsset).filter(c => c === 'scams' || c === 'crypto_risk'))
+  if (o.specLost > 0) ids.push('asset_risk')
+  next = withConcepts(next, ids)
+  next = { ...next, speculativeLosses: next.speculativeLosses + Math.max(0, Math.round(o.specLost)) }
+  const landed = !o.blocked && (lossBefore > 0 || o.skipped || o.lured)
+  if (!o.blocked && !landed) return next
+  return {
+    ...next,
+    attacksBlocked: next.attacksBlocked + (o.blocked ? 1 : 0),
+    attacksTaken: next.attacksTaken + (landed ? 1 : 0),
+    lossesTaken: next.lossesTaken + (o.blocked ? 0 : lossBefore),
+    hits: [...(next.hits ?? []), {
+      name: card.name, nameHi: card.nameHi, round, amount: o.blocked ? 0 : lossBefore, category: card.category,
+      blocked: o.blocked, lifeEvent: !!card.lifeEvent, lureAsset: card.lureAsset,
+    }],
+  }
+}
+
+const holdsMarket = (p: PlayerState) => getHoldings(p).some(h => MARKET_ASSETS.includes(h.asset))
 
 /** Phase-3 player fields for a brand-new player built elsewhere (e.g. multiplayer). */
 export function withEconomyDefaults(player: PlayerState): PlayerState {
@@ -265,7 +394,15 @@ export function equipDefense(state: GameState, playerIndex: number, card: GameCa
     const wealthFloor = card.effect?.type === 'wealth_floor'
       ? Math.max(p.wealthFloor, card.effect.value ?? 0)
       : p.wealthFloor
-    return { ...p, hand, activeDefenses, wealthFloor }
+    const equipped = { ...p, hand, activeDefenses, wealthFloor }
+    return patchStats(equipped, state, st => withConcepts(
+      { ...st, defensesEquipped: (st.defensesEquipped ?? 0) + 1 },
+      [
+        // A broad "covers everything" defense teaches the emergency fund, not each category
+        ...((card.blocksCategories?.length ?? 0) <= 2 ? (card.blocksCategories ?? []).flatMap(c => categoryConcepts({ category: c })) : []),
+        ...conceptsFromText(card.name, true),
+      ],
+    ))
   })
   return {
     ...state,
@@ -319,6 +456,8 @@ interface EffectCtx {
   players: PlayerState[]
   discarded: GameCard[]
   logs: string[]
+  /** Forced sales per player index (for stats) */
+  sales: Record<number, ForcedSale[]>
 }
 
 function takeLoss(ctx: EffectCtx, idx: number, amount: number): LossResult {
@@ -326,6 +465,7 @@ function takeLoss(ctx: EffectCtx, idx: number, amount: number): LossResult {
   ctx.players[idx] = res.player
   ctx.discarded.push(...res.brokenShields)
   ctx.logs.push(...res.logs)
+  if (res.forcedSales.length) ctx.sales[idx] = [...(ctx.sales[idx] ?? []), ...res.forcedSales]
   return res
 }
 
@@ -333,8 +473,8 @@ function takeLoss(ctx: EffectCtx, idx: number, amount: number): LossResult {
  * Apply an effect. `card` (optional) supplies the category: a `market` card
  * moves market holdings instead of cash (docs §6).
  */
-function applyEffect(state: GameState, effect: CardEffect, sourcePlayerIndex: number, targetPlayerIndex: number, card?: GameCard, exclude: Set<number> = new Set()): { state: GameState; logs: string[] } {
-  const ctx: EffectCtx = { players: [...state.players], discarded: [], logs: [] }
+function applyEffect(state: GameState, effect: CardEffect, sourcePlayerIndex: number, targetPlayerIndex: number, card?: GameCard, exclude: Set<number> = new Set()): { state: GameState; logs: string[]; sales: Record<number, ForcedSale[]> } {
+  const ctx: EffectCtx = { players: [...state.players], discarded: [], logs: [], sales: {} }
   const players = ctx.players
   const isMarket = card?.category === 'market'
   const source = players[sourcePlayerIndex]
@@ -427,6 +567,7 @@ function applyEffect(state: GameState, effect: CardEffect, sourcePlayerIndex: nu
       discardPile: ctx.discarded.length ? [...state.discardPile, ...ctx.discarded] : state.discardPile,
     },
     logs: ctx.logs,
+    sales: ctx.sales,
   }
 }
 
@@ -459,6 +600,7 @@ interface DecisionOutcome {
   investAmount: number
   asset?: AssetClass
   disabled?: string
+  forcedSales: ForcedSale[]
 }
 
 /** Pure money maths for one decision choice on one player (docs §4). */
@@ -468,9 +610,11 @@ function resolveDecision(player: PlayerState, card: GameCard, option: DecisionOp
   const e = option.effect
   const logs: string[] = []
   let brokenShields: GameCard[] = []
+  let forcedSales: ForcedSale[] = []
   const loss = (p: PlayerState, amount: number) => {
     const res = applyLoss(p, amount)
     brokenShields = res.brokenShields
+    forcedSales = res.forcedSales
     logs.push(...res.logs)
     return res.player
   }
@@ -484,7 +628,7 @@ function resolveDecision(player: PlayerState, card: GameCard, option: DecisionOp
     const amt = Number.isNaN(rawAmount) ? 0 : Math.round(rawAmount > 0 ? rawAmount * mult : rawAmount)
     p = amt >= 0 ? addCash(p, amt) : loss(p, -amt)
     if (streak > 1) logs.push(`🔥 Saving Streak x${streak}!`)
-    return { player: p, logs, brokenShields, investAmount: 0 }
+    return { player: p, logs, brokenShields, investAmount: 0, forcedSales }
   }
 
   if (option.type === 'spend') {
@@ -498,18 +642,18 @@ function resolveDecision(player: PlayerState, card: GameCard, option: DecisionOp
       : e.type === 'wealth_pct' ? -Math.abs(Math.round(rawAmount))
       : Math.round(rawAmount)
     p = amt >= 0 ? addCash(p, amt) : loss(p, -amt)
-    return { player: p, logs, brokenShields, investAmount: 0 }
+    return { player: p, logs, brokenShields, investAmount: 0, forcedSales }
   }
 
   // invest
   const asset = getInvestAsset(option)
   const cash = getCash(base)
   if (cash < MIN_INVEST_CASH) {
-    return { player: base, logs, brokenShields, investAmount: 0, asset, disabled: `Need at least ${formatINR(MIN_INVEST_CASH)} cash to invest` }
+    return { player: base, logs, brokenShields, investAmount: 0, asset, forcedSales, disabled: `Need at least ${formatINR(MIN_INVEST_CASH)} cash to invest` }
   }
   const amount = Math.round(cash * INVEST_FRACTION[card.tier])
   const p = addHolding({ ...base, savingStreak: 0, investChoices: base.investChoices + 1, doubleInvestActive: false }, asset, option.label && option.label !== 'Invest' ? option.label : card.name, amount, round)
-  return { player: p, logs, brokenShields, investAmount: amount, asset }
+  return { player: p, logs, brokenShields, investAmount: amount, asset, forcedSales }
 }
 
 /**
@@ -534,6 +678,34 @@ export function assetLabel(asset: AssetClass): string {
   return `${ASSETS[asset].emoji} ${ASSETS[asset].name}`
 }
 
+/** Stats + concepts for one decision (docs/phase4-design.md §2). */
+function recordDecision(player: PlayerState, state: GameState, card: GameCard, option: DecisionOption, out: DecisionOutcome): PlayerState {
+  const round = state.round ?? 1
+  return patchStats(player, state, (s0, p) => {
+    let s = recordForcedSales(s0, out.forcedSales, round)
+    const ids: ConceptId[] = []
+    if (option.type === 'save') {
+      const streak = (s.currentSaveStreak ?? 0) + 1
+      s = { ...s, saves: s.saves + 1, currentSaveStreak: streak, maxSaveStreak: Math.max(s.maxSaveStreak, streak) }
+      if (streak >= 3) ids.push('pay_yourself_first')
+    } else if (option.type === 'spend') {
+      s = { ...s, spends: s.spends + 1, currentSaveStreak: 0 }
+      if ((p.lifestyleLevel ?? 0) >= 2) ids.push('lifestyle_creep')
+    } else {
+      const asset = out.asset ?? getInvestAsset(option)
+      s = {
+        ...s,
+        invests: s.invests + 1,
+        currentSaveStreak: 0,
+        investedByAsset: { ...s.investedByAsset, [asset]: (s.investedByAsset[asset] ?? 0) + out.investAmount },
+      }
+      ids.push(...assetConcepts(asset), ...diversificationConcepts(p))
+    }
+    ids.push(...conceptsFromText(`${card.name} ${card.flavor ?? ''} ${option.label} ${option.description ?? ''}`))
+    return withConcepts(s, ids)
+  })
+}
+
 export function processDecision(state: GameState, playerIndex: number, choice: DecisionChoice, card: GameCard): GameState {
   const option = card.options?.find(o => o.type === choice)
   if (!option) return state
@@ -545,9 +717,10 @@ export function processDecision(state: GameState, playerIndex: number, choice: D
     return { ...state, log: pushLogs(state.log, `⚠️ ${out.disabled}`) }
   }
 
+  const decided = recordDecision(out.player, state, card, option, out)
   let newState: GameState = {
     ...state,
-    players: state.players.map((p, i) => (i === playerIndex ? out.player : p)),
+    players: state.players.map((p, i) => (i === playerIndex ? decided : p)),
     discardPile: out.brokenShields.length ? [...state.discardPile, ...out.brokenShields] : state.discardPile,
   }
 
@@ -619,6 +792,10 @@ export function processAction(state: GameState, playerIndex: number, card: GameC
   const oldTarget = getNetWorth(state.players[targetIndex])
   let newState: GameState = { ...state, players, discardPile }
   const effectLogs: string[] = []
+  const allSales: Record<number, ForcedSale[]> = {}
+  const collect = (r: { sales: Record<number, ForcedSale[]> }) => {
+    for (const [k, v] of Object.entries(r.sales)) allSales[+k] = [...(allSales[+k] ?? []), ...v]
+  }
 
   const markEmiDamage = (s: GameState, idx: number): GameState => ({
     ...s,
@@ -631,6 +808,7 @@ export function processAction(state: GameState, playerIndex: number, card: GameC
       const r = applyEffect(newState, effect, playerIndex, playerIndex, card, defended)
       newState = r.state
       effectLogs.push(...r.logs)
+      collect(r)
       if (card.id.startsWith('ac_emi_bomb')) {
         for (let i = 0; i < newState.players.length; i++) {
           if ((i !== playerIndex || effect.includeSelf) && !defended.has(i)) newState = markEmiDamage(newState, i)
@@ -644,6 +822,7 @@ export function processAction(state: GameState, playerIndex: number, card: GameC
         const r = applyEffect(newState, effect, playerIndex, i, card)
         newState = r.state
         effectLogs.push(...r.logs)
+        collect(r)
         if (card.id.startsWith('ac_emi_bomb')) newState = markEmiDamage(newState, i)
       }
     }
@@ -651,6 +830,7 @@ export function processAction(state: GameState, playerIndex: number, card: GameC
     const r = applyEffect(newState, effect, playerIndex, targetIndex, card)
     newState = r.state
     effectLogs.push(...r.logs)
+    collect(r)
     if (card.id.startsWith('ac_emi_bomb')) newState = markEmiDamage(newState, targetIndex)
   }
 
@@ -660,7 +840,23 @@ export function processAction(state: GameState, playerIndex: number, card: GameC
   const sourceDiffStr = sourceDiff > 0 ? ` (+₹${Math.abs(sourceDiff).toLocaleString()})` : ''
 
   const sourceHand = newState.players[playerIndex].hand.filter(c => c.id !== card.id)
-  const finalPlayers = newState.players.map((p, i) => (i === playerIndex ? { ...p, hand: sourceHand } : p))
+  const round = state.round ?? 1
+  const harmful = isHarmful(card)
+  const finalPlayers = newState.players.map((p0, i) => {
+    const p = i === playerIndex ? { ...p0, hand: sourceHand } : p0
+    const sales = allSales[i] ?? []
+    const isVictim = harmful && i !== playerIndex && candidates.includes(i)
+    if (!isVictim) return sales.length ? patchStats(p, state, s => recordForcedSales(s, sales, round)) : p
+    const before = state.players[i]
+    return patchStats(p, state, s => recordHit(s, card, round, {
+      blocked: defended.has(i),
+      lost: getNetWorth(before) - getNetWorth(p),
+      sales,
+      specLost: card.category === 'market' ? Math.max(0, speculativeValue(before) - speculativeValue(p)) : 0,
+      skipped: effect.type === 'skip_turn',
+      heldMarket: holdsMarket(before),
+    }))
+  })
 
   const targetName = state.players[targetIndex].name
   let logEntry = isAoE
@@ -682,7 +878,9 @@ export function processDefense(state: GameState, defenderIndex: number, defenseC
   const discard = [...state.discardPile, defenseCard]
   const hand = state.players[defenderIndex].hand.filter(c => c.id !== defenseCard.id)
   const updatedPlayers = state.players.map((p, i) =>
-    i === defenderIndex ? { ...p, hand } : p
+    i === defenderIndex
+      ? patchStats({ ...p, hand }, state, st => ({ ...st, attacksBlocked: st.attacksBlocked + 1 }))
+      : p
   )
 
   const logEntry = `${state.players[defenderIndex].name} defended with ${defenseCard.name}!`
@@ -782,6 +980,11 @@ export function applyLifeEvent(state: GameState, card: GameCard): { state: GameS
   const effect = lifeEventEffect(card.effect)
   let s = state
   const lines: string[] = [`🎲 Life event: ${card.name}${everyone ? ' (everyone)' : ` — ${state.players[targets[0]].name}`}`]
+  const round = state.round ?? 1
+  const harmful = isHarmful({ ...card, effect })
+  const setStats = (idx: number, fn: (st: PlayerGameStats) => PlayerGameStats) => {
+    s = { ...s, players: s.players.map((p, i) => (i === idx ? patchStats(p, s, fn) : p)) }
+  }
   for (const idx of targets) {
     const block = tryBlock(s.players[idx], { ...card, effect })
     if (block.used) {
@@ -791,25 +994,72 @@ export function applyLifeEvent(state: GameState, card: GameCard): { state: GameS
         discardPile: [...s.discardPile, block.used],
       }
       lines.push(`🛡️ ${s.players[idx].name}'s ${block.used.name} blocked ${card.name}!`)
+      setStats(idx, st => recordHit(st, card, round, { blocked: true, lost: 0, sales: [], specLost: 0, heldMarket: holdsMarket(s.players[idx]) }))
       continue
     }
     if (card.lureAsset) {
       const p = s.players[idx]
+      const lure = card.lureAsset
       const amount = Math.round(getCash(p) * Math.abs(card.effect.value ?? 0) / 100)
       if (amount > 0) {
-        s = { ...s, players: s.players.map((pl, i) => (i === idx ? addHolding(pl, card.lureAsset!, card.name, amount, s.round ?? 1) : pl)) }
-        lines.push(`🎣 ${p.name} fell for it: ${formatINR(amount)} moved into ${assetLabel(card.lureAsset)}`)
+        s = { ...s, players: s.players.map((pl, i) => (i === idx ? addHolding(pl, lure, card.name, amount, s.round ?? 1) : pl)) }
+        lines.push(`🎣 ${p.name} fell for it: ${formatINR(amount)} moved into ${assetLabel(lure)}`)
+        setStats(idx, st => recordHit(
+          { ...st, investedByAsset: { ...st.investedByAsset, [lure]: (st.investedByAsset[lure] ?? 0) + amount } },
+          card, round, { blocked: false, lost: 0, sales: [], specLost: 0, lured: true, heldMarket: false },
+        ))
       }
       continue
     }
-    const before = getNetWorth(s.players[idx])
+    const beforePlayer = s.players[idx]
+    const before = getNetWorth(beforePlayer)
     const r = applyEffect(s, effect, idx, idx, card)
     s = r.state
     const diff = getNetWorth(s.players[idx]) - before
     if (diff !== 0) lines.push(`${diff > 0 ? '🎉' : '💥'} ${s.players[idx].name}: ${diff > 0 ? '+' : '-'}${formatINR(Math.abs(diff))}`)
     lines.push(...r.logs)
+    const sales = r.sales[idx] ?? []
+    if (harmful) {
+      const after = s.players[idx]
+      setStats(idx, st => recordHit(st, card, round, {
+        blocked: false,
+        lost: -diff,
+        sales,
+        specLost: card.category === 'market' ? Math.max(0, speculativeValue(beforePlayer) - speculativeValue(after)) : 0,
+        heldMarket: holdsMarket(beforePlayer),
+      }))
+    } else if (sales.length) {
+      setStats(idx, st => recordForcedSales(st, sales, round))
+    }
   }
   return { state: s, lines, affected: targets.map(i => state.players[i].id) }
+}
+
+/** Stats for one player's market tick: speculative losses, crashes, compounding. */
+function recordMarketTick(before: PlayerState, after: PlayerState, changes: Partial<Record<AssetClass, number>>, round: number, state: GameState): PlayerState {
+  const held = getHoldings(before)
+  if (!held.length) return after
+  return patchStats(after, state, st => {
+    const ids: ConceptId[] = []
+    let specLost = 0
+    let worst = st.worstMarketDrop ?? null
+    for (const h of held) {
+      const pct = changes[h.asset] ?? 0
+      const now = getHoldings(after).find(x => x.id === h.id)
+      const value = now?.value ?? 0
+      if ((h.asset === 'crypto' || h.asset === 'scam') && value < h.value) specLost += h.value - value
+      if (pct <= -10) {
+        ids.push('asset_risk')
+        if (MARKET_ASSETS.includes(h.asset)) ids.push('market_patience')
+        if (h.asset === 'crypto') ids.push('crypto_risk')
+        if (!worst || pct < worst.pct) worst = { round, asset: h.asset, pct }
+      }
+      if (h.asset === 'scam' && value < h.value) ids.push('scams')
+      if (now && (now.value >= 2 * now.principal || (round - now.boughtRound >= 3 && now.value > now.principal))) ids.push('compounding')
+    }
+    ids.push(...diversificationConcepts(after))
+    return withConcepts({ ...st, speculativeLosses: st.speculativeLosses + Math.round(specLost), worstMarketDrop: worst }, ids)
+  })
 }
 
 /** Runs when the turn wraps to the first player: one year passes. */
@@ -825,7 +1075,7 @@ export function startNewRound(state: GameState): GameState {
     if (p.hasForfeited) return p
     const { player, wiped } = applyMarketToPlayer(p, changes)
     wiped.forEach(h => lines.push(`☠️ ${p.name}'s ${assetLabel(h.asset)} was wiped out.`))
-    return player
+    return recordMarketTick(p, player, changes, newRound, state)
   })
   if (heldBefore.size) {
     const moves = [...heldBefore].map(a => `${ASSETS[a].emoji} ${changes[a] >= 0 ? '+' : ''}${changes[a]}%`).join('  ')
@@ -837,15 +1087,22 @@ export function startNewRound(state: GameState): GameState {
     if (p.hasForfeited) return p
     const { player, lost } = applyInflation(p)
     if (lost > 0) lines.push(`💸 Inflation ate ${formatINR(lost)} of ${p.name}'s cash`)
-    return player
+    return patchStats(player, state, st => {
+      const ids: ConceptId[] = lost > 0 ? ['inflation'] : []
+      // Money parked where it barely beats (or loses to) inflation
+      const parked = getHoldings(player).some(h => h.asset === 'fd') || (newRound >= 3 && cashShare(player) > 0.6)
+      if (parked) ids.push('fd_vs_inflation')
+      return withConcepts({ ...st, inflationLost: st.inflationLost + lost }, ids)
+    })
   })
 
-  let s: GameState = {
+  // The year that just ended goes on the net-worth chart (before the new year's life event)
+  let s: GameState = recordRoundEnd({
     ...state,
     players,
     round: newRound,
     lastMarketTick: { round: newRound, changes },
-  }
+  })
 
   // Round limit reached: the game ends after the final year's market + inflation
   if (newRound > getRoundLimit(s)) {
@@ -928,7 +1185,7 @@ export function advanceTurn(state: GameState): GameState {
 
   const elapsed = Date.now() - state.startTime
   if (elapsed >= state.timeLimit) {
-    return endByLimit(checked, [], 'Time up')
+    return endByLimit(recordFinal(checked), [], 'Time up')
   }
 
   return {
@@ -950,13 +1207,15 @@ export function forceSkipTurn(state: GameState): GameState {
   return advanceTurn({ ...state, pendingDecision: null, pendingTarget: null, log: pushLogs(state.log, logEntry) })
 }
 
-export function checkWinCondition(state: GameState): GameState {
-  if (state.phase === 'game_over' && state.winner) return state
+export function checkWinCondition(input: GameState): GameState {
+  if (input.phase === 'game_over' && input.winner) return input
+  let state = trackPeaks(input)
   const reached = state.players
     .filter(p => !p.hasForfeited && getNetWorth(p) >= state.wealthGoal)
     .sort((a, b) => getNetWorth(b) - getNetWorth(a))
   if (reached.length) {
-    const winner = reached[0]
+    state = recordFinal(state)
+    const winner = state.players.find(p => p.id === reached[0].id) ?? reached[0]
     return {
       ...state,
       winner,
@@ -966,7 +1225,8 @@ export function checkWinCondition(state: GameState): GameState {
   }
   const activePlayers = state.players.filter(p => !p.hasForfeited)
   if (activePlayers.length === 1 && state.players.length > 1) {
-    const remainingWinner = activePlayers[0]
+    state = recordFinal(state)
+    const remainingWinner = state.players.find(p => p.id === activePlayers[0].id) ?? activePlayers[0]
     return {
       ...state,
       winner: remainingWinner,
