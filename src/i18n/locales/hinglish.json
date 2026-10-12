@@ -384,7 +384,108 @@
       "level_4": "Risk aur protection"
     },
     "play": "Khelo",
-    "locked": "Locked"
+    "locked": "Locked",
+    "starsTotal": "{{n}}/{{total}} ★",
+    "unlockHint": "Unlock ke liye Level {{n}} pe ★ kamao",
+    "best": "Best {{nw}}",
+    "replay": "Phir khelo",
+    "intro": {
+      "levelOf": "Level {{n}} · Umar {{age}}",
+      "oneIdea": "Ek seekh",
+      "rule": "Is level ka rule",
+      "goal": "Goal: {{years}} saal mein {{target}} tak pahuncho",
+      "rivals": "{{n}} rival bot attack karenge, par sirf TUMHARA target matter karta hai.",
+      "earnStars": "Stars kamao",
+      "start": "Level shuru karo",
+      "close": "Band karo",
+      "yourBest": "Tumhara best: {{nw}}"
+    },
+    "stars": {
+      "title": "Stars",
+      "earned": "{{n}}/3 stars",
+      "reachTarget": "{{years}} saal mein {{target}} tak pahuncho",
+      "clean": "Koi forced sale nahi, aur report card average B ya usse better",
+      "habit": {
+        "desire_meter": "Kam se kam ek planned treat lo aur kabhi impulse splurge mat karo",
+        "saving_streak": "{{n}} saal ki pay-yourself-first streak banao",
+        "lifestyle_creep": "End mein lifestyle salary ke {{pct}}% ya kam rakho",
+        "grihastha": "Har family goal poora karo: ghar aur padhai ready money se, parents insured",
+        "none": "Smart khelo"
+      }
+    },
+    "rules": {
+      "desire_meter": {
+        "name": "Desire Meter",
+        "idea": "Apni wants plan karo. Dabi hui wants phat padti hain — planned treat impulse splurge se sasta padta hai.",
+        "how1": "Meter har saal badhta hai, aur har baar jab tum Save ya Invest karte ho (khud ko rokte ho).",
+        "how2": "Meter 50+ pe Spend = planned treat: meter wapas 0, lifestyle creep nahi.",
+        "how3": "Meter 100 pe pahuncha toh agle saal impulse splurge: net worth ka 15% gaya."
+      },
+      "saving_streak": {
+        "name": "Saving Streak",
+        "idea": "Pehle khud ko pay karo. Har saal thoda-thoda, kabhi-kabhi badi rakam se better hai.",
+        "how1": "Har saal jab tum Save ya Invest karte ho, streak 1 badhti hai.",
+        "how2": "Har naye saal Auto-SIP tumhare index fund mein jaata hai — lambi streak, bada SIP (5 pe max).",
+        "how3": "Ek Spend se streak toot jaati hai aur Auto-SIP ruk jaata hai."
+      },
+      "lifestyle_creep": {
+        "name": "Lifestyle Creep aur Slots",
+        "idea": "Income badhe toh lifestyle ko saath mein mat badhne do — raise ko kuch achhe assets mein lagao.",
+        "how1": "Har saal salary milti hai 10% raise ke saath — par lifestyle chupke se har saal 5% zyada kha jaata hai.",
+        "how2": "Spend: lifestyle +12%. Save = budget review: lifestyle −10%.",
+        "how3": "Sirf 3 investment slots (alag-alag assets). Quality chuno: index fund, equity, debt."
+      },
+      "grihastha": {
+        "name": "Family Goals aur Insurance",
+        "idea": "Pata hue goals ka paisa safe jagah ready rakho, aur bade health shocks insurance pe chhodo.",
+        "how1": "Saal 4: ghar ka down payment. Saal 7: bachchon ki padhai. Cash, FD ya debt fund se bharo.",
+        "how2": "Ready money kam? Investments jaldi mein bikenge aur kami pe 20% extra lagega.",
+        "how3": "Boss, saal 9: parents hospital mein (net worth ka 20%). Health insurance equipped = sirf paanchva hissa tum bharoge."
+      }
+    },
+    "goals": {
+      "home": "Ghar ka down payment",
+      "education": "Bachchon ki padhai",
+      "parents_health": "Parents ki health",
+      "status": {
+        "pending": "Saal {{year}} mein",
+        "met": "Done ✓",
+        "strained": "Jaldi mein bhara",
+        "missed": "Chhoot gaya"
+      }
+    },
+    "hud": {
+      "desire": "Desire Meter",
+      "plannedZone": "Treat zone",
+      "treats": "Treats {{n}}",
+      "splurges": "Splurges {{n}}",
+      "streak": "Streak {{n}}",
+      "bestStreak": "Best {{n}}",
+      "nextSip": "Agla Auto-SIP {{amount}}",
+      "salary": "Salary {{amount}}",
+      "lifestyle": "Lifestyle salary ka {{pct}}%",
+      "slots": "Slots {{used}}/{{total}}",
+      "insured": "Health insured",
+      "notInsured": "Health cover nahi"
+    },
+    "events": {
+      "impulse_splurge": "Impulse splurge! Dabi wants phat padi: {{amount}} gaye.",
+      "planned_treat": "Planned treat! Bina guilt ke maza — Desire Meter wapas 0.",
+      "desire_warning": "Desire Meter high hai — abhi treat plan karo, warna impulse splurge hoga.",
+      "auto_sip": "Auto-SIP: {{amount}} tumhare index fund mein gaye (streak {{n}}).",
+      "streak_broken": "{{n}} ki streak toot gayi — Auto-SIP bonus gaya.",
+      "salary": "Raise! Salary {{salary}}, lifestyle {{pct}}% le gaya — tumhare liye {{left}} bache.",
+      "slots_full": "Saare {{n}} investment slots full hain — jo already hai usme add karo.",
+      "goal_met_home": "Ghar ka down payment {{amount}} ready money se bhara. Badhiya planning!",
+      "goal_met_education": "Bachchon ki padhai ({{amount}}) ready money se bhari. Badhiya planning!",
+      "goal_strained_home": "Ghar ka down payment ({{amount}}) aaya — ready money kam, investments jaldi mein bike.",
+      "goal_strained_education": "Bachchon ki padhai ({{amount}}) ka time — ready money kam, investments jaldi mein bike.",
+      "due_soon_home": "Ghar ka down payment ({{amount}}) {{n}} saal mein — cash / FD / debt fund ready rakho.",
+      "due_soon_education": "Bachchon ki padhai ({{amount}}) {{n}} saal mein — cash / FD / debt fund ready rakho.",
+      "due_soon_parents_health": "{{n}} saal mein parents ki health ka test — health insurance equipped rakho.",
+      "boss_insured": "Parents hospital mein: bill {{bill}}, zyada insurance ne bhara — tumne {{paid}} diye.",
+      "boss_uninsured": "Parents hospital mein, koi health cover nahi: tumne {{paid}} bhare."
+    }
   },
   "landing": {
     "signIn": "Sign In",
