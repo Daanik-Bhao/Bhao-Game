@@ -1,17 +1,56 @@
+/**
+ * save-game-result — records the end of a signed-in single-player game.
+ *
+ * Request (POST, user JWT in Authorization):
+ *   { matchId: uuid, won: boolean, placement: int, totalPlayers: int,
+ *     finalWealth: number, forfeit?: boolean,
+ *     stats?: { investChoices: number, emiDamageTaken: boolean } }
+ *
+ * The match must have been opened with the `start_match` RPC by the same user.
+ * Rules (numbers mirror MATCH_LIMITS in src/data/rankRules.ts):
+ *   - unknown / foreign / multiplayer matches are rejected;
+ *   - a match that is already finished returns its stored result (idempotent retry)
+ *     or 409 if it was closed without a result;
+ *   - matches older than MAX_MATCH_HOURS are rejected (410);
+ *   - non-forfeit results sooner than the minimum duration are rejected (422);
+ *   - a forfeit is always a loss in last place;
+ *   - RP/XP/coins/leaderboard/contracts are applied by SQL `apply_match_result`
+ *     (service_role only), which also enforces the daily ranked RP cap and the
+ *     daily coin caps.
+ *
+ * Multiplayer results are written by the `game-action` function, not here.
+ *
+ * Env: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (provided by Supabase).
+ */
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-function calculateRPChange(placement: number, totalPlayers: number, winStreak: number): number {
-  const baseGain = [80, 50, 30, 15, 0, -10]
-  const baseLoss = [0, 0, -15, -25, -30, -35]
-  const base = placement === 1 ? (baseGain[Math.min(totalPlayers - 1, 5)] ?? 30) : (baseLoss[Math.min(placement - 1, 5)] ?? -15)
-  const streakMultiplier = placement === 1 ? Math.min(1 + winStreak * 0.2, 2.0) : 1.0
-  return Math.round(base * streakMultiplier)
-}
+const MIN_DURATION_SECONDS: Record<string, number> = { ranked: 90, practice: 45, campaign: 45 }
+const MAX_MATCH_HOURS = 6
+const MAX_ABS_WEALTH = 1_000_000_000
+const MAX_INVEST_CHOICES = 50
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+class HttpError extends Error {
+  constructor(public status: number, message: string) {
+    super(message)
+  }
+}
+
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    status,
+  })
+}
+
+function isInt(v: unknown): v is number {
+  return typeof v === 'number' && Number.isInteger(v)
 }
 
 serve(async (req) => {
@@ -20,182 +59,110 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-    )
+    if (req.method !== 'POST') throw new HttpError(405, 'Method not allowed')
 
-    // Verify the user making the request
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
-    if (userError || !user) throw new Error('Unauthorized')
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) throw new HttpError(401, 'Unauthorized')
 
-    // Create a Service Role client to bypass RLS for updating the tables safely
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY') ?? '', {
+      global: { headers: { Authorization: authHeader } },
+    })
+    const { data: { user }, error: userError } = await userClient.auth.getUser()
+    if (userError || !user) throw new HttpError(401, 'Unauthorized')
 
-    const body = await req.json()
-    const {
-      username,
-      won,
-      finalWealth,
-      placement = 1,
-      totalPlayers = 2,
-      stats = { investChoices: 0, emiDamageTaken: false }
-    } = body
+    const admin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '')
 
-    if (typeof finalWealth !== 'number' || finalWealth < 0 || finalWealth > 100000000) {
-      throw new Error('Invalid finalWealth value');
-    }
-    if (typeof placement !== 'number' || placement < 1 || placement > 6) {
-      throw new Error('Invalid placement value');
-    }
-    if (typeof totalPlayers !== 'number' || totalPlayers < 1 || totalPlayers > 6) {
-      throw new Error('Invalid totalPlayers value');
+    let body: Record<string, unknown>
+    try {
+      body = await req.json()
+    } catch {
+      throw new HttpError(400, 'Invalid JSON body')
     }
 
-    const userId = user.id
+    const matchId = body.matchId
+    if (typeof matchId !== 'string' || !UUID_RE.test(matchId)) {
+      throw new HttpError(400, 'matchId is required')
+    }
 
-    // 1. Upsert leaderboard entry
-    const { data: existing } = await supabaseAdmin
-      .from('leaderboard')
-      .select('id, wins, losses, total_games, highest_net_worth')
-      .eq('user_id', userId)
+    const { data: match, error: matchError } = await admin
+      .from('matches')
+      .select('id, user_id, mode, total_players, started_at, finished_at')
+      .eq('id', matchId)
       .maybeSingle()
+    if (matchError) throw new HttpError(500, 'Could not load match')
+    if (!match || match.user_id !== user.id) throw new HttpError(404, 'Unknown match')
+    if (match.mode === 'multiplayer') throw new HttpError(400, 'Multiplayer results are recorded by the server')
 
-    if (existing) {
-      const currentWins = existing.wins || 0;
-      const currentLosses = existing.losses || 0;
-      const currentTotalGames = existing.total_games || 0;
-      const currentHighestNetWorth = existing.highest_net_worth || 0;
+    if (match.finished_at) {
+      // Idempotent retry: return the stored result if this match already has one.
+      const { data: existing } = await admin
+        .from('match_results')
+        .select('match_id, mode, won, placement, total_players, forfeit, rp_change, rp_capped, xp_gained, coins_gained, contract_coins')
+        .eq('match_id', matchId)
+        .eq('user_id', user.id)
+        .maybeSingle()
+      if (existing) return json({ success: true, result: { ...existing, already_applied: true } })
+      throw new HttpError(409, 'Match already finished')
+    }
 
-      await supabaseAdmin
-        .from('leaderboard')
-        .update({
-          wins: currentWins + (won ? 1 : 0),
-          losses: currentLosses + (won ? 0 : 1),
-          total_games: currentTotalGames + 1,
-          highest_net_worth: Math.max(currentHighestNetWorth, finalWealth),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', userId)
+    const ageSeconds = (Date.now() - new Date(match.started_at).getTime()) / 1000
+    if (ageSeconds > MAX_MATCH_HOURS * 3600) throw new HttpError(410, 'Match expired')
+
+    const forfeit = body.forfeit === true
+    const totalPlayers = body.totalPlayers
+    if (!isInt(totalPlayers) || totalPlayers < 1 || totalPlayers > 6 || (match.mode === 'ranked' && totalPlayers < 2)) {
+      throw new HttpError(400, 'Invalid totalPlayers')
+    }
+    if (match.total_players != null && match.total_players !== totalPlayers) {
+      throw new HttpError(400, 'totalPlayers does not match the started game')
+    }
+
+    let won = body.won === true
+    let placement = body.placement
+    if (forfeit) {
+      won = false
+      placement = totalPlayers
     } else {
-      await supabaseAdmin
-        .from('leaderboard')
-        .insert({
-          user_id: userId,
-          username,
-          wins: won ? 1 : 0,
-          losses: won ? 0 : 1,
-          total_games: 1,
-          highest_net_worth: finalWealth,
-        })
+      if (typeof body.won !== 'boolean') throw new HttpError(400, 'Invalid won')
+      if (!isInt(placement) || placement < 1 || placement > totalPlayers) throw new HttpError(400, 'Invalid placement')
+      if (won && placement !== 1) throw new HttpError(400, 'A win must be 1st place')
+      const minSeconds = MIN_DURATION_SECONDS[match.mode] ?? 90
+      if (ageSeconds < minSeconds) throw new HttpError(422, 'Game finished too quickly')
     }
 
-    // 2. Update profile stats
-    let awardedDc = 0;
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('games_played, games_won, win_streak, max_win_streak, rank_points, total_xp, daanik_coins')
-      .eq('id', userId)
-      .maybeSingle()
-
-    if (profile) {
-      const currentGamesPlayed = profile.games_played || 0;
-      const currentGamesWon = profile.games_won || 0;
-      const currentWinStreak = profile.win_streak || 0;
-      const currentMaxWinStreak = profile.max_win_streak || 0;
-      const currentRankPoints = profile.rank_points || 0;
-      const currentTotalXp = profile.total_xp || 0;
-      
-      const newStreak = won ? currentWinStreak + 1 : 0
-      const rpGain = calculateRPChange(placement, totalPlayers, currentWinStreak)
-      
-      await supabaseAdmin
-        .from('profiles')
-        .update({
-          games_played: currentGamesPlayed + 1,
-          games_won: currentGamesWon + (won ? 1 : 0),
-          win_streak: newStreak,
-          max_win_streak: Math.max(currentMaxWinStreak, newStreak),
-          rank_points: Math.max(0, currentRankPoints + rpGain),
-          total_xp: currentTotalXp + (won ? 100 : 25),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', userId)
-
-      // 3. Process Contracts
-      try {
-        const { data: activeContracts } = await supabaseAdmin
-          .from('daily_contracts')
-          .select('*')
-          .gte('contract_date', new Date().toISOString().split('T')[0])
-
-        if (activeContracts && activeContracts.length > 0) {
-          // Fetch existing player contracts in bulk
-          const activeContractIds = activeContracts.map((c: any) => c.id)
-          const { data: pContractsData } = await supabaseAdmin
-            .from('player_contracts')
-            .select('*')
-            .eq('player_id', userId)
-            .in('contract_id', activeContractIds)
-
-          const pContractsMap = new Map((pContractsData || []).map((pc: any) => [pc.contract_id, pc]))
-          const upserts = []
-
-          for (const contract of activeContracts) {
-            let increment = 0;
-            if (contract.requirement_type === 'wins' && won) increment = 1;
-            if (contract.requirement_type === 'weekly_wins' && won) increment = 1;
-            if (contract.requirement_type === 'invest_choices') increment = stats.investChoices;
-            if (contract.requirement_type === 'no_emi_win' && won && !stats.emiDamageTaken) increment = 1;
-
-            if (increment > 0) {
-              const pContract = pContractsMap.get(contract.id)
-              const currentProgress = pContract ? pContract.progress : 0;
-              const newProgress = currentProgress + increment;
-              const isNewlyCompleted = !pContract?.completed && newProgress >= contract.requirement_value;
-
-              upserts.push({
-                player_id: userId,
-                contract_id: contract.id,
-                progress: newProgress,
-                completed: isNewlyCompleted || (pContract?.completed ?? false),
-                completed_at: isNewlyCompleted ? new Date().toISOString() : pContract?.completed_at,
-              })
-
-              if (isNewlyCompleted) {
-                awardedDc += contract.reward_dc;
-              }
-            }
-          }
-
-          if (upserts.length > 0) {
-            await supabaseAdmin.from('player_contracts').upsert(upserts)
-          }
-
-          if (awardedDc > 0) {
-            await supabaseAdmin
-              .from('profiles')
-              .update({ daanik_coins: (profile.daanik_coins || 0) + awardedDc })
-              .eq('id', userId);
-          }
-        }
-      } catch (e) {
-        console.error('Failed to process contracts', e);
-      }
+    const finalWealth = body.finalWealth
+    if (typeof finalWealth !== 'number' || !Number.isFinite(finalWealth) || Math.abs(finalWealth) > MAX_ABS_WEALTH) {
+      throw new HttpError(400, 'Invalid finalWealth')
     }
 
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
+    const rawStats = (body.stats && typeof body.stats === 'object') ? body.stats as Record<string, unknown> : {}
+    const investChoices = isInt(rawStats.investChoices)
+      ? Math.min(Math.max(rawStats.investChoices, 0), MAX_INVEST_CHOICES)
+      : 0
+    const stats = {
+      investChoices,
+      emiDamageTaken: rawStats.emiDamageTaken === true,
+      forfeit,
+    }
+
+    const { data: result, error: applyError } = await admin.rpc('apply_match_result', {
+      p_match_id: matchId,
+      p_user_id: user.id,
+      p_mode: match.mode,
+      p_won: won,
+      p_placement: placement,
+      p_total_players: totalPlayers,
+      p_final_wealth: Math.round(finalWealth),
+      p_stats: stats,
     })
+    if (applyError) throw new HttpError(400, applyError.message)
+
+    return json({ success: true, result })
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
-    })
+    const status = error instanceof HttpError ? error.status : 500
+    const message = error instanceof Error ? error.message : 'Unexpected error'
+    if (status >= 500) console.error('save-game-result failed', error)
+    return json({ error: message }, status)
   }
 })
