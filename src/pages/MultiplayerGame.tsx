@@ -18,6 +18,8 @@ import { playSound } from '../lib/audio'
 import { GameBoard, UIPhase } from '../components/game/GameBoard'
 import { useTranslation } from 'react-i18next'
 import { usePreloadImages } from '../hooks/usePreloadImages'
+import { GameReportPanel } from '../components/learning/GameReportPanel'
+import { progressOwnerKey } from '../lib/campaignProgress'
 
 function GameClock({ startTime, timeLimit }: { startTime: number; timeLimit: number }) {
   const [now, setNow] = useState(Date.now())
@@ -45,8 +47,9 @@ export function MultiplayerGame() {
   usePreloadImages()
   const { roomId } = useParams<{ roomId: string }>()
   const navigate = useNavigate()
-  const { profile, refreshProfile } = useAuth()
+  const { user, profile, refreshProfile } = useAuth()
   const { t } = useTranslation()
+  const [showLog, setShowLog] = useState(false)
 
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [uiPhase, setUiPhase] = useState<PagePhase>('loading')
@@ -596,9 +599,15 @@ export function MultiplayerGame() {
     const isWinner = gameState.winner?.id === myPlayerId
     const placement = sorted.findIndex(p => p.id === myPlayerId) + 1
     const ordinal = placement === 1 ? 'st' : placement === 2 ? 'nd' : placement === 3 ? 'rd' : 'th'
+    const leaveTo = async (path: string) => {
+      if (roomId && myPlayerId) {
+        await leaveRoom(roomId, myPlayerId).catch(() => { })
+      }
+      navigate(path)
+    }
 
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--green-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ minHeight: '100vh', background: 'var(--green-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(16px, 4vw, 24px)', paddingBottom: 0 }}>
         {isWinner && <Confetti width={window.innerWidth} height={window.innerHeight} recycle={false} numberOfPieces={500} colors={['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#f1f5f9']} />}
         <div style={{ width: '100%', maxWidth: 900, textAlign: 'center', zIndex: 10 }}>
           <div style={{ fontSize: 'clamp(50px, 15vw, 80px)', marginBottom: 16 }}>
@@ -607,12 +616,21 @@ export function MultiplayerGame() {
           <h1 style={{ fontSize: 'clamp(28px, 8vw, 40px)', fontWeight: 800, fontFamily: 'var(--font-display)', color: isWinner ? 'var(--gold)' : 'var(--green-light)', marginBottom: 8 }}>
             {isWinner ? 'Victory!' : `${placement}${ordinal} Place`}
           </h1>
-          <p style={{ color: 'var(--gray)', marginBottom: 28, fontSize: 20 }}>
+          <p style={{ color: 'var(--gray)', marginBottom: 20, fontSize: 20 }}>
             {t('game.finalWealth', { amount: formatWealth(myFinalPlayer?.wealth ?? 0) })}
           </p>
 
-          <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', marginBottom: 24 }}>
-            <div style={{ flex: '1 1 300px', background: 'var(--green-deep)', border: '1px solid var(--green-primary)', borderRadius: 16, padding: 20 }}>
+          {myFinalPlayer && (
+            <GameReportPanel
+              state={gameState}
+              playerId={myFinalPlayer.id}
+              ownerKey={progressOwnerKey(user?.id ?? myPlayerId)}
+              onOpenLibrary={() => leaveTo('/library')}
+            />
+          )}
+
+          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', marginBottom: 16, maxWidth: 720, marginLeft: 'auto', marginRight: 'auto' }}>
+            <div style={{ flex: '1 1 280px', background: 'var(--green-deep)', border: '1px solid var(--green-primary)', borderRadius: 16, padding: 20 }}>
               <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--gray)', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 {t('game.finalRankings')}
               </h3>
@@ -641,9 +659,16 @@ export function MultiplayerGame() {
               ))}
             </div>
 
-            {/* Match Highlights */}
+            {/* Match Highlights (collapsed by default; the report card above is the summary) */}
             {gameState.log && gameState.log.length > 0 && (
-              <div style={{ flex: '1 1 300px', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: 20, textAlign: 'left', maxHeight: 250, overflowY: 'auto' }}>
+              <div style={{ flex: '1 1 100%', display: 'flex', justifyContent: 'center' }}>
+                <button className="rc-log-toggle" aria-expanded={showLog} onClick={() => setShowLog(v => !v)}>
+                  {showLog ? 'Hide game log ▲' : 'Show game log ▼'}
+                </button>
+              </div>
+            )}
+            {showLog && gameState.log && gameState.log.length > 0 && (
+              <div style={{ flex: '1 1 280px', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: 20, textAlign: 'left', maxHeight: 250, overflowY: 'auto' }}>
                 <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--gray)', marginBottom: 8, textTransform: 'uppercase' }}>Match Highlights</h3>
                 <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: 14, color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {gameState.log.slice(0, 15).map((entry, idx) => (
@@ -654,22 +679,12 @@ export function MultiplayerGame() {
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginTop: 12 }}>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', position: 'sticky', bottom: 0, padding: '12px 0 max(16px, env(safe-area-inset-bottom))', background: 'linear-gradient(to bottom, rgba(0,16,16,0), var(--green-black) 35%)', zIndex: 20 }}>
             <div className="btn-rebound" style={{ boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)', borderRadius: 8 }}>
-              <Button style={{ minWidth: 200, height: 48 }} onClick={async () => {
-                if (roomId && myPlayerId) {
-                  await leaveRoom(roomId, myPlayerId).catch(() => { })
-                }
-                navigate('/multiplayer')
-              }}>Play Again</Button>
+              <Button style={{ minWidth: 200, height: 48 }} onClick={() => leaveTo('/multiplayer')}>Play Again</Button>
             </div>
             <div className="btn-rebound">
-              <Button variant="secondary" style={{ minWidth: 200, height: 48 }} onClick={async () => {
-                if (roomId && myPlayerId) {
-                  await leaveRoom(roomId, myPlayerId).catch(() => { })
-                }
-                navigate('/dashboard')
-              }}>Dashboard</Button>
+              <Button variant="secondary" style={{ minWidth: 200, height: 48 }} onClick={() => leaveTo('/dashboard')}>Dashboard</Button>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { markLevelCompleted, progressOwnerKey } from '../lib/campaignProgress'
@@ -22,6 +22,7 @@ import { supabase } from '../lib/supabase'
 import { motion } from 'framer-motion'
 import { usePreloadImages } from '../hooks/usePreloadImages'
 import { TrendingUp, TrendingDown } from 'lucide-react'
+import { GameReportPanel } from '../components/learning/GameReportPanel'
 
 type GamePhaseUI = 'setup' | UIPhase | 'result'
 
@@ -475,6 +476,14 @@ export function Game() {
         players={gameState.players}
         mode={mode}
         gameLog={gameState.log}
+        report={
+          <GameReportPanel
+            state={gameState}
+            playerId={humanPlayer.id}
+            ownerKey={progressOwnerKey(user?.id)}
+            onOpenLibrary={() => navigate('/library')}
+          />
+        }
         onPlayAgain={() => { setGameState(null); setUiPhase('setup') }}
         onDashboard={() => navigate('/dashboard')}
       />
@@ -888,11 +897,12 @@ function SetupScreen({ botCount, setBotCount, onStart, onBack, levelId }: { botC
     </div>
   )
 }
-function ResultScreen({ isWinner, placement, finalWealth, rpChange, players, mode, onPlayAgain, onDashboard, nearMiss, wealthGap, gameLog }: { isWinner: boolean; placement: number; finalWealth: number; rpChange: number; players: PlayerState[]; mode: string; onPlayAgain: () => void; onDashboard: () => void; nearMiss?: boolean; wealthGap?: number; gameLog: string[] }) {
+function ResultScreen({ isWinner, placement, finalWealth, rpChange, players, mode, onPlayAgain, onDashboard, nearMiss, wealthGap, gameLog, report }: { isWinner: boolean; placement: number; finalWealth: number; rpChange: number; players: PlayerState[]; mode: string; onPlayAgain: () => void; onDashboard: () => void; nearMiss?: boolean; wealthGap?: number; gameLog: string[]; report?: ReactNode }) {
   const sorted = [...players].sort((a, b) => b.wealth - a.wealth)
+  const [showLog, setShowLog] = useState(false)
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--green-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, zIndex: 100, position: 'relative' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--green-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(16px, 4vw, 24px)', paddingBottom: 0, zIndex: 100, position: 'relative' }}>
       {isWinner && <Confetti width={window.innerWidth} height={window.innerHeight} recycle={false} numberOfPieces={500} colors={['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#f1f5f9']} />}
       <div style={{ width: '100%', maxWidth: 900, textAlign: 'center', zIndex: 10 }}>
         {/* Massive Text Stamp */}
@@ -925,7 +935,7 @@ function ResultScreen({ isWinner, placement, finalWealth, rpChange, players, mod
             You were just {formatWealth(wealthGap)} away from winning!
           </p>
         )}
-        <p style={{ color: 'var(--text-muted)', marginBottom: 28, fontSize: 20 }}>Final wealth: {formatWealth(finalWealth)}</p>
+        <p style={{ color: 'var(--text-muted)', marginBottom: 20, fontSize: 20 }}>Final wealth: {formatWealth(finalWealth)}</p>
 
         {mode === 'ranked' && (
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 12, background: rpChange > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${rpChange > 0 ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, marginBottom: 28 }}>
@@ -935,9 +945,11 @@ function ResultScreen({ isWinner, placement, finalWealth, rpChange, players, mod
           </div>
         )}
 
+        {report}
+
         {/* Final Rankings & Highlights */}
-        <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', marginBottom: 24 }}>
-          <div style={{ flex: '1 1 300px', background: 'var(--green-deep)', border: '1px solid var(--green-primary)', borderRadius: 16, padding: 20 }}>
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', marginBottom: 16, maxWidth: 720, marginLeft: 'auto', marginRight: 'auto' }}>
+          <div style={{ flex: '1 1 280px', background: 'var(--green-deep)', border: '1px solid var(--green-primary)', borderRadius: 16, padding: 20 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--gray)', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Final Rankings
             </h3>
@@ -966,9 +978,16 @@ function ResultScreen({ isWinner, placement, finalWealth, rpChange, players, mod
             ))}
           </div>
 
-          {/* Match Highlights */}
+          {/* Match Highlights (collapsed by default; the report card above is the summary) */}
           {gameLog && gameLog.length > 0 && (
-            <div style={{ flex: '1 1 300px', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: 20, textAlign: 'left', maxHeight: 250, overflowY: 'auto' }}>
+            <div style={{ flex: '1 1 100%', display: 'flex', justifyContent: 'center' }}>
+              <button className="rc-log-toggle" aria-expanded={showLog} onClick={() => setShowLog(v => !v)}>
+                {showLog ? 'Hide game log ▲' : 'Show game log ▼'}
+              </button>
+            </div>
+          )}
+          {showLog && gameLog && gameLog.length > 0 && (
+            <div style={{ flex: '1 1 280px', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: 20, textAlign: 'left', maxHeight: 250, overflowY: 'auto' }}>
               <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--gray)', marginBottom: 8, textTransform: 'uppercase' }}>Match Highlights</h3>
               <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: 14, color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {gameLog.slice(0, 15).map((entry: string, idx: number) => (
@@ -979,7 +998,7 @@ function ResultScreen({ isWinner, placement, finalWealth, rpChange, players, mod
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginTop: 12 }}>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', position: 'sticky', bottom: 0, padding: '12px 0 max(16px, env(safe-area-inset-bottom))', background: 'linear-gradient(to bottom, rgba(0,16,16,0), var(--green-black) 35%)', zIndex: 20 }}>
           <div className="btn-rebound" style={{ boxShadow: '0 0 20px rgba(244, 210, 123, 0.4)', borderRadius: 12 }}>
             <Button variant="gold" size="lg" onClick={onPlayAgain} style={{ minWidth: 200 }}>PLAY AGAIN</Button>
           </div>

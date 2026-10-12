@@ -11,6 +11,7 @@ import { isSoundEnabled, toggleSound } from '../lib/audio'
 import { useTranslation } from 'react-i18next'
 import { DailyRewardModal } from '../components/DailyRewardModal'
 import { DeleteAccountButton } from '../components/DeleteAccountButton'
+import { LibraryEntryCard } from '../components/learning/LibraryEntryCard'
 
 
 type Tab = 'home' | 'leaderboard' | 'contracts' | 'profile'
@@ -468,6 +469,9 @@ function HomeTab({ navigate, profile, onlineUsers }: { navigate: (path: string) 
           </button>
         </div>
 
+        {/* Gyaan Library */}
+        <LibraryEntryCard />
+
         {/* Season Banner (Mocking IPO Boom) */}
         <div style={{
           position: 'relative', zIndex: 1,
@@ -553,6 +557,9 @@ function HomeTab({ navigate, profile, onlineUsers }: { navigate: (path: string) 
             Continue Playing
           </button>
         </div>
+
+        {/* Mobile Gyaan Library */}
+        <LibraryEntryCard compact />
 
         {/* Mobile Season Banner */}
         <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', cursor: 'pointer', background: '#F0F0E0' }} onClick={() => navigate('/multiplayer')}>
