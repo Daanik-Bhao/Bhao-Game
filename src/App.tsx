@@ -34,6 +34,7 @@ const Lobby = retryLazy(() => import('./pages/Lobby').then(m => ({ default: m.Lo
 const MultiplayerGame = retryLazy(() => import('./pages/MultiplayerGame').then(m => ({ default: m.MultiplayerGame })))
 const Campaign = retryLazy(() => import('./pages/Campaign').then(m => ({ default: m.Campaign })))
 const TutorialGame = retryLazy(() => import('./pages/TutorialGame').then(m => ({ default: m.TutorialGame })))
+const Library = retryLazy(() => import('./pages/Library').then(m => ({ default: m.Library })))
 const GuestHome = retryLazy(() => import('./pages/GuestHome').then(m => ({ default: m.GuestHome })))
 const SignInRequired = retryLazy(() => import('./pages/SignInRequired').then(m => ({ default: m.SignInRequired })))
 const Privacy = retryLazy(() => import('./pages/Legal').then(m => ({ default: m.Privacy })))
@@ -125,6 +126,7 @@ function AppRoutes() {
         <Route path="/game" element={<GameRoute />} />
         <Route path="/game/level/:levelId" element={<PlayableRoute><Game /></PlayableRoute>} />
         <Route path="/campaign" element={<PlayableRoute><Campaign /></PlayableRoute>} />
+        <Route path="/library" element={<PlayableRoute><Library /></PlayableRoute>} />
         <Route path="/tutorial" element={<PlayableRoute><TutorialGame /></PlayableRoute>} />
         <Route path="/multiplayer" element={<ProtectedRoute><Lobby /></ProtectedRoute>} />
         <Route path="/multiplayer/:roomId" element={<ProtectedRoute><MultiplayerGame /></ProtectedRoute>} />

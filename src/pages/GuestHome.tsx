@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { Button } from '../components/ui/Button'
+import { LibraryEntryCard } from '../components/learning/LibraryEntryCard'
 
 /** Home screen for guests: offline modes only, with a nudge to sign in for online play. */
 export function GuestHome() {
@@ -43,6 +44,7 @@ export function GuestHome() {
               </span>
             </button>
           ))}
+          <LibraryEntryCard variant="tile" />
         </div>
 
         <section className="glass-panel" style={{ marginTop: 24, padding: 20, borderRadius: 16, border: '1px dashed var(--green-primary)' }}>
