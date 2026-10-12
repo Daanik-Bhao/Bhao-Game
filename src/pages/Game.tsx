@@ -203,15 +203,7 @@ export function Game() {
     const inPlay = uiPhase !== 'setup' && uiPhase !== 'result' && gameState.phase !== 'game_over'
 
     if (newYear && inPlay) {
-      // "Year N" summary: market moves, inflation, life event
-      const news = gameState.roundNews!
-      enqueuePopup({
-        title: `YEAR ${news.round} / ${getRoundLimit(gameState)}`,
-        reason: i18n.language === 'hi' ? 'एक साल बीत गया' : 'A year has passed',
-        lines: news.lines.slice(1),
-        amountStr: `${wealthDiff >= 0 ? '+' : '-'}₹${Math.abs(wealthDiff).toLocaleString()}`,
-        isGain: wealthDiff >= 0,
-      })
+      // The board's non-blocking Year strip shows the market / inflation / life-event news
     } else if (wealthDiff !== 0 && inPlay) {
       let reason = gameState.log[0] || 'Wealth updated'
       let description = ''
