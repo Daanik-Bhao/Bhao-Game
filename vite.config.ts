@@ -6,6 +6,10 @@ const THEME_COLOR = '#004030'
 const BACKGROUND_COLOR = '#EEEFE0'
 
 export default defineConfig({
+  server: {
+    // Agent worktrees under .claude/ are full repo copies; don't watch them
+    watch: { ignored: ['**/.claude/**'] },
+  },
   plugins: [
     react(),
     VitePWA({

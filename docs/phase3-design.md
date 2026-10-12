@@ -109,3 +109,50 @@ Tuning applied to get here:
   attacking whenever possible — with persistent hands bots always hold an attack card, and constant
   attacks made growth near-zero for everyone.
 - Asset table (`src/data/assets.ts`) left unchanged: realistic returns were enough once the above was set.
+
+### Balance results v2 — real tagged decks
+
+Same method, now with the content-tagged decks: real invest assets (mostly index/equity, 1 scam and
+2 crypto options in the whole pool), the 16 `lifeEvent` cards in the event deck, `market` rival cards
+hitting holdings, and category-based defenses. 2,000 games per row unless noted.
+
+One strategy vs two shipped bots, 3 players (the real single-player setup):
+
+| seat 1 plays | before: win / median NW | after: win / median NW | before: goal reached, median rounds | after: goal reached, median rounds |
+|---|---|---|---|---|
+| balanced | 33.8% / ₹45.1L | 32.5% / ₹46.1L (≈ fair 33%) | 88% · 18 (p25 16) | **95% · 16 (p25 15, p75 18)** |
+| always invest | 12.2% / ₹34.4L | 12.3% / ₹36.5L | 84% · 18 | 93% · 17 |
+| always save | 0% / ₹4.8L | 0% / ₹4.8L | 81% · 18 | 92% · 17 |
+| scam-chaser | 0% / ₹0.0L | 0% / ₹0.0L | 80% · 18 | 90% · 17 |
+| big spender | 0% / ₹0.1L | 0% / ₹0.1L | 81% · 18 | 91% · 17 |
+
+Hard bots (difficulty 1.2), balanced seat: 95% goal reached, median 17 rounds.
+
+Mixed tables after tuning (seats drawn from the five strategies; win rate when present):
+
+| players | save | index | balanced | scam | spender | goal reached | median rounds |
+|---|---|---|---|---|---|---|---|
+| 2 | 40% | 85% | 93% | 2% | 44% | 43% | 20 |
+| 3 | 14% | 62% | 85% | 0% | 0% | 67% | 19 |
+| 5 | 0% | 25% | 75% | 0% | 0% | 83% | 18 |
+
+Mixed tables still often run to the limit because they are full of save/scam/spender seats that never get
+anywhere (2 players: half the games have no investor at all). They are a strategy ranking, not a pacing test.
+
+Lessons per game (balanced vs 2 bots): ~7.8 life events, a forced sale with exit penalty in ~40% of games
+(~86% for the always-invest player who keeps no cash buffer).
+
+**Scam visibility.** With the real decks a scam invest option shows up only ~0.45 times per game and
+bots almost never take it, so before this change the scam lesson appeared in ~0% of games.
+Fix: built-in **lure** life events (`lureAsset` on the card, new optional `GameCard` field):
+"WhatsApp Stock Tip" and "Double-Your-Money Scheme" (20% of cash → 🎣 scam) and "Crypto Influencer"
+(15% → ₿ crypto). A lure lands on a random **bot** when there is one, so humans watch it happen;
+`fraud` defenses block it. A scam holding now appears in **~42% of games** (0.7 lures/game) and is
+usually wiped out a year or two later in the "Year N" news.
+
+Tuning in v2 and why:
+- `index` mean 12 → **13%**, `equity` 13 → **14%** (still plausible long-run Indian numbers;
+  index capped at 13 as requested). The 16 real life events (Medical Emergency −15%, Tax Audit −15%,
+  Severe Market Crash on holdings…) are harsher than the v1 built-ins and pushed the median to 18 rounds.
+- `BOT_ATTACK_LEADER_CHANCE` 0.2 → **0.15** for the same reason.
+- `INVEST_FRACTION` unchanged (35/50/65/75%); event chance unchanged (50%/round).

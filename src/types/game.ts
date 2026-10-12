@@ -63,6 +63,8 @@ export interface GameCard {
   lifeEvent?: boolean
   /** Defense cards: block any incoming card whose category is listed */
   blocksCategories?: EventCategory[]
+  /** Life events only: the affected player is talked into moving |effect.value|% of their cash into this asset (e.g. a scam tip) */
+  lureAsset?: AssetClass
 }
 
 /** An investment a player owns. Its value moves every round; it counts toward net worth. */
