@@ -2,6 +2,10 @@ export type CardType = 'decision' | 'action' | 'defense' | 'situation'
 export type CardTier = 'common' | 'rare' | 'epic' | 'legendary'
 export type DecisionChoice = 'spend' | 'save' | 'invest'
 export type MultiplayerMode = 'blitz' | 'standard' | 'epic'
+/** Where an INVEST choice puts the money. Return/risk table lives in src/data/assets.ts */
+export type AssetClass = 'fd' | 'debt' | 'gold' | 'index' | 'equity' | 'smallcap' | 'realestate' | 'crypto' | 'scam'
+/** What kind of trouble a card causes; defense cards block whole categories. */
+export type EventCategory = 'medical' | 'job' | 'market' | 'fraud' | 'tax' | 'property' | 'legal' | 'personal' | 'travel' | 'debt'
 import type { LevelConfig, LevelState } from './level'
 export interface CardEffect {
   type: 'wealth_change' | 'wealth_pct' | 'wealth_next_turn' | 'wealth_end_game' | 'skip_turn' | 'steal' | 'steal_pct' | 'attack_all_pct' | 'block_card' | 'reduce_attack_pct' | 'copy_card' | 'set_goal' | 'market_crash_player' | 'wealth_floor' | 'double_invest'
@@ -29,6 +33,8 @@ export interface DecisionOption {
   /** Applied when investRisk triggers (e.g. -₹200K loss) */
   failEffect?: CardEffect
   mentorInsight?: string
+  /** INVEST options only: the asset this money goes into (defaults inferred from investRisk) */
+  asset?: AssetClass
 }
 
 export interface GameCard {
@@ -51,6 +57,26 @@ export interface GameCard {
   interestRate?: number
   tenorMonths?: number
   mentorInsight?: string
+  /** Action / life-event cards: the kind of trouble this is */
+  category?: EventCategory
+  /** True for misfortunes (illness, roof leak...) that come from the shared Life Event deck, not from a rival */
+  lifeEvent?: boolean
+  /** Defense cards: block any incoming card whose category is listed */
+  blocksCategories?: EventCategory[]
+}
+
+/** An investment a player owns. Its value moves every round; it counts toward net worth. */
+export interface Holding {
+  id: string
+  asset: AssetClass
+  /** Card / label it came from, e.g. "Nifty 50 SIP" */
+  name: string
+  principal: number
+  value: number
+  /** Round in which it was bought */
+  boughtRound: number
+  /** % change applied at the last market tick (for UI arrows) */
+  lastChangePct: number
 }
 
 export interface PlayerState {
@@ -71,6 +97,11 @@ export interface PlayerState {
   emiDamageTaken: boolean
   hasForfeited?: boolean
   diffMultiplier?: number
+  /** Phase 3 economy. `wealth` stays = net worth (cash + holdings) so existing UI keeps working. */
+  cash?: number
+  holdings?: Holding[]
+  /** Rises with each Spend: raises the inflation hit on cash (lifestyle creep) */
+  lifestyleLevel?: number
   profile?: {
     rank_points: number
     avatar_url: string | null
@@ -98,6 +129,14 @@ export interface GameState {
   multiplayerMode?: MultiplayerMode
   levelConfig?: LevelConfig
   levelState?: LevelState
+  /** Phase 3: one round = every active player has had a turn = one year of life */
+  round?: number
+  /** Shared Life Event deck (lifeEvent cards), drawn at the start of a round */
+  eventDeck?: GameCard[]
+  /** Most recent life event, for the UI */
+  lastEvent?: { card: GameCard; round: number; affectedPlayerIds: string[] } | null
+  /** Most recent market tick, for the UI: % change per asset class this round */
+  lastMarketTick?: { round: number; changes: Partial<Record<AssetClass, number>> } | null
 }
 
 export interface MogulRank {
