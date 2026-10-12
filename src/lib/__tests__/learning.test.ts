@@ -317,6 +317,25 @@ describe('report card', () => {
     expect(c.projection.yourMixValue).toBe(c.projection.indexValue)
   })
 
+  it('emergency grade is capped at C when most of the money was lost, even without forced sales', () => {
+    // The scam-chaser never sells in a hurry, but loses most of their money
+    expect(['C', 'D']).toContain(gradeOf(card(scamGame), 'emergency'))
+
+    const s = initGame({ id: 'h', name: 'H' }, 1)
+    const st = { ...emptyStats(STARTING_WEALTH), invests: 2, investedByAsset: { scam: STARTING_WEALTH * 0.5 }, speculativeLosses: STARTING_WEALTH * 0.45 }
+    const c = buildReportCard({ ...s, players: s.players.map((p, i) => (i === 0 ? { ...p, stats: st } : p)) }, 'h')
+    const g = c.grades.find(x => x.area === 'emergency')!
+    expect(g.grade).toBe('C')
+    expect(g.reason).toContain('45%')
+    expect(g.reasonHi).toContain('45%')
+    expect(c.personaId).not.toBe('emergency_pro')
+
+    // Small losses keep the A
+    const ok = { ...emptyStats(STARTING_WEALTH), speculativeLosses: STARTING_WEALTH * 0.1 }
+    const c2 = buildReportCard({ ...s, players: s.players.map((p, i) => (i === 0 ? { ...p, stats: ok } : p)) }, 'h')
+    expect(c2.grades.find(x => x.area === 'emergency')!.grade).toBe('A')
+  })
+
   it('lessons: at most 3, tied to concepts, and quote real events', () => {
     for (const g of [saveGame, balancedGame, scamGame]) {
       const c = card(g)
