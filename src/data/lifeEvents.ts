@@ -59,6 +59,29 @@ export const BUILTIN_LIFE_EVENTS: GameCard[] = [
     mentorInsight: 'Small surprises are certain — budget a little every month for repairs.',
     effect: { type: 'wealth_pct', value: -4, target: 'self' },
   },
+  // Lures: the affected player (a bot when there is one, so humans watch it happen) moves
+  // |value|% of their cash into a risky asset. A fraud defense blocks it.
+  {
+    id: 'le_whatsapp_tip', name: 'WhatsApp Stock Tip', nameHi: 'व्हाट्सऐप स्टॉक टिप', type: 'action', tier: 'rare', lifeEvent: true, category: 'fraud', lureAsset: 'scam',
+    flavor: '"Guaranteed 30% a month, sir — only for close friends!" Someone forwards a hot tip.',
+    flavorHi: '"हर महीने 30% पक्का, सिर्फ़ दोस्तों के लिए!" — एक हॉट टिप आई।',
+    mentorInsight: 'Nobody can guarantee high returns. "Guaranteed" + "urgent" + "secret" is the recipe of almost every investment scam.',
+    effect: { type: 'wealth_pct', value: -20, target: 'self' },
+  },
+  {
+    id: 'le_chit_fund_scheme', name: 'Double-Your-Money Scheme', nameHi: 'पैसा डबल स्कीम', type: 'action', tier: 'rare', lifeEvent: true, category: 'fraud', lureAsset: 'scam',
+    flavor: 'A neighbour\'s "chit fund" promises to double your money in a year. Everyone in the building has joined.',
+    flavorHi: 'पड़ोसी की "चिट फंड" स्कीम एक साल में पैसा डबल करने का वादा करती है।',
+    mentorInsight: 'Unregistered schemes paying old investors with new investors\' money collapse sooner or later. Check SEBI/RBI registration before investing.',
+    effect: { type: 'wealth_pct', value: -20, target: 'self' },
+  },
+  {
+    id: 'le_crypto_influencer', name: 'Crypto Influencer', nameHi: 'क्रिप्टो इन्फ्लुएंसर', type: 'action', tier: 'rare', lifeEvent: true, category: 'fraud', lureAsset: 'crypto',
+    flavor: 'A finfluencer promises the next 100x coin. FOMO kicks in.',
+    flavorHi: 'एक फ़िनफ़्लुएंसर ने अगला 100x कॉइन बताया। FOMO हो गया।',
+    mentorInsight: 'Speculation is not investing. Only put in money you can afford to lose completely.',
+    effect: { type: 'wealth_pct', value: -15, target: 'self' },
+  },
   {
     id: 'le_tax_notice', name: 'Tax Notice', nameHi: 'टैक्स नोटिस', type: 'action', tier: 'rare', lifeEvent: true, category: 'tax',
     flavor: 'You forgot to declare interest income. Pay the dues plus interest.',
