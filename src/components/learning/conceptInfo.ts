@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { Concept, ConceptId } from '../../types/learning'
 import { CONCEPTS } from '../../data/concepts'
+import { pickLang } from '../../i18n/lang'
 
 /** Used when a concept is missing from the catalog (e.g. while the catalog is a stub). */
 const FALLBACK_EMOJI: Record<ConceptId, string> = {
@@ -31,13 +32,16 @@ export interface ConceptView {
   hasDetails: boolean
 }
 
-/** Language-resolved view of a concept, safe for ids missing from the catalog. */
-export function conceptView(id: ConceptId, hindi: boolean): ConceptView {
+/**
+ * Language-resolved view of a concept, safe for ids missing from the catalog.
+ * Hindi uses the *Hi fields; English and Hinglish use the English write-up.
+ */
+export function conceptView(id: ConceptId, lang: string): ConceptView {
   const c: Concept | undefined = CONCEPTS[id]
   if (!c) {
     return { id, emoji: FALLBACK_EMOJI[id] ?? '📘', title: titleFromId(id), oneLiner: '', explanation: '', example: '', actionTip: '', hasDetails: false }
   }
-  const pick = (en: string, hi: string) => (hindi && hi ? hi : en)
+  const pick = (en: string, hi: string) => pickLang(en, hi, lang)
   return {
     id,
     emoji: c.emoji || FALLBACK_EMOJI[id] || '📘',
@@ -56,7 +60,7 @@ export function useIsHindi(): boolean {
   return i18n.language === 'hi'
 }
 
-/** Real-money rupees, Indian style: ₹4,500 · ₹1.2 lakh · ₹2.35 crore */
+/** Real-money rupees, Indian style: ₹4,500 · ₹1.2 lakh · ₹2.35 crore (लाख / करोड़ in Hindi) */
 export function formatRupees(amount: number, hindi = false): string {
   const n = Math.round(amount)
   const sign = n < 0 ? '-' : ''

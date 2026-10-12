@@ -326,7 +326,23 @@ function gradeRisk(m: Metrics): ReportCard['grades'][number] {
     `कोई सट्टा नहीं, और पैसा ${m.classes.length} तरह के निवेश में बँटा रहा — समझदारी भरा जोखिम।`)
 }
 
+/** Share of the starting net worth lost to speculation / hits that makes an "emergency-ready" grade untrue. */
+const BIG_LOSS_SHARE = 0.4
+
 function gradeEmergency(m: Metrics): ReportCard['grades'][number] {
+  const g = gradeEmergencyBase(m)
+  const { s, start } = m
+  const bigLoss = Math.max(s.speculativeLosses, s.lossesTaken)
+  // Never selling in a hurry is not "emergency-ready" if most of the money vanished anyway.
+  if (start > 0 && bigLoss > start * BIG_LOSS_SHARE && (g.grade === 'A' || g.grade === 'B')) {
+    return grade('emergency', 'C',
+      `You never had to sell in a hurry, but you lost ${inr(bigLoss)} (${pct(bigLoss / start)}% of what you started with) — a safety net only works if the money survives.`,
+      `आपको जल्दबाज़ी में कुछ नहीं बेचना पड़ा, पर ${inr(bigLoss)} (शुरुआती पैसे का ${pct(bigLoss / start)}%) डूब गए — सुरक्षा तभी काम आती है जब पैसा बचा रहे।`)
+  }
+  return g
+}
+
+function gradeEmergencyBase(m: Metrics): ReportCard['grades'][number] {
   const { s, start } = m
   const buffer = m.minCash >= 0.05 && m.avgCash >= 0.1
   if (s.forcedSales === 0) {

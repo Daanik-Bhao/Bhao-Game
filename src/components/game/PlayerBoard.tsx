@@ -248,7 +248,7 @@ export function PlayerBoard({ player, isCurrent, isMe, isTarget, isOffline, weal
         </motion.div>
         {/* Investments count (Phase 3) */}
         {(player.holdings?.length ?? 0) > 0 && (
-          <span className="econ-holdings-badge" title={`${player.holdings!.length} investments`}>📈{player.holdings!.length}</span>
+          <span className="econ-holdings-badge" title={t('board.investmentsCount', { n: player.holdings!.length })}>📈{player.holdings!.length}</span>
         )}
 
         {/* Net worth pill */}

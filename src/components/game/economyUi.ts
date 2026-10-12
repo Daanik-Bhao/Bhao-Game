@@ -2,6 +2,10 @@ import type { AssetClass, DecisionOption, GameCard, GameState, Holding, PlayerSt
 import { formatWealth } from '../../types/game'
 import { ASSETS, MAX_LIFESTYLE_LEVEL } from '../../data/assets'
 import type { AssetInfo } from '../../data/assets'
+import { ALL_CARDS } from '../../data/cards'
+import { BUILTIN_LIFE_EVENTS } from '../../data/lifeEvents'
+import i18n from '../../i18n/i18n'
+import { pickLang } from '../../i18n/lang'
 import {
   canEquip, getCash, getHoldings, getNetWorth, getRoundLimit, inflationPct, previewDecision, MAX_ACTIVE_DEFENSES, SAVE_STREAK_CAP,
 } from '../../lib/gameEngine'
@@ -25,12 +29,45 @@ export function signedPct(pct: number): string {
   return `${rounded > 0 ? '+' : '−'}${Math.abs(rounded)}%`
 }
 
-export const RISK_META: Record<AssetInfo['risk'], { label: string; color: string; bg: string }> = {
-  none: { label: 'No risk', color: '#a7f3d0', bg: 'rgba(16,185,129,0.22)' },
-  low: { label: 'Low risk', color: '#bbf7d0', bg: 'rgba(34,197,94,0.22)' },
-  medium: { label: 'Medium risk', color: '#fde68a', bg: 'rgba(234,179,8,0.24)' },
-  high: { label: 'High risk', color: '#fed7aa', bg: 'rgba(249,115,22,0.26)' },
-  extreme: { label: 'Extreme risk', color: '#fecaca', bg: 'rgba(239,68,68,0.3)' },
+export const RISK_META: Record<AssetInfo['risk'], { color: string; bg: string }> = {
+  none: { color: '#a7f3d0', bg: 'rgba(16,185,129,0.22)' },
+  low: { color: '#bbf7d0', bg: 'rgba(34,197,94,0.22)' },
+  medium: { color: '#fde68a', bg: 'rgba(234,179,8,0.24)' },
+  high: { color: '#fed7aa', bg: 'rgba(249,115,22,0.26)' },
+  extreme: { color: '#fecaca', bg: 'rgba(239,68,68,0.3)' },
+}
+
+const t = (key: string, opts?: Record<string, unknown>): string => i18n.t(key, opts)
+
+/** "Low risk" / "कम जोखिम" / "Low risk" */
+export function riskLabel(risk: AssetInfo['risk']): string {
+  return t(`econ.risk.${risk}`)
+}
+
+/** Asset name in the current language (Hinglish keeps the English name). */
+export function assetName(asset: AssetInfo): string {
+  return pickLang(asset.name, asset.nameHi, i18n.language)
+}
+
+/** One-line teaching hint for an asset class. */
+export function assetLesson(asset: AssetInfo): string {
+  return t(`econ.assetLesson.${asset.id}`, { defaultValue: asset.lesson })
+}
+
+const HI_CARD_NAMES = new Map<string, string>()
+for (const c of [...ALL_CARDS, ...BUILTIN_LIFE_EVENTS]) if (c.nameHi) HI_CARD_NAMES.set(c.name, c.nameHi)
+
+/** A card name from the engine/log in the current language. */
+export function cardNameFor(name: string): string {
+  return pickLang(name, HI_CARD_NAMES.get(name), i18n.language)
+}
+
+/** The engine's messages are English; translate the ones the board shows. */
+export function localizeEngineText(msg: string): string {
+  const need = msg.match(/^Need at least (₹[\d,]+) cash to invest$/)
+  if (need) return t('econ.needCash', { amount: need[1] })
+  if (msg === 'Not available') return t('econ.notAvailable')
+  return msg
 }
 
 export function assetInfo(asset: AssetClass): AssetInfo {
@@ -62,43 +99,40 @@ export function describeDecision(state: GameState, playerIndex: number, card: Ga
   const p = previewDecision(state, playerIndex, card, opt.type)
   const tone = (n: number): DecisionView['headlineTone'] => (n > 0 ? 'gain' : n < 0 ? 'loss' : 'neutral')
   const forcedSale = opt.type !== 'invest' && p.netWorthDelta < p.cashDelta - 1
+  const disabled = p.disabled ? localizeEngineText(p.disabled) : undefined
 
   if (opt.type === 'save') {
     const streak = Math.min(SAVE_STREAK_CAP, (player?.savingStreak ?? 0) + 1)
-    const details = [`${signedRupees(p.cashDelta)} to cash`]
-    let hint: string
-    if (streak > 1) hint = `🔥 Save streak ×${streak}: +${streak * 5}% bonus`
-    else hint = 'Save again next turn to start a streak bonus'
-    if (player) details.push(`Idle cash loses ~${inflationPct(player)}%/yr to inflation`)
-    return { type: 'save', headline: signedRupees(p.netWorthDelta), headlineTone: tone(p.netWorthDelta), details, hint, disabled: p.disabled, forcedSale }
+    const details = [t('econ.save.toCash', { amount: signedRupees(p.cashDelta) })]
+    const hint = streak > 1 ? t('econ.save.streak', { streak, bonus: streak * 5 }) : t('econ.save.startStreak')
+    if (player) details.push(t('econ.save.inflation', { pct: inflationPct(player) }))
+    return { type: 'save', headline: signedRupees(p.netWorthDelta), headlineTone: tone(p.netWorthDelta), details, hint, disabled, forcedSale }
   }
 
   if (opt.type === 'spend') {
     const level = player?.lifestyleLevel ?? 0
-    const lifestyle = level >= MAX_LIFESTYLE_LEVEL
-      ? 'lifestyle maxed'
-      : 'lifestyle ↑ (inflation +1%)'
-    const details = [`${signedRupees(p.netWorthDelta)}, +1 card, ${lifestyle}`]
+    const lifestyle = level >= MAX_LIFESTYLE_LEVEL ? t('econ.spend.lifestyleMax') : t('econ.spend.lifestyleUp')
+    const details = [t('econ.spend.details', { amount: signedRupees(p.netWorthDelta), lifestyle })]
     return {
       type: 'spend', headline: signedRupees(p.netWorthDelta), headlineTone: tone(p.netWorthDelta), details,
-      hint: forcedSale ? '⚠️ Not enough cash: investments get sold at a penalty' : 'Lifestyle creep makes every future year cost more',
-      disabled: p.disabled, forcedSale,
+      hint: forcedSale ? t('econ.spend.forcedSale') : t('econ.spend.creep'),
+      disabled, forcedSale,
     }
   }
 
   // invest
   const asset = p.asset ? ASSETS[p.asset] : undefined
   const details: string[] = []
-  if (asset) details.push(`avg ~${asset.meanPct}%/yr`)
-  if (p.investAmount > 0) details.push(`Moves ${rupees(p.investAmount)} of your cash`)
+  if (asset) details.push(t('econ.invest.avg', { pct: asset.meanPct }))
+  if (p.investAmount > 0) details.push(t('econ.invest.moves', { amount: rupees(p.investAmount) }))
   return {
     type: 'invest',
     headline: p.investAmount > 0 ? rupees(p.investAmount) : '—',
     headlineTone: 'neutral',
     details,
-    hint: asset?.lesson,
+    hint: asset ? assetLesson(asset) : undefined,
     asset,
-    disabled: p.disabled,
+    disabled,
   }
 }
 
@@ -117,16 +151,16 @@ export interface CardPlayability {
 
 export function cardPlayability(state: GameState, playerIndex: number, card: GameCard, myTurnToPlay: boolean): CardPlayability {
   if (card.type === 'defense') {
-    if (!myTurnToPlay) return { action: 'equip', ok: false, reason: 'Wait for your turn' }
+    if (!myTurnToPlay) return { action: 'equip', ok: false, reason: t('econ.play.waitTurn') }
     if (canEquip(state, playerIndex, card)) return { action: 'equip', ok: true }
     const p = state.players[playerIndex]
-    if (state.equippedThisTurn) return { action: 'equip', ok: false, reason: 'One equip per turn — already used' }
-    if (p && p.activeDefenses.length >= MAX_ACTIVE_DEFENSES) return { action: 'equip', ok: false, reason: `Defense slots full (${MAX_ACTIVE_DEFENSES}/${MAX_ACTIVE_DEFENSES})` }
-    return { action: 'equip', ok: false, reason: 'Cannot equip now' }
+    if (state.equippedThisTurn) return { action: 'equip', ok: false, reason: t('econ.play.oneEquip') }
+    if (p && p.activeDefenses.length >= MAX_ACTIVE_DEFENSES) return { action: 'equip', ok: false, reason: t('econ.play.slotsFull', { max: MAX_ACTIVE_DEFENSES }) }
+    return { action: 'equip', ok: false, reason: t('econ.play.cannotEquip') }
   }
-  if (!myTurnToPlay) return { action: 'play', ok: false, reason: 'Wait for your turn' }
+  if (!myTurnToPlay) return { action: 'play', ok: false, reason: t('econ.play.waitTurn') }
   if (card.type === 'decision' || card.type === 'action') return { action: 'play', ok: true }
-  return { action: 'play', ok: false, reason: 'This card cannot be played' }
+  return { action: 'play', ok: false, reason: t('econ.play.cannotPlay') }
 }
 
 // ---------------------------------------------------------------------------
@@ -170,11 +204,16 @@ export function yearLabel(state: GameState): { round: number; max: number } {
 
 /** Short text describing what a defense card blocks. */
 export function defenseBlurb(card: GameCard): string {
-  if (card.blocksCategories?.length) return `Blocks ${card.blocksCategories.join(', ')}`
+  const lang = i18n.language
+  if (card.blocksCategories?.length) {
+    return t('econ.def.blocks', { what: card.blocksCategories.map(c => t(`econ.category.${c}`, { defaultValue: c })).join(', ') })
+  }
   const e = card.effect
-  if (e?.type === 'wealth_floor') return `Net worth can't drop below ${rupees(e.value ?? 0)}`
-  if (e?.type === 'reduce_attack_pct') return `Cuts attacks by ${e.value ?? 0}%`
-  if (e?.blocks?.includes('any')) return 'Blocks any attack'
-  if (e?.blocks?.length) return `Blocks ${e.blocks.join(', ')}`
-  return card.shortFlavor || card.flavor
+  if (e?.type === 'wealth_floor') return t('econ.def.floor', { amount: rupees(e.value ?? 0) })
+  if (e?.type === 'reduce_attack_pct') return t('econ.def.cut', { pct: e.value ?? 0 })
+  if (e?.blocks?.includes('any')) return t('econ.def.any')
+  if (e?.blocks?.length) return t('econ.def.blocks', { what: e.blocks.map(cardNameFor).join(', ') })
+  return lang === 'hi'
+    ? (card.shortFlavorHi || card.flavorHi || card.shortFlavor || card.flavor)
+    : (card.shortFlavor || card.flavor)
 }

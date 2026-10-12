@@ -11,6 +11,7 @@ import { getTargetableIndices } from './boardUtils'
 import { EmoteButton, PlayersStrip, TurnCountdown } from './BoardShared'
 import { DecisionOptions, HandActionBar, HandCardFrame, PortfolioPanel, YearNewsStrip, YearPill, useYearNews } from './EconomyPanels'
 import { cardPlayability, rupees } from './economyUi'
+import { LanguageSwitcher } from '../LanguageSwitcher'
 import './GameBoardDesktop.css'
 
 function PlayerTimerRing({ turnStartTime, timeLimit }: { turnStartTime: number, timeLimit: number }) {
@@ -128,7 +129,7 @@ export function GameBoardDesktop({
 
   const dense = hand.length > 5
   const renderHand = (interactive: boolean) => (
-    <div className={`dk-hand${dense ? ' dense' : ''}${interactive ? '' : ' preview'}`} role="listbox" aria-label="Your hand">
+    <div className={`dk-hand${dense ? ' dense' : ''}${interactive ? '' : ' preview'}`} role="listbox" aria-label={t('board.yourHand')}>
       <AnimatePresence>
         {hand.map(card => (
           <HandCardFrame
@@ -167,7 +168,7 @@ export function GameBoardDesktop({
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div className="econ-id-name">{myPlayer.name}</div>
-                      <div className="econ-id-sub">{isMyTurn ? 'Your turn' : `${currentPlayer?.name ?? ''} is playing`} · {hand.length}/{HAND_SIZE} cards</div>
+                      <div className="econ-id-sub">{isMyTurn ? t('board.yourTurn') : t('board.isPlaying', { name: currentPlayer?.name ?? '' })} · {t('board.cardsInHand', { n: hand.length, max: HAND_SIZE })}</div>
                     </div>
                   </div>
                 )}
@@ -190,7 +191,7 @@ export function GameBoardDesktop({
                 )}
                 {hand.length > 0 && (
                   <>
-                    <div className="dk-hand-label">Your hand — plan your next move</div>
+                    <div className="dk-hand-label">{t('board.planNext')}</div>
                     {renderHand(false)}
                   </>
                 )}
@@ -200,13 +201,13 @@ export function GameBoardDesktop({
             {/* Draw phase: refill the hand */}
             {isMyTurn && gameState.phase === 'draw' && (
               <div className="dk-draw">
-                <div className="dk-draw-title">Your Turn</div>
+                <div className="dk-draw-title">{t('board.yourTurn')}</div>
                 <div className="dk-draw-inner">
                   <div className="dk-draw-sub">
-                    {hand.length < HAND_SIZE ? `Draw to refill your hand to ${HAND_SIZE} cards.` : 'Draw to start your turn.'}
+                    {hand.length < HAND_SIZE ? t('board.drawRefill', { max: HAND_SIZE }) : t('board.drawStart')}
                   </div>
                   <img src="/avatars/cards in hand.png" alt="" className="dk-draw-fan" />
-                  <button type="button" className="btn-rebound dk-draw-btn" onClick={onDrawCard}>Draw Card</button>
+                  <button type="button" className="btn-rebound dk-draw-btn" onClick={onDrawCard}>{t('board.drawCard')}</button>
                 </div>
               </div>
             )}
@@ -215,8 +216,8 @@ export function GameBoardDesktop({
             {isPlayPhase && (
               <div className="dk-play">
                 <div className="dk-hand-label">
-                  {selectMode ? 'Pick a card — then Play, Equip or Pass' : 'Pick a card to play'}
-                  {gameState.equippedThisTurn && <span className="dk-equipped-note">🛡️ Defense equipped this turn</span>}
+                  {selectMode ? t('board.pickThenAct') : t('board.pickToPlay')}
+                  {gameState.equippedThisTurn && <span className="dk-equipped-note">🛡️ {t('board.equippedThisTurn')}</span>}
                 </div>
                 {renderHand(true)}
                 {selectMode && (
@@ -243,15 +244,15 @@ export function GameBoardDesktop({
                 <div className="dk-decision-panel">
                   <div className="dk-decision-head">
                     <h3>{cardName(pending.card)}</h3>
-                    {myPlayer && <span className="dk-decision-cash">💵 Cash <strong>{rupees(myPlayer.cash ?? myPlayer.wealth)}</strong></span>}
+                    {myPlayer && <span className="dk-decision-cash">💵 {t('econ.cash')} <strong>{rupees(myPlayer.cash ?? myPlayer.wealth)}</strong></span>}
                   </div>
                   <p>{hi ? (pending.card.shortFlavorHi || pending.card.flavorHi || pending.card.shortFlavor || pending.card.flavor) : (pending.card.shortFlavor || pending.card.flavor)}</p>
                   <DecisionOptions state={gameState} playerIndex={myPlayerIndex} card={pending.card} onDecision={onDecision} hi={hi} variant="desktop" />
                   {onPass && (
                     <div className="econ-decision-foot">
-                      <button type="button" className="econ-btn econ-btn-pass" onClick={onCancelTargeting}><span>← Back to hand</span></button>
+                      <button type="button" className="econ-btn econ-btn-pass" onClick={onCancelTargeting}><span>← {t('board.backToHand')}</span></button>
                       <button type="button" className="econ-btn econ-btn-pass" onClick={() => onPass(pending.card.id)}>
-                        <span>Pass</span><small>discard this card · ends turn</small>
+                        <span>{t('econ.hand.pass')}</span><small>{t('board.passThisCard')}</small>
                       </button>
                     </div>
                   )}
@@ -263,19 +264,19 @@ export function GameBoardDesktop({
             {uiPhase === 'targeting' && gameState.pendingTarget && (
               <div className="dk-target">
                 <div style={{ fontSize: 44, marginBottom: 12 }}>🎯</div>
-                <div className="dk-wait-title">{t('game.selectTarget', { card: gameState.pendingTarget.card.name })}</div>
-                <div className="dk-wait-sub" style={{ marginBottom: 20 }}>Pick the rival to hit:</div>
+                <div className="dk-wait-title">{t('game.selectTarget', { card: cardName(gameState.pendingTarget.card) })}</div>
+                <div className="dk-wait-sub" style={{ marginBottom: 20 }}>{t('board.pickRival')}</div>
                 <div className="dk-target-list">
                   {targetIndices.map(i => {
                     const p = gameState.players[i]
                     return (
                       <button key={p.id} type="button" className="dk-target-btn" onClick={() => onTargetSelect(i)}>
-                        <span>Target {p.name}</span>
-                        <small>{rupees(p.wealth)} net worth · {(p.holdings ?? []).length} investments</small>
+                        <span>{t('board.target', { name: p.name })}</span>
+                        <small>{t('board.targetSub', { amount: rupees(p.wealth), n: (p.holdings ?? []).length })}</small>
                       </button>
                     )
                   })}
-                  {targetIndices.length === 0 && <div style={{ fontSize: 16, color: '#fca5a5' }}>No opponents left to target.</div>}
+                  {targetIndices.length === 0 && <div style={{ fontSize: 16, color: '#fca5a5' }}>{t('board.noTargets')}</div>}
                 </div>
                 <Button variant="secondary" onClick={onCancelTargeting}>{t('common.cancel')}</Button>
               </div>
@@ -287,6 +288,7 @@ export function GameBoardDesktop({
       {/* TOP LEFT: year */}
       <div className="dk-year">
         <YearPill state={gameState} onClick={yearNews.show} />
+        <LanguageSwitcher variant="cycle" tone="dark" />
       </div>
 
       {/* TOP CENTER: players strip (multiplayer / when the page has no opponent HUD) */}

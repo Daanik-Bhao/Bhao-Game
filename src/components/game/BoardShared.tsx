@@ -49,13 +49,14 @@ export function TurnCountdown({ turnStartTime, timeLimit, label }: { turnStartTi
 
 /** Tap-to-open emote picker (no hover needed). */
 export function EmoteButton({ onSendEmote, direction = 'down' }: { onSendEmote: (emoji: string) => void; direction?: 'up' | 'down' }) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   return (
     <div className="emote-button-wrap">
       <button
         type="button"
         className="board-icon-btn"
-        aria-label="Send emote"
+        aria-label={t('board.sendEmote')}
         aria-expanded={open}
         onClick={() => setOpen(o => !o)}
       >
@@ -105,6 +106,7 @@ export function PlayersStrip({
   gameState, myPlayerId, isMultiplayer, onlinePlayers, targeting, onTargetSelect,
   activeEmotes, highlightPlayerId, includeMe = true, className = '',
 }: PlayersStripProps) {
+  const { t } = useTranslation()
   const ordered = gameState.players
     .map((player, index) => ({ player, index }))
     .filter(({ player }) => includeMe || player.id !== myPlayerId)
@@ -137,7 +139,7 @@ export function PlayersStrip({
               onClick={() => onTargetSelect(index)}
               compact
             />
-            <div className="chip-name">{isMe ? 'You' : player.name}{player.hasForfeited ? ' (left)' : ''}</div>
+            <div className="chip-name">{isMe ? t('board.you') : player.name}{player.hasForfeited ? ` ${t('board.left')}` : ''}</div>
             <AnimatePresence>
               {activeEmotes?.[player.id] && (
                 <motion.span

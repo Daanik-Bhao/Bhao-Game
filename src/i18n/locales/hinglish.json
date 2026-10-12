@@ -102,7 +102,8 @@
     "confirmForfeit": "Kya aap sach mein match chhodna chahte hain?",
     "forfeitWarning": "Active game chhodne par loss milega aur 25 🪙 ka penalty lagega.",
     "stayInGame": "Game mein rahein",
-    "forfeitMatch": "Match Forfeit Karein"
+    "forfeitMatch": "Match Forfeit Karein",
+    "close": "Band karo"
   },
   "leaderboard": {
     "title": "Leaderboard",
@@ -156,5 +157,643 @@
     "players": "Players",
     "waitingForHost": "Host ke start karne ka wait kar rahe hain...",
     "startGame": "Game Start Karein"
+  },
+  "lang": {
+    "label": "Language",
+    "switchTo": "Language change karo: {{lang}}"
+  },
+  "board": {
+    "yourHand": "Tumhare cards",
+    "yourTurn": "Tumhari baari",
+    "isPlaying": "{{name}} khel raha hai",
+    "cardsInHand": "{{n}}/{{max}} cards",
+    "planNext": "Tumhare cards — agli chaal socho",
+    "planAhead": "Tumhare cards — aage ka socho",
+    "drawRefill": "Card lo aur haath mein phir se {{max}} cards karo.",
+    "drawStart": "Turn shuru karne ke liye card lo.",
+    "drawCard": "Card lo",
+    "refill": "Haath mein {{max}} cards poore karo",
+    "deckLeft": "Deck mein {{n}} cards bache",
+    "pickThenAct": "Card chuno — phir Play, Equip ya Pass",
+    "pickToPlay": "Khelne ke liye card chuno",
+    "pickCard": "Card chuno",
+    "equippedThisTurn": "Is turn defense lag gaya",
+    "equippedShort": "Is turn equip kiya",
+    "newCard": "Naya: {{card}}",
+    "tapCard": "Card pe tap karo, dekho kya karta hai.",
+    "playableNow": "cards abhi khel sakte ho.",
+    "selectCard": "Card select karo",
+    "backToHand": "Cards pe wapas",
+    "back": "Wapas",
+    "passThisCard": "yeh card hatega · turn khatam",
+    "pickRival": "Kis pe attack karna hai, chuno:",
+    "target": "{{name}} pe attack",
+    "targetSub": "{{amount}} net worth · {{n}} investments",
+    "noTargets": "Attack karne ke liye koi bacha nahi.",
+    "you": "Tum",
+    "left": "(chala gaya)",
+    "sendEmote": "Emoji bhejo",
+    "yourPortfolio": "Tumhara portfolio",
+    "yourMoney": "Tumhara paisa",
+    "investmentsCount": "{{n}} investments"
+  },
+  "econ": {
+    "risk": {
+      "none": "No risk",
+      "low": "Low risk",
+      "medium": "Medium risk",
+      "high": "High risk",
+      "extreme": "Bahut risky"
+    },
+    "crashChance": "Har saal {{pct}}% crash ka chance",
+    "noCrash": "Crash ka koi risk nahi",
+    "choice": {
+      "spend": "Spend",
+      "save": "Save",
+      "invest": "Invest"
+    },
+    "save": {
+      "toCash": "{{amount}} cash mein",
+      "streak": "🔥 Saving streak ×{{streak}}: +{{bonus}}% bonus",
+      "startStreak": "Agli baari phir save karo, streak bonus shuru!",
+      "inflation": "Pada hua cash inflation se ~{{pct}}%/saal ghatta hai"
+    },
+    "spend": {
+      "lifestyleMax": "lifestyle already max",
+      "lifestyleUp": "lifestyle ↑ (inflation +1%)",
+      "details": "{{amount}}, +1 card, {{lifestyle}}",
+      "forcedSale": "⚠️ Cash kam hai: investments penalty pe bikenge",
+      "creep": "Lifestyle badhi toh har saal ka kharcha bhi badhega"
+    },
+    "invest": {
+      "avg": "avg ~{{pct}}%/saal",
+      "moves": "{{amount}} cash se invest hoga"
+    },
+    "needCash": "Invest karne ke liye kam se kam {{amount}} cash chahiye",
+    "notAvailable": "Available nahi",
+    "assetLesson": {
+      "fd": "Safe aur steady, par inflation se bas thoda aage.",
+      "debt": "Low risk, tax mein fayda, long-term goals ke liye lock.",
+      "gold": "Gold safety ke liye hai, growth ke liye nahi. Thoda hi rakho.",
+      "index": "Poore market ka hissa. Saal upar-neeche, decades strong.",
+      "equity": "Zyada return, bade jhatke. Patience chahiye.",
+      "smallcap": "Jaldi double ho sakta hai, usse bhi jaldi half.",
+      "realestate": "Steady hai, par jaldi mein bechna pada toh bada nuksaan.",
+      "crypto": "Pura satta. Sirf utna lagao jitna doob jaaye toh chalega.",
+      "scam": "“Guaranteed return” wali tip = scam. Zyada paisa gayab ho jaata hai."
+    },
+    "play": {
+      "waitTurn": "Apni baari ka wait karo",
+      "oneEquip": "Ek turn mein ek hi equip — ho chuka",
+      "slotsFull": "Defense slots full ({{max}}/{{max}})",
+      "cannotEquip": "Abhi equip nahi kar sakte",
+      "cannotPlay": "Yeh card nahi khel sakte"
+    },
+    "netWorth": "Net worth",
+    "goalAria": "Goal ka {{pct}}%",
+    "goalText": "{{goal}} ka {{pct}}%",
+    "cash": "Cash",
+    "invested": "Invested",
+    "inflationRate": "Inflation −{{pct}}%/saal",
+    "investments": "Investments",
+    "noInvestments": "Abhi koi investment nahi — invest karo, paisa tumhare liye kaam karega.",
+    "lastYear": "{{pct}} pichhle saal",
+    "lifestyleTip": "Har Spend se lifestyle badhti hai: cash pe +1% inflation",
+    "lifestyle": "Lifestyle {{level}}",
+    "saveStreak": "Saving streak {{n}}",
+    "investedTag": "{{amount}} invested",
+    "defenses": "Defense {{n}}/{{max}}",
+    "noDefenses": "Koi nahi — defense cards free mein lagao",
+    "openPortfolio": "Apna portfolio kholo",
+    "dismiss": "Band karo",
+    "def": {
+      "blocks": "Blocks: {{what}}",
+      "floor": "Net worth {{amount}} se neeche nahi jaayegi",
+      "cut": "Attacks {{pct}}% kam karta hai",
+      "any": "Koi bhi attack block"
+    },
+    "category": {
+      "medical": "medical bills",
+      "job": "job loss",
+      "market": "market crash",
+      "fraud": "fraud",
+      "tax": "tax ka lafda",
+      "property": "property damage",
+      "legal": "legal jhanjhat",
+      "personal": "personal problems",
+      "travel": "travel problems",
+      "debt": "loan ka lafda"
+    },
+    "year": {
+      "aria": "Saal {{n}} / {{max}}",
+      "short": "Saal {{n}}/{{max}}",
+      "long": "Saal {{n}} / {{max}}",
+      "passed": "Ek saal nikal gaya",
+      "market": "is saal market",
+      "inflation": "Inflation ne tumhare cash se {{amount}} kha liye",
+      "wiped": "Tumhara {{what}} pura doob gaya",
+      "everyone": "sab pe",
+      "you": "tum",
+      "blockedBy": "{{list}} ne block kiya",
+      "yourCard": "tumhare {{card}}",
+      "theirCard": "{{name}} ke {{card}}",
+      "youDelta": "tum {{delta}}",
+      "lureYou": "Tum jhaanse mein aa gaye: {{amount}} {{asset}} mein chale gaye",
+      "lureOther": "{{name}} jhaanse mein aa gaya: {{amount}} {{asset}} mein chale gaye",
+      "quiet": "Shaant saal — kuch khaas nahi hua."
+    },
+    "hand": {
+      "new": "NEW",
+      "free": "Free",
+      "play": "Khelo",
+      "pick": "Ek card chuno.",
+      "glowing": "Chamakte",
+      "canPlay": "cards abhi khel sakte ho",
+      "equipFree": "defense lagana free hai",
+      "orPass": "ya Pass karke ek card hatao",
+      "passTitle": "Yeh card hatao aur turn khatam",
+      "pass": "Pass",
+      "passSub": "card hatega · turn khatam",
+      "equipCard": "{{card}} lagao",
+      "equipSub": "free · turn chalta rahega",
+      "playCard": "{{card}} khelo",
+      "chooseSub": "Save / Spend / Invest choose karo",
+      "endsTurn": "turn khatam"
+    }
+  },
+  "result": {
+    "defenseEquipped": "Defense lag gaya! Ab ek card khelo.",
+    "oneDefense": "Ek turn mein ek hi defense lag sakta hai. Decision ya action card khelo.",
+    "slotsFull": "Defense slots full ({{max}}). Decision ya action card khelo.",
+    "passed": "Pass kiya — {{card}} hata diya.",
+    "choiceMade": "{{choice}} choose kiya!",
+    "levelBanner": "LEVEL - {{n}}",
+    "mode": {
+      "ranked": "RANKED",
+      "practice": "PRACTICE",
+      "campaign": "CAMPAIGN"
+    },
+    "youWin": "TUM JEET GAYE!",
+    "betterLuck": "AGLI BAAR PAKKA!",
+    "soClose": "Bas thoda sa reh gaya!",
+    "place": "{{n}}{{ordinal}} Place",
+    "ordinal": {
+      "1": "st",
+      "2": "nd",
+      "3": "rd",
+      "4": "th"
+    },
+    "justAway": "Jeet se bas {{amount}} door reh gaye!",
+    "showLog": "Game log dikhao",
+    "hideLog": "Game log chhupao",
+    "highlights": "Match Highlights",
+    "playAgain": "PHIR SE KHELO",
+    "dashboard": "DASHBOARD"
+  },
+  "popup": {
+    "invested": "INVEST KIYA!",
+    "movedInto": "{{amount}} {{asset}} mein gaye",
+    "gained": "PAISA BADHA!",
+    "attacked": "{{name}} NE ATTACK KIYA!",
+    "lost": "PAISA GAYA!"
+  },
+  "setup": {
+    "newGame": "Naya Game",
+    "aiOpponents": "AI opponents",
+    "playingAgainst": "{{n}} AI ke against · total {{total}} players",
+    "raceTo": "Target:",
+    "entryReward": "Reward",
+    "winToEarn": "Game jeeto aur pao",
+    "startGame": "Game shuru karo",
+    "defaultGoal": "₹50 lakh"
+  },
+  "campaign": {
+    "yourTurn": "Tumhari baari",
+    "level": "Level {{n}}",
+    "allComplete": "Sab complete",
+    "progress": "Campaign progress",
+    "complete": "{{n}}/{{total}} complete",
+    "current": "Level {{n}} ~ Badhiya start!",
+    "completed": "Level {{n}} ~ Complete!",
+    "notUnlocked": "Abhi locked hai",
+    "learningFallback": "Learning",
+    "learning": {
+      "level_1": "Kharche pe control",
+      "level_2": "Saving",
+      "level_3": "Investing",
+      "level_4": "Risk aur protection"
+    },
+    "play": "Khelo",
+    "locked": "Locked"
+  },
+  "landing": {
+    "signIn": "Sign In",
+    "playNow": "Abhi khelo",
+    "badge": "PAISE KE FAISLON KA GAME",
+    "hero1": "Kamao.",
+    "hero2": "Attack karo.",
+    "hero3": "Chha jao.",
+    "heroSub": "Real Indian money decisions wala fast card game. SIP, market crash, tax raid sab jhelo aur sabse pehle ₹50 lakh tak pahuncho.",
+    "startFree": "Free mein khelna shuru karo",
+    "toDashboard": "Apne dashboard pe jao",
+    "playGuest": "Guest ban ke khelo — sign-up ki zaroorat nahi",
+    "cardType": {
+      "decision": "DECISION",
+      "action": "ACTION",
+      "defense": "DEFENSE"
+    },
+    "tier": {
+      "common": "C",
+      "rare": "R",
+      "legendary": "L"
+    },
+    "effect": {
+      "block": "BLOCK",
+      "crisis": "CRISIS"
+    },
+    "preview": {
+      "diwali": {
+        "name": "Diwali Bonus",
+        "desc": "Paisa badhao"
+      },
+      "crash": {
+        "name": "Market Crash",
+        "desc": "Sabka paisa ghate"
+      },
+      "emergency": {
+        "name": "Emergency Fund",
+        "desc": "Attack roko"
+      },
+      "blackSwan": {
+        "name": "The Black Swan",
+        "desc": "Extreme event"
+      }
+    },
+    "stats": {
+      "cards": "Cards",
+      "goal": "Goal",
+      "tiers": "Rank tiers",
+      "time": "Game time",
+      "timeValue": "20-30 min"
+    },
+    "why": "BHAO kyun?",
+    "whySub": "Competitive card games ka pura maza, Indian money life ke saath.",
+    "feature": {
+      "decisions": {
+        "title": "Real Indian money decisions",
+        "desc": "Har card tumhe real life jaisi situation mein daalta hai. SIP, EMI, tax raid, IPO — tumhare faisle tumhari kismat decide karte hain."
+      },
+      "attack": {
+        "title": "Attack aur defend",
+        "desc": "Action cards se rivals pe tax raid, market crash aur UPI fraud se attack karo. Defense cards se jawab do."
+      },
+      "rank": {
+        "title": "Mogul rank ladder",
+        "desc": "8 rank tiers mein Rookie se DAANIK Legend tak chadho. RP mile ya gaye — ladder jhooth nahi bolti."
+      },
+      "economy": {
+        "title": "DAANIK economy",
+        "desc": "DAANIK coins kamao, cards trade karo, guilds join karo aur game ke stock market mein invest karo jo players ke behaviour pe chalta hai."
+      },
+      "seasons": {
+        "title": "Prestige seasons",
+        "desc": "30 din ke seasons, har baar nayi theme — IPO boom, crypto cycle, election economy. Har mahine naye rules."
+      },
+      "contracts": {
+        "title": "Daily contracts",
+        "desc": "Har midnight 3 naye contracts. Miss kiye toh gaye. Streak banao, rare cards pao."
+      }
+    },
+    "faq": {
+      "title": "Aksar puchhe jaane wale sawaal",
+      "q1": "BHAO kya hai?",
+      "a1": "BHAO ek competitive, multiplayer money card game hai jo real Indian economy jaisa feel deta hai. Players SIP, IPO boom aur achanak market crash jaisi real situations face karte hain. Goal: dusre players ke attacks se bachte hue sabse pehle ₹50 lakh jodna.",
+      "q2": "Stock simulator kaise kaam karta hai?",
+      "a2": "Normal stock simulators se alag, BHAO events pe chalta hai. Players \"Decision Cards\" lete hain jahan safe saving ya risky investing mein se chunna hota hai. Achha investment = high return, par pura paisa doobne ka risk bhi. Special \"Action Cards\" se players pure market pe asar daalne wale events chala sakte hain.",
+      "q3": "Kya BHAO free hai?",
+      "a3": "Haan, BHAO bilkul free hai. Account banao, wealth banao, Mogul rank ladder chadho aur multiplayer rooms mein dosto se compete karo — zero cost. Game ka focus hai khel-khel mein paise ki samajh badhana."
+    },
+    "ctaSub": "Hazaaron players ke saath ₹50 lakh ki race join karo.",
+    "ctaBtn": "Abhi khelo — bilkul free",
+    "footer": "Paise ke faislon ka game — entertainment aur financial literacy ke liye. Financial advice nahi hai."
+  },
+  "report": {
+    "aria": "Tumhara money report card",
+    "eyebrow": "Tumhari money report",
+    "startedWith": "Shuru mein",
+    "endedWith": "End mein",
+    "grades": "Tumhare grades",
+    "gradeAria": "Grade {{grade}}",
+    "forReal": "Agar real life mein {{years}} saal aisa karo",
+    "remember": "Yeh yaad rakho",
+    "learnMore": "Aur jaano",
+    "newInLibrary": "Gyaan Library mein naya",
+    "metAgain": "Yeh baatein phir se mili",
+    "metThisGame": "Is game mein mili baatein",
+    "openLibrary": "Gyaan Library kholo",
+    "area": {
+      "saving": "Saving",
+      "investing": "Investing",
+      "risk": "Risk",
+      "emergency": "Emergency fund",
+      "protection": "Protection"
+    },
+    "persona": {
+      "thrill_seeker": "Risk ka Deewana",
+      "lifestyle_lover": "Shauk Pehle Wala",
+      "inflation_favourite": "Inflation ka Favourite Customer",
+      "firefighter": "Hamesha Aag Bujhane Wala",
+      "emergency_pro": "Emergency-Ready Pro",
+      "steady_builder": "Steady Builder",
+      "safety_first": "Safety-First Saver",
+      "growth_hunter": "Growth ka Shikari",
+      "money_learner": "Paise ka Student"
+    },
+    "proj": {
+      "yourMix": "Tumhara mix",
+      "fd": "FD / savings",
+      "index": "Index fund SIP",
+      "sub": "Har mahine {{monthly}}, {{years}} saal tak (tumne dale {{total}})",
+      "putIn": "Tumne kitna dala",
+      "legend": "tumne kitna dala"
+    },
+    "spark": {
+      "label": "{{years}} saal mein net worth: {{start}} se {{end}}, peak {{peak}}",
+      "year": "Saal {{n}}: {{amount}}",
+      "start": "Start",
+      "yearN": "Saal {{n}}"
+    }
+  },
+  "concept": {
+    "example": "Example",
+    "tryThis": "Real life mein try karo",
+    "comingSoon": "Iski poori details jaldi aa rahi hain."
+  },
+  "library": {
+    "title": "Gyaan Library",
+    "subtitle": "Khelte-khelte seekhi paise ki baatein",
+    "backHome": "Home pe wapas",
+    "unlocked": "{{count}} / {{total}} unlocked",
+    "playForMore": "Aur unlock karne ke liye khelo",
+    "progressAria": "Unlocked concepts",
+    "emptyTitle": "Library abhi khaali hai!",
+    "emptyBody": "Har game mein jo money ideas milte hain, woh yahan unlock hote hain. Pehla game khatam karo!",
+    "play": "Khelo",
+    "tapToRead": "Aur padhne ke liye tap karo.",
+    "lockedAria": "{{title}}: locked",
+    "playToUnlock": "Unlock karne ke liye khelo",
+    "how": "Kaise: {{hint}}",
+    "newCount": "{{n}} naye",
+    "unlockAsYouPlay": "Khelte-khelte money ideas unlock hote hain.",
+    "ideasUnlocked": "{{count}} / {{total}} money ideas unlocked",
+    "open": "Kholo",
+    "hint": {
+      "inflation": "Inflation wale saal mein cash pada rehne do.",
+      "compounding": "Koi investment 3+ saal rakho ya double karo.",
+      "emergency_fund": "Aisa nuksaan jhelo jo cash se cover na ho.",
+      "sip": "Index fund mein invest karo.",
+      "index_funds": "Index fund mein invest karo.",
+      "diversification": "Ek saath 3 ya zyada type ke investments rakho.",
+      "asset_risk": "Kisi risky investment ko upar-neeche hote dekho.",
+      "fd_vs_inflation": "High inflation ke time FD mein paisa rakho.",
+      "liquidity": "Bill bharne ke liye investment bechna pade.",
+      "market_patience": "Market crash mein bhi investment hold karo.",
+      "scams": "Koi “too good to be true” offer aaye.",
+      "crypto_risk": "Crypto crash ho tab crypto pakde raho.",
+      "lifestyle_creep": "Lifestyle do-teen baar upgrade karo.",
+      "pay_yourself_first": "Lagatar teen turn Save karo.",
+      "health_insurance": "Medical emergency face karo.",
+      "term_insurance": "Life insurance wala card khelo.",
+      "credit_card_debt": "Credit card ka aisa bill aaye jo poora na bhar pao.",
+      "good_vs_bad_debt": "Koi loan ya EMI lo.",
+      "tax_saving": "Tax wala card khelo.",
+      "cyber_safety": "Kisi fraud attack ka target bano.",
+      "real_estate": "Property kharido ya becho.",
+      "gold": "Gold kharido."
+    }
+  },
+  "guest": {
+    "tutorial": "Tutorial",
+    "tutorialDesc": "2 minute mein cards samjho.",
+    "campaign": "Campaign",
+    "campaignDesc": "Life ke stages wale levels khelo.",
+    "practice": "Bots ke saath practice",
+    "practiceDesc": "Computer players ke saath ek quick game.",
+    "playingAs": "Khel rahe ho as",
+    "guest": "Guest",
+    "ready": "Khelne ke liye ready?",
+    "deviceOnly": "Guest progress sirf isi device pe save hoti hai.",
+    "signInTitle": "Online khelne ke liye sign in karo",
+    "signInBody": "Multiplayer rooms, ranked games, leaderboard, coins aur daily contracts ke liye free account chahiye.",
+    "createAccount": "Free account banao",
+    "onlineUnavailable": "Online game abhi available nahi hai.",
+    "exit": "Guest mode se bahar niklo"
+  },
+  "signin": {
+    "onlineBody": "Multiplayer, ranked games, leaderboard aur coins ke liye free BHAO account chahiye, taaki progress save ho aur dusre players se match ho sake.",
+    "playBody": "Har device pe progress save karne ke liye sign in karo, ya seedha guest ban ke khelo.",
+    "unavailable": "Online features abhi available nahi hain.",
+    "signInOrCreate": "Sign in karo ya account banao",
+    "playAsGuest": "Guest ban ke khelo",
+    "backGuestHome": "Guest home pe wapas",
+    "goHome": "Home pe jao"
+  },
+  "legal": {
+    "home": "BHAO home",
+    "privacyShort": "Privacy",
+    "termsShort": "Terms",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "lastUpdated": "Last update: {{date}}",
+    "englishOnly": "Poora text abhi sirf English mein hai.",
+    "sections": {
+      "privacy": {
+        "h1": "Guest ban ke khelna",
+        "h2": "Account banane pe hum kya info lete hain",
+        "h3": "Error tracking",
+        "h4": "Tumhare device pe store data",
+        "h5": "Third-party services",
+        "h6": "Hum kya nahi karte",
+        "h7": "Data rakhna aur delete karna",
+        "h8": "Tumhare rights",
+        "h9": "Bachche",
+        "h10": "Changes"
+      },
+      "terms": {
+        "h1": "Game",
+        "h2": "Virtual items",
+        "h3": "Tumhara account",
+        "h4": "Fair play",
+        "h5": "Availability",
+        "h6": "Liability",
+        "h7": "Privacy",
+        "h8": "Changes aur laagu kanoon"
+      }
+    }
+  },
+  "tutorial": {
+    "skip": "Tutorial skip karo",
+    "next": "Next",
+    "watching": "Dekh rahe hain…",
+    "stepOf": "Step {{n}} / {{total}}",
+    "hook": {
+      "kicker": "BHAO · pehla match",
+      "title": "Tumhari daily chai {{amount}} ki ho sakti hai.",
+      "perDay": "roz chai-snacks pe",
+      "perMonth": "har mahine, SIP mein lagao toh",
+      "after": "{{years}} saal baad, {{rate}}% saalana pe",
+      "fine": "Isme {{paidIn}} tumhara apna paisa hai; baaki {{growth}} compounding se aata hai. {{rate}}% Indian index funds ka long-term average hai, guarantee nahi — kuch saal girte hain, kuch saal uchhalte hain.",
+      "lead": "Chalo dekhte hain paisa asli mein kaise badhta hai. Rahul ke saath 4 saal ka mini match — bas 5 minute.",
+      "start": "Match shuru karo",
+      "rules": "Bas rules dikhao (30 sec)"
+    },
+    "summary": {
+      "kickerSkipped": "BHAO in 4 ideas",
+      "kickerDone": "Tutorial complete!",
+      "titleSkipped": "BHAO ke 4 money moves",
+      "titleDone": "Tumne pehle 4 saal khel liye!",
+      "yourNetWorth": "Tumhari net worth",
+      "rahulNetWorth": "Rahul ki net worth",
+      "lesson": {
+        "invest": {
+          "title": "Jaldi invest karo, baaki kaam time karega",
+          "body": "Pada hua cash inflation se har saal ~6% ghatta hai. Index fund market ke saath badhta hai — saal upar-neeche, decades strong."
+        },
+        "emergency": {
+          "title": "Emergency fund bana lo",
+          "body": "Achanak kharche ke liye cash ho toh investments jaldi mein nahi bechne padte — Rahul ne flat bechne pe 15% penalty bhari."
+        },
+        "insure": {
+          "title": "Bade risks ka insurance lo",
+          "body": "Health insurance ne hospital bill ₹0 kar diya. BHAO mein defense lagana free hai aur turn khatam nahi hota."
+        },
+        "scam": {
+          "title": "“Guaranteed returns” = red flag",
+          "body": "Hot tips aur paisa-double schemes doob jaati hain. Invest karne se pehle SEBI/RBI registration check karo."
+        }
+      },
+      "play": "Real game khelo",
+      "playTutorial": "Tutorial khelo",
+      "replay": "Tutorial phir se khelo"
+    },
+    "nudge": {
+      "playChai": "Is lesson ke liye “{{card}}” khelo — roz ₹150 wala card.",
+      "decisionSave": "Koi decision card khelo aur Save chuno.",
+      "equipFirst": "Pehle Health Insurance lagao — free hai aur turn chalta rahega.",
+      "decision": "Koi decision card khelo.",
+      "tapNext": "Pehle tip mein Next dabao.",
+      "wait": "Ek second ruko…",
+      "readTip": "Tip padho, phir Next dabao.",
+      "chooseInvest": "Is lesson ke liye Invest chuno.",
+      "chooseSave": "Save chuno — pehle cash buffer banao.",
+      "defenseSoon": "Defense cards thodi der mein aayenge.",
+      "oneEquip": "Ek turn mein ek hi free equip.",
+      "noPass": "Pass karne se card hatega aur turn khatam — abhi nahi."
+    },
+    "step": {
+      "networth": {
+        "title": "Tumhara paisa",
+        "body": "Net worth = cash + investments. Tum {{cash}} cash se shuru karte ho, koi investment nahi. BHAO ka har round tumhari life ka ek saal hai. Net worth ko {{goal}} tak le jao."
+      },
+      "rival": {
+        "title": "Milo {{name}} se",
+        "body": "Rahul ki net worth bhi {{netWorth}} hai, par usme {{flat}} ka flat hai aur cash sirf {{cash}}. Woh har bacha rupaya invest kar deta hai, emergency fund zero. Uspe nazar rakho."
+      },
+      "pickChai": {
+        "title": "Ek card khelo",
+        "body": "Har turn mein ek card khelte ho. Yeh card roz chai-snacks pe jaane wale ₹150 ka hai — matlab mahine ke ₹4,500.",
+        "todo": "“{{card}}” pe tap karo, phir ▶ Khelo."
+      },
+      "preview": {
+        "title": "Save, Spend ya Invest?",
+        "body": "Har choice dikhati hai ki abhi paise pe kya asar hoga. Save se cash badhta hai. Spend se cash ghatta hai aur lifestyle mehengi hoti hai. Invest se cash investment mein jaata hai — aaj net worth same rehti hai, phir har saal badhti (ya girti) hai."
+      },
+      "invest": {
+        "title": "Invest kar do",
+        "body": "Index fund mein India ki top companies ka thoda-thoda hissa hota hai. Invest se tumhare {{amount}} cash isme jaayenge — turant profit nahi, saal-dar-saal badhta hai.",
+        "bodyPart": "Index fund mein India ki top companies ka thoda-thoda hissa hota hai. Invest se tumhare cash ka kuch hissa isme jaayega — turant profit nahi, saal-dar-saal badhta hai.",
+        "todo": "Invest pe tap karo."
+      },
+      "botTurn": {
+        "title": "Rahul ki baari",
+        "body": "Tum ek card khelte ho, phir turn khatam. Ab Rahul khelega — woh apna cash aur property mein daalta hai."
+      },
+      "year": {
+        "title": "Ek saal nikal gaya",
+        "market": "Market hila: tumhara index fund {{pct}} gaya, {{from}} → {{to}}.",
+        "inflation": "Inflation ({{pct}}% saalana) ne tumhare pade hue cash se {{amount}} kha liye: daam badhe, toh utne hi rupaye mein kam aata hai. Pada hua cash chupchaap ghatta hai.",
+        "inflationSome": "Inflation ({{pct}}% saalana) ne tumhare pade hue cash ka kuch hissa kha liya: daam badhe, toh utne hi rupaye mein kam aata hai. Pada hua cash chupchaap ghatta hai."
+      },
+      "lure": {
+        "title": "Life event: ek “hot tip”",
+        "body": "Har saal koi life event aa sakta hai. Rahul ko WhatsApp pe tip mili — “har mahine guaranteed 30%!” — aur usne {{amount}} laga diye. Dekhte hain kya hota hai.",
+        "bodyNoAmount": "Har saal koi life event aa sakta hai. Rahul ko WhatsApp pe tip mili — “har mahine guaranteed 30%!” — aur usne paisa laga diya. Dekhte hain kya hota hai."
+      },
+      "pickSave": {
+        "title": "Buffer rakho",
+        "body": "Tumhare paas {{cash}} cash hai. Sab invest kar dena risky hai: life mein achanak bills aate hain. Thoda cash emergency fund ke liye rakho.",
+        "todoSave": "Save pe tap karo.",
+        "todoCard": "“{{card}}” pe tap karo, phir ▶ Khelo."
+      },
+      "botTurn2": {
+        "title": "Save ho gaya!",
+        "body": "Ab tumhare paas {{cash}} cash hai. Rahul khel raha hai — woh phir invest karta hai aur cash lagbhag zero."
+      },
+      "medical": {
+        "title": "Medical emergency!",
+        "head": "Rahul phisal gaya aur hospital jaana pada.",
+        "headBill": "Rahul phisal gaya aur hospital jaana pada — uski net worth {{amount}} gir gayi.",
+        "sold": "Uske paas cash kam tha, toh jaldi mein flat ka hissa 15% penalty pe bechna pada.",
+        "you": "Tumhare paas {{cash}} cash hai, toh aisa bill cash se bhar jaayega aur investments badhte rahenge. Emergency fund isi liye hota hai."
+      },
+      "equip": {
+        "title": "Insurance lo",
+        "body": "Tumhe Health Insurance mila. Defense cards ek type ki problem block karte hain — yeh medical bills block karta hai. Defense lagana free hai: turn khatam nahi hota.",
+        "todo": "Chamakte “{{card}}” card pe tap karo, phir 🛡️ Equip."
+      },
+      "freePlay": {
+        "title": "Abhi bhi tumhari baari",
+        "body": "Insurance lag gaya. Is turn abhi bhi ek card khel sakte ho — tumhari marzi. Invest, Save ya Spend: ab pata hai kaun kya karta hai.",
+        "todo": "Koi bhi card khelo."
+      },
+      "botTurn3": {
+        "body": "Rahul khelta hai. Phir ek aur saal nikalta hai…"
+      },
+      "scam": {
+        "title": "Hot tip ka paisa kahan gaya?",
+        "wiped": "Rahul ki “guaranteed” tip do saal lagatar giri aur ab poori doob gayi. “Guaranteed high return” = scam ka formula.",
+        "crashing": "Rahul ki “guaranteed” tip girti ja rahi hai. “Guaranteed high return” = scam ka formula.",
+        "blocked": "Aur is saal tumpe hospital bill aaya — Health Insurance ne block kar diya, tumne kuch nahi bhara."
+      }
+    },
+    "rules": {
+      "aria": "BHAO kaise khelein",
+      "kicker": "BHAO KAISE KHELEIN",
+      "playGuided": "Guided match khelo",
+      "gotIt": "Samajh gaya",
+      "goal": {
+        "title": "Goal kya hai",
+        "p1": "Rivals se pehle apni net worth goal tak le jao — ya saal khatam hone pe sabse ameer raho.",
+        "p2": "Ek round = life ka ek saal. Har saal sab ek-ek turn khelte hain."
+      },
+      "cash": {
+        "title": "Cash vs investments",
+        "p1": "Net worth = cash + investments.",
+        "p2": "Haath mein {{hand}} cards hote hain. Har turn ek card khelo: Save (cash badhta hai), Spend (cash ghatta hai, lifestyle badhti hai) ya Invest (cash index fund, gold, property… mein jaata hai).",
+        "p3": "Defense lagana free hai ({{maxDefenses}} tak). Ya Pass karo: ek card hatao aur turn khatam."
+      },
+      "year": {
+        "title": "Saal beet-ta hai",
+        "p1": "Har investment market ke saath chalta hai: safe wale thoda, risky wale bahut — crash bhi hote hain.",
+        "p2": "Inflation har saal pade hue cash ka lagbhag {{inflation}}% kha jaati hai (lifestyle pe kharcha karte raho toh aur zyada).",
+        "p3": "Toh jo paisa abhi nahi chahiye, use invest karo — par thoda cash zaroor rakho."
+      },
+      "events": {
+        "title": "Life events aur defense",
+        "p1": "Zyada-tar saal kuch na kuch hota hai: bonus, hospital bill, job gap, “guaranteed” scam tip…",
+        "p2": "Bills cash se bharte hain. Cash nahi hai? Toh investments jaldi mein penalty pe bikte hain. Isliye emergency fund rakhte hain.",
+        "p3": "Health Insurance jaise defense cards poori category ki problems block kar dete hain."
+      }
+    }
   }
 }

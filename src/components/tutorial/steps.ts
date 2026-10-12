@@ -1,12 +1,15 @@
 /**
  * Coach-mark steps of the guided first match. Text is built from the live
- * GameState so every number on screen is the engine's real number.
+ * GameState so every number on screen is the engine's real number; the words
+ * come from the locale files (tutorial.step.*).
  */
-import type { GameState, PlayerState } from '../../types/game'
+import type { GameCard, GameState, PlayerState } from '../../types/game'
 import type { UIPhase } from '../game/GameBoard'
 import { getCash, getHoldings, getNetWorth, inflationPct, previewDecision } from '../../lib/gameEngine'
 import { formatINR } from '../../lib/economy'
+import { ALL_CARDS } from '../../data/cards'
 import { CARD_IDS, TUTORIAL_BOT_NAME, isCard } from '../../data/tutorialScript'
+import i18n from '../../i18n/i18n'
 
 export type StepId =
   | 'networth' | 'rival'
@@ -34,7 +37,7 @@ export interface StepDef {
   lesson: number
   /** next = read and tap Next; action = do it on the board; wait = watch (bot playing) */
   kind: 'next' | 'action' | 'wait'
-  title: string
+  title: () => string
   body: (ctx: StepCtx) => string
   /** Short "do this" line shown for action steps */
   todo?: (ctx: StepCtx) => string
@@ -46,6 +49,17 @@ export interface StepDef {
 }
 
 export const LESSON_COUNT = 9
+
+const t = (key: string, opts?: Record<string, unknown>): string => i18n.t(`tutorial.step.${key}`, opts)
+
+/** The card's title as the board shows it (GameCard: short name first, Hindi in Hindi). */
+export function tutorialCardTitle(id: string): string {
+  const c: GameCard | undefined = ALL_CARDS.find(x => x.id === id)
+  if (!c) return id
+  return i18n.language === 'hi'
+    ? (c.shortNameHi || c.nameHi || c.shortName || c.name)
+    : (c.shortName || c.name)
+}
 
 const you = (gs: GameState): PlayerState => gs.players[0]
 const rahul = (gs: GameState): PlayerState => gs.players[1]
@@ -66,29 +80,25 @@ const HAND = { selectors: ['.dk-hand', '.mb-hand'] }
 export const STEPS: StepDef[] = [
   {
     id: 'networth', lesson: 1, kind: 'next',
-    title: 'Your money',
-    body: ({ gs }) =>
-      `Net worth = cash + investments. You start with ${formatINR(getCash(you(gs)))} in cash and no investments. ` +
-      `Each round of BHAO is one year of your life. Grow your net worth toward ${formatINR(gs.wealthGoal)}.`,
+    title: () => t('networth.title'),
+    body: ({ gs }) => t('networth.body', { cash: formatINR(getCash(you(gs))), goal: formatINR(gs.wealthGoal) }),
     target: () => PORTFOLIO,
   },
   {
     id: 'rival', lesson: 1, kind: 'next',
-    title: `Meet ${TUTORIAL_BOT_NAME}`,
+    title: () => t('rival.title', { name: TUTORIAL_BOT_NAME }),
     body: ({ gs }) => {
       const r = rahul(gs)
       const flat = getHoldings(r).find(h => h.asset === 'realestate')
-      return `Rahul has the same ${formatINR(getNetWorth(r))} net worth, but ${formatINR(flat?.value ?? 0)} of it is a flat ` +
-        `and only ${formatINR(getCash(r))} is cash. He invests every spare rupee and keeps no emergency fund. Keep an eye on him.`
+      return t('rival.body', { netWorth: formatINR(getNetWorth(r)), flat: formatINR(flat?.value ?? 0), cash: formatINR(getCash(r)) })
     },
     target: () => PLAYERS,
   },
   {
     id: 'pickChai', lesson: 2, kind: 'action',
-    title: 'Play a card',
-    body: () =>
-      'Each turn you play one card. This one is about the ₹150 a day you spend on chai and snacks — ₹4,500 a month.',
-    todo: () => 'Tap “Daily Convenience Habit”, then ▶ Play.',
+    title: () => t('pickChai.title'),
+    body: () => t('pickChai.body'),
+    todo: () => t('pickChai.todo', { card: tutorialCardTitle(CARD_IDS.chai) }),
     target: ({ gs }) => {
       const c = you(gs).hand.find(h => isCard(h, CARD_IDS.chai))
       return c ? { card: c.id } : HAND
@@ -97,66 +107,58 @@ export const STEPS: StepDef[] = [
   },
   {
     id: 'preview', lesson: 2, kind: 'next',
-    title: 'Save, Spend or Invest?',
-    body: () =>
-      'Each choice shows what it does to your money right now. Save adds cash. Spend costs cash and makes your lifestyle ' +
-      'more expensive. Invest moves cash into an investment — your net worth stays the same today, then grows (or dips) every year.',
+    title: () => t('preview.title'),
+    body: () => t('preview.body'),
     target: () => ({ selectors: ['.econ-dopts'] }),
   },
   {
     id: 'invest', lesson: 2, kind: 'action',
-    title: 'Invest it',
+    title: () => t('invest.title'),
     body: ({ gs }) => {
       const card = gs.pendingDecision?.card
       const amount = card ? previewDecision(gs, 0, card, 'invest').investAmount : 0
-      return `An index fund owns a slice of India's top companies. Invest moves ${amount ? formatINR(amount) : 'part'} of your cash into it — ` +
-        'no instant profit, it grows year by year.'
+      return amount ? t('invest.body', { amount: formatINR(amount) }) : t('invest.bodyPart')
     },
-    todo: () => 'Tap Invest.',
+    todo: () => t('invest.todo'),
     target: () => ({ selectors: ['.econ-dopt-invest'] }),
     done: ({ gs }) => gs.currentPlayerIndex !== 0 || (gs.round ?? 1) > 1,
   },
   {
     id: 'botTurn', lesson: 3, kind: 'wait',
-    title: 'Rahul’s turn',
-    body: () => 'You play one card, then your turn ends. Now Rahul plays — he puts his cash into more property.',
+    title: () => t('botTurn.title'),
+    body: () => t('botTurn.body'),
     target: () => PLAYERS,
     done: ({ gs }) => (gs.round ?? 1) >= 2 && gs.currentPlayerIndex === 0,
     allowBot: true,
   },
   {
     id: 'year', lesson: 4, kind: 'next',
-    title: 'A year passed',
+    title: () => t('year.title'),
     body: ({ gs }) => {
       const me = you(gs)
       const idx = getHoldings(me).find(h => h.asset === 'index')
       const ate = line(gs, new RegExp(`Inflation ate (₹[\\d,]+) of ${me.name}'s cash`))?.[1]
       const market = idx
-        ? `The market moved: your index fund went ${pct(gs.lastMarketTick?.changes.index)}, ${formatINR(idx.principal)} → ${formatINR(idx.value)}. `
+        ? t('year.market', { pct: pct(gs.lastMarketTick?.changes.index), from: formatINR(idx.principal), to: formatINR(idx.value) }) + ' '
         : ''
-      return market +
-        `Inflation (${inflationPct(me)}% a year) ate ${ate ?? 'some'} of your idle cash: prices went up, so the same rupees buy less. ` +
-        'Cash that just sits there quietly shrinks.'
+      return market + t(ate ? 'year.inflation' : 'year.inflationSome', { pct: inflationPct(me), amount: ate })
     },
     target: () => PORTFOLIO,
   },
   {
     id: 'lure', lesson: 4, kind: 'next',
-    title: 'Life event: a “hot tip”',
+    title: () => t('lure.title'),
     body: ({ gs }) => {
       const amt = line(gs, /fell for it: (₹[\d,]+)/)?.[1]
-      return `Each year can bring a life event. Rahul got a WhatsApp tip — “guaranteed 30% a month!” — and put ${amt ?? 'money'} into it. ` +
-        'Let’s see how that goes.'
+      return amt ? t('lure.body', { amount: amt }) : t('lure.bodyNoAmount')
     },
     target: () => PLAYERS,
   },
   {
     id: 'pickSave', lesson: 5, kind: 'action',
-    title: 'Keep a buffer',
-    body: ({ gs }) =>
-      `You have ${formatINR(getCash(you(gs)))} in cash. Investing all of it is risky: life throws surprise bills. ` +
-      'Keep some cash as an emergency fund.',
-    todo: ({ uiPhase }) => (uiPhase === 'decision' ? 'Tap Save.' : 'Tap “Travel vs Savings Dilemma”, then ▶ Play.'),
+    title: () => t('pickSave.title'),
+    body: ({ gs }) => t('pickSave.body', { cash: formatINR(getCash(you(gs))) }),
+    todo: ({ uiPhase }) => (uiPhase === 'decision' ? t('pickSave.todoSave') : t('pickSave.todoCard', { card: tutorialCardTitle(CARD_IDS.buffer) })),
     target: ({ gs, uiPhase }) => {
       if (uiPhase === 'decision') return { selectors: ['.econ-dopt-save'] }
       const c = you(gs).hand.find(h => isCard(h, CARD_IDS.buffer))
@@ -166,35 +168,29 @@ export const STEPS: StepDef[] = [
   },
   {
     id: 'botTurn2', lesson: 5, kind: 'wait',
-    title: 'Saved!',
-    body: ({ gs }) =>
-      `Your cash is now ${formatINR(getCash(you(gs)))}. Rahul is playing — he invests again and keeps almost no cash.`,
+    title: () => t('botTurn2.title'),
+    body: ({ gs }) => t('botTurn2.body', { cash: formatINR(getCash(you(gs))) }),
     target: () => PLAYERS,
     done: ({ gs }) => (gs.round ?? 1) >= 3 && gs.currentPlayerIndex === 0,
     allowBot: true,
   },
   {
     id: 'medical', lesson: 6, kind: 'next',
-    title: 'Medical emergency!',
+    title: () => t('medical.title'),
     body: ({ gs }) => {
       const bill = line(gs, new RegExp(`💥 ${TUTORIAL_BOT_NAME}: -(₹[\\d,]+)`))?.[1]
       const sold = lines(gs).some(l => l.includes(`${TUTORIAL_BOT_NAME} had to sell`))
-      const head = `Rahul slipped and needed hospital care${bill ? ` — his net worth fell by ${bill}` : ''}. `
-      const lesson = sold
-        ? 'He had too little cash, so he was forced to sell part of his flat in a hurry at a 15% penalty. '
-        : ''
-      return head + lesson +
-        `You keep ${formatINR(getCash(you(gs)))} in cash, so a bill like that would be paid from cash and your investments keep growing. That is what an emergency fund is for.`
+      const head = bill ? t('medical.headBill', { amount: bill }) : t('medical.head')
+      const lesson = sold ? ' ' + t('medical.sold') : ''
+      return `${head}${lesson} ${t('medical.you', { cash: formatINR(getCash(you(gs))) })}`
     },
     target: () => PLAYERS,
   },
   {
     id: 'equip', lesson: 7, kind: 'action',
-    title: 'Get insured',
-    body: () =>
-      'You drew Health Insurance. Defense cards block a kind of trouble — this one blocks medical bills. ' +
-      'Equipping a defense is free: it does not use up your turn.',
-    todo: () => 'Tap the glowing “Good Health” card, then 🛡️ Equip.',
+    title: () => t('equip.title'),
+    body: () => t('equip.body'),
+    todo: () => t('equip.todo', { card: tutorialCardTitle(CARD_IDS.insurance) }),
     target: ({ gs }) => {
       const c = you(gs).hand.find(h => isCard(h, CARD_IDS.insurance))
       return c ? { card: c.id } : HAND
@@ -203,30 +199,27 @@ export const STEPS: StepDef[] = [
   },
   {
     id: 'freePlay', lesson: 7, kind: 'action',
-    title: 'Still your turn',
-    body: () => 'Insurance is on. You can still play one card this turn — your call. Invest, save or spend: you know what each does now.',
-    todo: () => 'Play any card.',
+    title: () => t('freePlay.title'),
+    body: () => t('freePlay.body'),
+    todo: () => t('freePlay.todo'),
     target: () => HAND,
     done: ({ gs }) => gs.currentPlayerIndex !== 0 || (gs.round ?? 1) > 3,
   },
   {
     id: 'botTurn3', lesson: 7, kind: 'wait',
-    title: 'Rahul’s turn',
-    body: () => 'Rahul plays. Then another year passes…',
+    title: () => t('botTurn.title'),
+    body: () => t('botTurn3.body'),
     target: () => PLAYERS,
     done: ({ gs }) => (gs.round ?? 1) >= 4 && gs.currentPlayerIndex === 0,
     allowBot: true,
   },
   {
     id: 'scam', lesson: 8, kind: 'next',
-    title: 'Where did the hot tip go?',
+    title: () => t('scam.title'),
     body: ({ gs }) => {
       const wiped = lines(gs).some(l => l.startsWith(`☠️ ${TUTORIAL_BOT_NAME}'s`))
       const blocked = lines(gs).some(l => l.includes('Health Insurance blocked'))
-      return (wiped
-        ? 'Rahul’s “guaranteed” tip crashed two years in a row and is now wiped out. Guaranteed high returns are how scams work. '
-        : 'Rahul’s “guaranteed” tip keeps crashing. Guaranteed high returns are how scams work. ') +
-        (blocked ? 'And a hospital bill hit you this year — your Health Insurance blocked it, so you paid nothing.' : '')
+      return t(wiped ? 'scam.wiped' : 'scam.crashing') + (blocked ? ' ' + t('scam.blocked') : '')
     },
     target: () => ({ selectors: ['.econ-year-strip', '.dk-rail .econ-defenses', '.desktop-players-strip', '.mb-players'] }),
   },

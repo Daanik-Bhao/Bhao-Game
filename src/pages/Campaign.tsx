@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ARTHA_YATRA_LEVELS } from '../data/levels'
 import type { LevelConfig } from '../types/level'
 import { useAuth } from '../hooks/useAuth'
@@ -13,6 +14,7 @@ import {
 
 export function Campaign() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { user } = useAuth()
   const ownerKey = progressOwnerKey(user?.id)
 
@@ -72,20 +74,20 @@ export function Campaign() {
             </div>
             <div>
               <h1 style={{ margin: 0, fontWeight: 700, color: '#064e3b', fontSize: 14 }}>BHAO</h1>
-              <p style={{ margin: 0, fontSize: 10, color: '#047857' }}>It's your turn</p>
+              <p style={{ margin: 0, fontSize: 10, color: '#047857' }}>{t('campaign.yourTurn')}</p>
             </div>
           </div>
         </div>
         <div style={{ background: '#ccfbf1', padding: '4px 12px', borderRadius: 9999, border: '1px solid #5eead4' }}>
-          <span style={{ color: '#115e59', fontWeight: 700, fontSize: 12 }}>{currentLevelId ? `Level ${completedCount + 1}` : 'All Complete'}</span>
+          <span style={{ color: '#115e59', fontWeight: 700, fontSize: 12 }}>{currentLevelId ? t('campaign.level', { n: completedCount + 1 }) : t('campaign.allComplete')}</span>
         </div>
       </div>
 
       {/* Progress Bar */}
       <div style={{ position: 'relative', zIndex: 10, background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(4px)', padding: '8px 16px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span style={{ color: '#065f46', fontSize: 12, fontWeight: 600 }}>Campaign Progress</span>
-          <span style={{ color: '#047857', fontSize: 12 }}>{completedCount}/{totalLevels} Complete</span>
+          <span style={{ color: '#065f46', fontSize: 12, fontWeight: 600 }}>{t('campaign.progress')}</span>
+          <span style={{ color: '#047857', fontSize: 12 }}>{t('campaign.complete', { n: completedCount, total: totalLevels })}</span>
         </div>
         <div style={{ height: 8, background: '#e5e7eb', borderRadius: 9999, overflow: 'hidden' }}>
           <div
@@ -121,6 +123,7 @@ export function Campaign() {
 }
 
 function LeaderboardCard({ level, position, status, onClick }: { level: LevelConfig, position: number, status: 'current' | 'completed' | 'locked', onClick?: () => void }) {
+  const { t } = useTranslation()
   const getCardStyle = () => {
     if (status === 'current') {
       return {
@@ -163,11 +166,11 @@ function LeaderboardCard({ level, position, status, onClick }: { level: LevelCon
     return "🏛️"
   }
 
-  const reqText = status === 'current' 
-    ? `Level ${position} ~ Good Start!` 
-    : status === 'completed' 
-    ? `Level ${position} ~ Completed!` 
-    : 'Not Yet Unlocked';
+  const reqText = status === 'current'
+    ? t('campaign.current', { n: position })
+    : status === 'completed'
+    ? t('campaign.completed', { n: position })
+    : t('campaign.notUnlocked')
 
   return (
     <div 
@@ -203,7 +206,7 @@ function LeaderboardCard({ level, position, status, onClick }: { level: LevelCon
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.06)', padding: '2px 8px', borderRadius: 6 }}>
             <span style={{ fontSize: 11 }}>📈</span>
-            <span style={{ fontSize: 11, color: style.textColor, fontWeight: 700 }}>{level.mainLearning || 'Learning'}</span>
+            <span style={{ fontSize: 11, color: style.textColor, fontWeight: 700 }}>{t(`campaign.learning.${level.id}`, { defaultValue: level.mainLearning || t('campaign.learningFallback') })}</span>
           </div>
         </div>
       </div>
@@ -222,7 +225,7 @@ function LeaderboardCard({ level, position, status, onClick }: { level: LevelCon
         }}
       >
         <span style={{ fontSize: 14, marginLeft: -4 }}>{isClickable ? '▶️' : '🔒'}</span>
-        {isClickable ? 'Play' : 'Locked'}
+        {isClickable ? t('campaign.play') : t('campaign.locked')}
       </button>
     </div>
   )

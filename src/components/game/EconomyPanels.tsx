@@ -1,30 +1,34 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import type { AssetClass, DecisionChoice, GameCard, GameState, PlayerState } from '../../types/game'
 import { AnimatedNumber } from '../AnimatedNumber'
 import { ASSETS } from '../../data/assets'
 import { sortDecisionOptions } from './boardUtils'
 import {
-  RISK_META, cardPlayability, defenseBlurb, describeDecision, portfolioView, rupees, signedPct, signedRupees, yearLabel,
-  type CardPlayability,
+  RISK_META, assetName, cardNameFor, cardPlayability, defenseBlurb, describeDecision, portfolioView, riskLabel, rupees, signedPct,
+  signedRupees, yearLabel, type CardPlayability,
 } from './economyUi'
+import { assetLabel } from '../../lib/gameEngine'
 import './EconomyPanels.css'
 
 type Variant = 'desktop' | 'compact'
-
-const HI_DECISION_LABELS: Record<string, string> = { spend: 'खर्च', save: 'बचत', invest: 'निवेश' }
-const EN_DECISION_LABELS: Record<string, string> = { spend: 'Spend', save: 'Save', invest: 'Invest' }
 
 // ---------------------------------------------------------------------------
 // Risk badge
 // ---------------------------------------------------------------------------
 
 export function RiskBadge({ asset }: { asset: AssetClass }) {
+  const { t } = useTranslation()
   const info = ASSETS[asset]
   const meta = RISK_META[info.risk]
   return (
-    <span className="econ-risk" style={{ color: meta.color, background: meta.bg }} title={info.crashChance ? `${Math.round(info.crashChance * 100)}% yearly crash chance` : 'No crash risk'}>
-      {meta.label}
+    <span
+      className="econ-risk"
+      style={{ color: meta.color, background: meta.bg }}
+      title={info.crashChance ? t('econ.crashChance', { pct: Math.round(info.crashChance * 100) }) : t('econ.noCrash')}
+    >
+      {riskLabel(info.risk)}
     </span>
   )
 }
@@ -43,16 +47,17 @@ interface DecisionOptionsProps {
 }
 
 export function DecisionOptions({ state, playerIndex, card, onDecision, hi, variant }: DecisionOptionsProps) {
+  const { t } = useTranslation()
   return (
     <div className={`econ-dopts econ-${variant}`}>
       {sortDecisionOptions(card.options).map((opt, i) => {
         const view = describeDecision(state, playerIndex, card, opt)
-        const badge = hi ? HI_DECISION_LABELS[opt.type] : EN_DECISION_LABELS[opt.type]
+        const badge = t(`econ.choice.${opt.type}`)
         const label = hi ? (opt.labelHi || opt.label) : opt.label
         const desc = opt.shortDescription
           ? (hi ? (opt.shortDescriptionHi || opt.shortDescription) : opt.shortDescription)
           : (hi && opt.descriptionHi ? opt.descriptionHi : opt.description)
-        const showLabel = label && label.toLowerCase() !== badge.toLowerCase()
+        const showLabel = label && label.toLowerCase() !== badge.toLowerCase() && label.toLowerCase() !== opt.type
         return (
           <motion.button
             key={opt.type}
@@ -75,7 +80,7 @@ export function DecisionOptions({ state, playerIndex, card, onDecision, hi, vari
             {view.asset && (
               <div className="econ-dopt-asset">
                 <span className="econ-asset-emoji" aria-hidden>{view.asset.emoji}</span>
-                <span className="econ-asset-name">{hi ? view.asset.nameHi : view.asset.name}</span>
+                <span className="econ-asset-name">{assetName(view.asset)}</span>
                 <RiskBadge asset={view.asset.id} />
               </div>
             )}
@@ -104,32 +109,33 @@ interface PortfolioPanelProps {
 }
 
 export function PortfolioPanel({ player, goal, variant, header }: PortfolioPanelProps) {
+  const { t, i18n } = useTranslation()
   const v = portfolioView(player, goal)
   return (
     <div className={`econ-portfolio econ-${variant}`}>
       {header}
       <div className="econ-nw-row">
-        <span className="econ-nw-label">Net worth</span>
+        <span className="econ-nw-label">{t('econ.netWorth')}</span>
         <span className="econ-nw-value"><AnimatedNumber value={v.netWorth} formatFn={rupees} duration={900} /></span>
       </div>
-      <div className="econ-goal" aria-label={`${Math.round(v.progress * 100)}% of goal`}>
+      <div className="econ-goal" aria-label={t('econ.goalAria', { pct: Math.round(v.progress * 100) })}>
         <div className="econ-goal-track">
           <motion.div className="econ-goal-fill" animate={{ width: `${v.progress * 100}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} />
         </div>
-        <span className="econ-goal-text">{Math.round(v.progress * 100)}% of {rupees(v.goal)}</span>
+        <span className="econ-goal-text">{t('econ.goalText', { pct: Math.round(v.progress * 100), goal: rupees(v.goal) })}</span>
       </div>
 
       <div className="econ-cash-row">
         <span className="econ-row-icon" aria-hidden>💵</span>
         <span className="econ-row-main">
-          <span className="econ-row-name">Cash</span>
-          <span className="econ-row-sub">Inflation −{v.inflation}%/yr</span>
+          <span className="econ-row-name">{t('econ.cash')}</span>
+          <span className="econ-row-sub">{t('econ.inflationRate', { pct: v.inflation })}</span>
         </span>
         <span className="econ-row-value"><AnimatedNumber value={v.cash} formatFn={rupees} duration={900} /></span>
       </div>
 
-      <div className="econ-holdings" role="list" aria-label="Investments">
-        {v.holdings.length === 0 && <div className="econ-empty">No investments yet — Invest to make money work for you.</div>}
+      <div className="econ-holdings" role="list" aria-label={t('econ.investments')}>
+        {v.holdings.length === 0 && <div className="econ-empty">{t('econ.noInvestments')}</div>}
         <AnimatePresence initial={false}>
           {v.holdings.map(h => {
             const info = ASSETS[h.asset]
@@ -148,11 +154,11 @@ export function PortfolioPanel({ player, goal, variant, header }: PortfolioPanel
               >
                 <span className="econ-row-icon" aria-hidden>{info.emoji}</span>
                 <span className="econ-row-main">
-                  <span className="econ-row-name">{h.name}</span>
+                  <span className="econ-row-name">{cardNameFor(h.name)}</span>
                   <span className="econ-row-sub">
-                    {info.name}
+                    {assetName(info)}
                     {h.lastChangePct !== 0 && (
-                      <span className={`econ-tick ${up ? 'up' : down ? 'down' : ''}`}> {up ? '▲' : '▼'} {signedPct(h.lastChangePct)} last yr</span>
+                      <span className={`econ-tick ${up ? 'up' : down ? 'down' : ''}`}> {up ? '▲' : '▼'} {t('econ.lastYear', { pct: signedPct(h.lastChangePct) })}</span>
                     )}
                   </span>
                 </span>
@@ -167,17 +173,17 @@ export function PortfolioPanel({ player, goal, variant, header }: PortfolioPanel
       </div>
 
       <div className="econ-tags">
-        <span className="econ-tag" title="Each Spend raises lifestyle: +1% inflation on cash">🛍️ Lifestyle {v.lifestyleLevel}</span>
-        {v.savingStreak > 0 && <span className="econ-tag good">🔥 Save streak {v.savingStreak}</span>}
-        <span className="econ-tag">📊 {rupees(v.invested)} invested</span>
+        <span className="econ-tag" title={t('econ.lifestyleTip')}>🛍️ {t('econ.lifestyle', { level: v.lifestyleLevel })}</span>
+        {v.savingStreak > 0 && <span className="econ-tag good">🔥 {t('econ.saveStreak', { n: v.savingStreak })}</span>}
+        <span className="econ-tag">📊 {t('econ.investedTag', { amount: rupees(v.invested) })}</span>
       </div>
       <div className="econ-defenses">
-        <span className="econ-def-title">🛡️ Defenses {v.defenses.length}/3</span>
+        <span className="econ-def-title">🛡️ {t('econ.defenses', { n: v.defenses.length, max: 3 })}</span>
         {v.defenses.length === 0
-          ? <span className="econ-def-empty">None — equip defense cards for free</span>
+          ? <span className="econ-def-empty">{t('econ.noDefenses')}</span>
           : v.defenses.map(d => (
             <span key={d.id} className="econ-def" title={defenseBlurb(d)}>
-              <strong>{d.shortName || d.name}</strong>
+              <strong>{shortCardName(d, i18n.language)}</strong>
               <span>{defenseBlurb(d)}</span>
             </span>
           ))}
@@ -186,17 +192,23 @@ export function PortfolioPanel({ player, goal, variant, header }: PortfolioPanel
   )
 }
 
+/** Short card name in the current language (Hindi fields only exist for Hindi). */
+function shortCardName(c: GameCard, lang: string): string {
+  return lang === 'hi' ? (c.shortNameHi || c.nameHi || c.shortName || c.name) : (c.shortName || c.name)
+}
+
 /** Compact one-line wallet summary (opens the portfolio sheet). */
 export function WalletChip({ player, goal, onClick, wide }: { player: PlayerState; goal: number; onClick: () => void; wide?: boolean }) {
+  const { t } = useTranslation()
   const v = portfolioView(player, goal)
   return (
-    <button type="button" className={`econ-wallet-chip${wide ? ' wide' : ''}`} onClick={onClick} aria-label="Open your portfolio">
+    <button type="button" className={`econ-wallet-chip${wide ? ' wide' : ''}`} onClick={onClick} aria-label={t('econ.openPortfolio')}>
       <span className="econ-wallet-icon" aria-hidden>💼</span>
       {wide ? (
         <>
-          <span className="econ-wallet-part"><small>Cash</small>{rupees(v.cash)}</span>
-          <span className="econ-wallet-part"><small>Invested</small>{rupees(v.invested)}</span>
-          <span className="econ-wallet-part nw"><small>Net worth</small>{rupees(v.netWorth)}</span>
+          <span className="econ-wallet-part"><small>{t('econ.cash')}</small>{rupees(v.cash)}</span>
+          <span className="econ-wallet-part"><small>{t('econ.invested')}</small>{rupees(v.invested)}</span>
+          <span className="econ-wallet-part nw"><small>{t('econ.netWorth')}</small>{rupees(v.netWorth)}</span>
           <span className="econ-wallet-bar" aria-hidden><span style={{ width: `${v.progress * 100}%` }} /></span>
         </>
       ) : (
@@ -212,12 +224,13 @@ export function WalletChip({ player, goal, onClick, wide }: { player: PlayerStat
 // ---------------------------------------------------------------------------
 
 export function YearPill({ state, onClick, short }: { state: GameState; onClick?: () => void; short?: boolean }) {
+  const { t } = useTranslation()
   const { round, max } = yearLabel(state)
   const shown = Math.min(round, max)
   return (
-    <button type="button" className="econ-year-pill" onClick={onClick} disabled={!onClick || !state.roundNews} aria-label={`Year ${shown} of ${max}`}>
+    <button type="button" className="econ-year-pill" onClick={onClick} disabled={!onClick || !state.roundNews} aria-label={t('econ.year.aria', { n: shown, max })}>
       <span aria-hidden>📅</span>
-      <span>{short ? `Y${shown}/${max}` : `Year ${shown} / ${max}`}</span>
+      <span>{short ? t('econ.year.short', { n: shown, max }) : t('econ.year.long', { n: shown, max })}</span>
     </button>
   )
 }
@@ -254,7 +267,15 @@ interface YearSummary {
   market: { asset: AssetClass; pct: number; mine: boolean; crash: boolean }[]
   inflation?: string
   wiped: string[]
-  event?: { card: GameCard; who: string; blockedBy: string[]; myDelta?: string; good: boolean; lure?: string }
+  event?: {
+    card: GameCard
+    /** null = everyone */
+    who: { me: boolean; name: string }[] | null
+    blockedBy: { mine: boolean; owner: string; card: string }[]
+    myDelta?: string
+    good: boolean
+    lure?: { mine: boolean; name: string; amount: string }
+  }
 }
 
 function escapeRe(s: string) {
@@ -282,20 +303,24 @@ function summarize(state: GameState, me: PlayerState | null): YearSummary | null
     for (const l of lines) {
       const m = l.match(infRe)
       if (m) inflation = m[1]
-      if (l.startsWith(`☠️ ${me.name}'s `)) wiped.push(l.replace(`☠️ ${me.name}'s `, '').replace(' was wiped out.', ''))
+      if (l.startsWith(`☠️ ${me.name}'s `)) {
+        const label = l.replace(`☠️ ${me.name}'s `, '').replace(' was wiped out.', '')
+        const asset = (Object.keys(ASSETS) as AssetClass[]).find(a => assetLabel(a) === label)
+        wiped.push(asset ? `${ASSETS[asset].emoji} ${assetName(ASSETS[asset])}` : label)
+      }
     }
   }
 
   let event: YearSummary['event']
   const ev = state.lastEvent
   if (ev && ev.round === news.round) {
-    const names = ev.affectedPlayerIds.map(id => (id === me?.id ? 'you' : state.players.find(p => p.id === id)?.name ?? '?'))
+    const names = ev.affectedPlayerIds.map(id => ({ me: id === me?.id, name: state.players.find(p => p.id === id)?.name ?? '?' }))
     const everyone = ev.affectedPlayerIds.length > 1 && ev.affectedPlayerIds.length >= state.players.filter(p => !p.hasForfeited).length
-    const blockedBy: string[] = []
+    const blockedBy: NonNullable<YearSummary['event']>['blockedBy'] = []
     for (const l of lines) {
       if (!l.includes(`blocked ${ev.card.name}`)) continue
       const m = l.match(/^🛡️ (.+?)'s (.+?) blocked /)
-      if (m) blockedBy.push(`${m[1] === me?.name ? 'Your' : `${m[1]}'s`} ${m[2]}`)
+      if (m) blockedBy.push({ mine: m[1] === me?.name, owner: m[1], card: cardNameFor(m[2]) })
     }
     let myDelta: string | undefined
     if (me) {
@@ -304,9 +329,9 @@ function summarize(state: GameState, me: PlayerState | null): YearSummary | null
     }
     const good = (ev.card.effect?.value ?? 0) > 0
     // Lure events (scam tips): money moved into a risky asset instead of a cash loss
-    const lureLine = ev.card.lureAsset ? lines.find(l => l.startsWith('🎣 ')) : undefined
-    const lure = lureLine && me ? lureLine.replace('🎣 ' + me.name + ' fell', '🎣 You fell') : lureLine
-    event = { card: ev.card, who: everyone ? 'everyone' : names.join(', '), blockedBy, myDelta, good, lure }
+    const lureMatch = ev.card.lureAsset ? lines.map(l => l.match(/^🎣 (.+) fell for it: (₹[\d,]+) moved into /)).find(Boolean) : null
+    const lure = lureMatch ? { mine: lureMatch[1] === me?.name, name: lureMatch[1], amount: lureMatch[2] } : undefined
+    event = { card: ev.card, who: everyone ? null : names, blockedBy, myDelta, good, lure }
   }
 
   return { round: news.round, market, inflation, wiped, event }
@@ -321,6 +346,7 @@ interface YearNewsStripProps {
 }
 
 export function YearNewsStrip({ state, myPlayerId, open, onClose, variant }: YearNewsStripProps) {
+  const { t } = useTranslation()
   const me = state.players.find(p => p.id === myPlayerId) ?? null
   const summary = useMemo(() => summarize(state, me), [state, me])
   const max = yearLabel(state).max
@@ -338,9 +364,9 @@ export function YearNewsStrip({ state, myPlayerId, open, onClose, variant }: Yea
             onClick={onClose}
           >
             <div className="econ-year-head">
-              <span className="econ-year-title">📅 Year {Math.min(summary.round, max)} / {max}</span>
-              <span className="econ-year-sub">A year passed</span>
-              <button type="button" className="econ-year-close" aria-label="Dismiss" onClick={e => { e.stopPropagation(); onClose() }}>✕</button>
+              <span className="econ-year-title">📅 {t('econ.year.long', { n: Math.min(summary.round, max), max })}</span>
+              <span className="econ-year-sub">{t('econ.year.passed')}</span>
+              <button type="button" className="econ-year-close" aria-label={t('econ.dismiss')} onClick={e => { e.stopPropagation(); onClose() }}>✕</button>
             </div>
             {summary.market.length > 0 && (
               <div className="econ-year-market">
@@ -351,27 +377,40 @@ export function YearNewsStrip({ state, myPlayerId, open, onClose, variant }: Yea
                     initial={{ scale: 0.6 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.15 + i * 0.07 }}
-                    title={ASSETS[m.asset].name}
+                    title={assetName(ASSETS[m.asset])}
                   >
                     {ASSETS[m.asset].emoji} {m.crash ? '💥 ' : ''}{signedPct(m.pct)}
                   </motion.span>
                 ))}
-                {!summary.market.some(m => m.mine) && <span className="econ-year-note">market this year</span>}
+                {!summary.market.some(m => m.mine) && <span className="econ-year-note">{t('econ.year.market')}</span>}
               </div>
             )}
             <div className="econ-year-lines">
-              {summary.inflation && <span className="econ-year-line loss">💸 Inflation ate {summary.inflation} of your cash</span>}
-              {summary.wiped.map(w => <span key={w} className="econ-year-line loss">☠️ Your {w} was wiped out</span>)}
+              {summary.inflation && <span className="econ-year-line loss">💸 {t('econ.year.inflation', { amount: summary.inflation })}</span>}
+              {summary.wiped.map(w => <span key={w} className="econ-year-line loss">☠️ {t('econ.year.wiped', { what: w })}</span>)}
               {summary.event && (
                 <span className={`econ-year-line event ${summary.event.good ? 'good' : 'bad'}`}>
-                  🎲 <strong>{summary.event.card.name}</strong> → {summary.event.who}
-                  {summary.event.blockedBy.length > 0 && <> · 🛡️ blocked by {summary.event.blockedBy.join(', ')}</>}
-                  {summary.event.myDelta && <> · you {summary.event.myDelta}</>}
+                  🎲 <strong>{cardNameFor(summary.event.card.name)}</strong> → {summary.event.who === null
+                    ? t('econ.year.everyone')
+                    : summary.event.who.map(w => (w.me ? t('econ.year.you') : w.name)).join(', ')}
+                  {summary.event.blockedBy.length > 0 && (
+                    <> · 🛡️ {t('econ.year.blockedBy', {
+                      list: summary.event.blockedBy
+                        .map(b => (b.mine ? t('econ.year.yourCard', { card: b.card }) : t('econ.year.theirCard', { name: b.owner, card: b.card })))
+                        .join(', '),
+                    })}</>
+                  )}
+                  {summary.event.myDelta && <> · {t('econ.year.youDelta', { delta: summary.event.myDelta })}</>}
                 </span>
               )}
-              {summary.event?.lure && <span className="econ-year-line loss">{summary.event.lure}</span>}
+              {summary.event?.lure && (
+                <span className="econ-year-line loss">🎣 {summary.event.lure.mine
+                  ? t('econ.year.lureYou', { amount: summary.event.lure.amount, asset: assetLure(summary.event.card) })
+                  : t('econ.year.lureOther', { name: summary.event.lure.name, amount: summary.event.lure.amount, asset: assetLure(summary.event.card) })}
+                </span>
+              )}
               {!summary.inflation && !summary.event && summary.wiped.length === 0 && (
-                <span className="econ-year-line">Quiet year — no life event.</span>
+                <span className="econ-year-line">{t('econ.year.quiet')}</span>
               )}
             </div>
             <motion.div className="econ-year-timer" initial={{ scaleX: 1 }} animate={{ scaleX: 0 }} transition={{ duration: 8, ease: 'linear' }} />
@@ -382,6 +421,11 @@ export function YearNewsStrip({ state, myPlayerId, open, onClose, variant }: Yea
   )
 }
 
+function assetLure(card: GameCard): string {
+  const a = card.lureAsset ? ASSETS[card.lureAsset] : null
+  return a ? `${a.emoji} ${assetName(a)}` : ''
+}
+
 // ---------------------------------------------------------------------------
 // Hand: playable frame + action bar
 // ---------------------------------------------------------------------------
@@ -389,12 +433,13 @@ export function YearNewsStrip({ state, myPlayerId, open, onClose, variant }: Yea
 export function HandCardFrame({
   play, selected, isNew, children, className = '',
 }: { play: CardPlayability; selected: boolean; isNew?: boolean; children: ReactNode; className?: string }) {
+  const { t } = useTranslation()
   return (
     <div className={`econ-hand-card ${play.ok ? 'is-playable' : 'is-locked'}${selected ? ' is-selected' : ''} ${className}`}>
-      {isNew && <span className="econ-hand-new">NEW</span>}
+      {isNew && <span className="econ-hand-new">{t('econ.hand.new')}</span>}
       {children}
       <span className={`econ-hand-tag ${play.action}${play.ok ? '' : ' off'}`}>
-        {play.action === 'equip' ? (play.ok ? '🛡️ Free' : '🔒') : (play.ok ? '▶ Play' : '🔒')}
+        {play.action === 'equip' ? (play.ok ? `🛡️ ${t('econ.hand.free')}` : '🔒') : (play.ok ? `▶ ${t('econ.hand.play')}` : '🔒')}
       </span>
     </div>
   )
@@ -413,23 +458,24 @@ interface HandActionBarProps {
 
 /** Buttons for the selected card: Play / Equip (free) + Pass (discard & end turn). */
 export function HandActionBar({ state, playerIndex, card, onPlay, onEquip, onPass, variant, cardName }: HandActionBarProps) {
+  const { t } = useTranslation()
   const play = card ? cardPlayability(state, playerIndex, card, true) : null
   const equipsLeft = !state.equippedThisTurn
   return (
     <div className={`econ-actions econ-${variant}`}>
       {!card && (
         <div className="econ-actions-hint">
-          👆 Pick a card. <span className="glow-word">Glowing</span> cards can be played now
-          {equipsLeft ? ' · equipping a defense is free' : ''}
-          {onPass ? ' · or Pass to discard one' : ''}
+          👆 {t('econ.hand.pick')} <span className="glow-word">{t('econ.hand.glowing')}</span> {t('econ.hand.canPlay')}
+          {equipsLeft ? ` · ${t('econ.hand.equipFree')}` : ''}
+          {onPass ? ` · ${t('econ.hand.orPass')}` : ''}
         </div>
       )}
       {card && play && (
         <>
           {onPass && (
-            <button type="button" className="econ-btn econ-btn-pass" onClick={() => onPass(card.id)} title="Discard this card and end your turn">
-              <span>Pass</span>
-              <small>discard · ends turn</small>
+            <button type="button" className="econ-btn econ-btn-pass" onClick={() => onPass(card.id)} title={t('econ.hand.passTitle')}>
+              <span>{t('econ.hand.pass')}</span>
+              <small>{t('econ.hand.passSub')}</small>
             </button>
           )}
           {play.action === 'equip' ? (
@@ -439,13 +485,13 @@ export function HandActionBar({ state, playerIndex, card, onPlay, onEquip, onPas
               disabled={!play.ok}
               onClick={() => (onEquip ? onEquip(card) : onPlay(card))}
             >
-              <span>🛡️ Equip {cardName(card)}</span>
-              <small>{play.ok ? 'free · doesn’t end turn' : play.reason}</small>
+              <span>🛡️ {t('econ.hand.equipCard', { card: cardName(card) })}</span>
+              <small>{play.ok ? t('econ.hand.equipSub') : play.reason}</small>
             </button>
           ) : (
             <button type="button" className="econ-btn econ-btn-play" disabled={!play.ok} onClick={() => onPlay(card)}>
-              <span>▶ Play {cardName(card)}</span>
-              <small>{play.ok ? (card.type === 'decision' ? 'choose Save / Spend / Invest' : 'ends your turn') : play.reason}</small>
+              <span>▶ {t('econ.hand.playCard', { card: cardName(card) })}</span>
+              <small>{play.ok ? (card.type === 'decision' ? t('econ.hand.chooseSub') : t('econ.hand.endsTurn')) : play.reason}</small>
             </button>
           )}
         </>

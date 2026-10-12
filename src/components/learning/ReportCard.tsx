@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { motion, type Variants } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
+import { pickLang } from '../../i18n/lang'
 import type { ConceptId, Grade, PlayerGameStats, ReportCard as ReportCardData } from '../../types/learning'
 import { Wealth } from '../Wealth'
 import { ConceptSheet } from './ConceptSheet'
 import { NetWorthSparkline } from './NetWorthSparkline'
 import { ProjectionBars } from './ProjectionBars'
-import { conceptView, useIsHindi } from './conceptInfo'
+import { conceptView } from './conceptInfo'
 import './learning.css'
 
 const GRADE_COLORS: Record<Grade, { fg: string; bg: string; border: string }> = {
@@ -36,12 +38,13 @@ export interface ReportCardProps {
 
 /** End-of-game "what you did / what it means in real life / what to remember" card. Dark theme. */
 export function ReportCard({ report, stats, newlyUnlocked, onOpenLibrary }: ReportCardProps) {
-  const hindi = useIsHindi()
-  const tx = (en: string, hi: string) => (hindi ? hi : en)
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language
+  const hindi = lang === 'hi'
   const [openConcept, setOpenConcept] = useState<ConceptId | null>(null)
 
-  const persona = (hindi && report.personaTitleHi) || report.personaTitle
-  const headline = (hindi && report.headlineHi) || report.headline
+  const persona = t(`report.persona.${report.personaId}`, { defaultValue: pickLang(report.personaTitle, report.personaTitleHi, lang) })
+  const headline = pickLang(report.headline, report.headlineHi, lang)
   const change = report.finalNetWorth - report.startNetWorth
   const changePct = report.startNetWorth > 0 ? Math.round((change / report.startNetWorth) * 100) : null
 
@@ -56,14 +59,14 @@ export function ReportCard({ report, stats, newlyUnlocked, onOpenLibrary }: Repo
   return (
     <motion.section
       className="report-card"
-      aria-label={tx('Your money report card', 'आपका पैसा रिपोर्ट कार्ड')}
+      aria-label={t('report.aria')}
       variants={container}
       initial="hidden"
       animate="show"
     >
       {/* Persona + headline */}
       <motion.div variants={item} className="rc-hero">
-        <div className="rc-eyebrow">📋 {tx('Your money report', 'आपकी पैसा रिपोर्ट')}</div>
+        <div className="rc-eyebrow">📋 {t('report.eyebrow')}</div>
         <div className="rc-persona">{persona}</div>
         {headline && <p className="rc-headline">{headline}</p>}
       </motion.div>
@@ -72,36 +75,36 @@ export function ReportCard({ report, stats, newlyUnlocked, onOpenLibrary }: Repo
       <motion.div variants={item} className="rc-panel">
         <div className="rc-networth">
           <div>
-            <div className="rc-label">{tx('Started with', 'शुरुआत')}</div>
+            <div className="rc-label">{t('report.startedWith')}</div>
             <div className="rc-nw-value"><Wealth amount={report.startNetWorth} /></div>
           </div>
           <div className="rc-arrow" aria-hidden="true">→</div>
           <div>
-            <div className="rc-label">{tx('Ended with', 'अंत में')}</div>
+            <div className="rc-label">{t('report.endedWith')}</div>
             <div className="rc-nw-value rc-nw-final"><Wealth amount={report.finalNetWorth} /></div>
           </div>
           <div className={`rc-delta ${change >= 0 ? 'up' : 'down'}`}>
             {change >= 0 ? '▲' : '▼'} {changePct !== null ? `${Math.abs(changePct)}%` : <Wealth amount={Math.abs(change)} />}
           </div>
         </div>
-        {series.length >= 2 && <NetWorthSparkline values={series} hindi={hindi} />}
+        {series.length >= 2 && <NetWorthSparkline values={series} />}
       </motion.div>
 
       {/* Grades */}
       {report.grades.length > 0 && (
         <motion.div variants={item}>
-          <h3 className="rc-section-title">{tx('Your grades', 'आपके ग्रेड')}</h3>
+          <h3 className="rc-section-title">{t('report.grades')}</h3>
           <ul className="rc-grades">
             {report.grades.map(g => {
               const col = GRADE_COLORS[g.grade] ?? GRADE_COLORS.C
               return (
                 <li key={g.area} className="rc-grade" style={{ background: col.bg, borderColor: col.border }}>
-                  <span className="rc-grade-letter" style={{ color: col.fg, borderColor: col.border }} aria-label={tx(`Grade ${g.grade}`, `ग्रेड ${g.grade}`)}>
+                  <span className="rc-grade-letter" style={{ color: col.fg, borderColor: col.border }} aria-label={t('report.gradeAria', { grade: g.grade })}>
                     {g.grade}
                   </span>
                   <span className="rc-grade-text">
-                    <span className="rc-grade-label">{(hindi && g.labelHi) || g.label}</span>
-                    <span className="rc-grade-reason">{(hindi && g.reasonHi) || g.reason}</span>
+                    <span className="rc-grade-label">{t(`report.area.${g.area}`, { defaultValue: pickLang(g.label, g.labelHi, lang) })}</span>
+                    <span className="rc-grade-reason">{pickLang(g.reason, g.reasonHi, lang)}</span>
                   </span>
                 </li>
               )
@@ -114,11 +117,11 @@ export function ReportCard({ report, stats, newlyUnlocked, onOpenLibrary }: Repo
       {hasProjection && (
         <motion.div variants={item} className="rc-panel">
           <h3 className="rc-section-title" style={{ marginTop: 0 }}>
-            {tx(`If you did this for real for ${p.years} years`, `अगर आप असल में ${p.years} साल ऐसा करें`)}
+            {t('report.forReal', { years: p.years })}
           </h3>
           <ProjectionBars projection={p} hindi={hindi} />
-          {((hindi && p.explanationHi) || p.explanation) && (
-            <p className="rc-note">{(hindi && p.explanationHi) || p.explanation}</p>
+          {pickLang(p.explanation, p.explanationHi, lang) && (
+            <p className="rc-note">{pickLang(p.explanation, p.explanationHi, lang)}</p>
           )}
         </motion.div>
       )}
@@ -126,18 +129,18 @@ export function ReportCard({ report, stats, newlyUnlocked, onOpenLibrary }: Repo
       {/* Lessons */}
       {lessons.length > 0 && (
         <motion.div variants={item}>
-          <h3 className="rc-section-title">{tx('Remember this', 'यह याद रखें')}</h3>
+          <h3 className="rc-section-title">{t('report.remember')}</h3>
           <div className="rc-lessons">
             {lessons.map((l, i) => {
-              const c = conceptView(l.conceptId, hindi)
+              const c = conceptView(l.conceptId, lang)
               return (
                 <button key={`${l.conceptId}-${i}`} className="rc-lesson" onClick={() => setOpenConcept(l.conceptId)}>
                   <span className="rc-lesson-head">
                     <span aria-hidden="true" style={{ fontSize: 22 }}>{c.emoji}</span>
                     <span className="rc-lesson-title">{c.title}</span>
                   </span>
-                  <span className="rc-lesson-text">{(hindi && l.textHi) || l.text}</span>
-                  <span className="rc-lesson-more">{tx('Learn more →', 'और जानें →')}</span>
+                  <span className="rc-lesson-text">{pickLang(l.text, l.textHi, lang)}</span>
+                  <span className="rc-lesson-more">{t('report.learnMore')} →</span>
                 </button>
               )
             })}
@@ -150,25 +153,25 @@ export function ReportCard({ report, stats, newlyUnlocked, onOpenLibrary }: Repo
         <motion.div variants={item} className="rc-panel rc-unlocks">
           {newOnes.length > 0 && (
             <>
-              <div className="rc-unlock-title">✨ {tx('New in your Gyaan Library', 'आपकी ज्ञान लाइब्रेरी में नया')}</div>
+              <div className="rc-unlock-title">✨ {t('report.newInLibrary')}</div>
               <div className="rc-chips">
-                {newOnes.map(id => <ConceptChip key={id} id={id} hindi={hindi} isNew onClick={() => setOpenConcept(id)} />)}
+                {newOnes.map(id => <ConceptChip key={id} id={id} isNew onClick={() => setOpenConcept(id)} />)}
               </div>
             </>
           )}
           {metAgain.length > 0 && (
             <>
               <div className="rc-unlock-title rc-muted" style={{ marginTop: newOnes.length > 0 ? 12 : 0 }}>
-                {newOnes.length > 0 || newlyUnlocked ? tx('Ideas you met again', 'जिन बातों से फिर मिले') : tx('Ideas you met this game', 'इस खेल में मिली बातें')}
+                {newOnes.length > 0 || newlyUnlocked ? t('report.metAgain') : t('report.metThisGame')}
               </div>
               <div className="rc-chips">
-                {metAgain.map(id => <ConceptChip key={id} id={id} hindi={hindi} onClick={() => setOpenConcept(id)} />)}
+                {metAgain.map(id => <ConceptChip key={id} id={id} onClick={() => setOpenConcept(id)} />)}
               </div>
             </>
           )}
           {onOpenLibrary && (
             <button className="rc-library-btn" onClick={onOpenLibrary}>
-              📚 {tx('Open Gyaan Library', 'ज्ञान लाइब्रेरी खोलें')}
+              📚 {t('report.openLibrary')}
             </button>
           )}
         </motion.div>
@@ -179,12 +182,13 @@ export function ReportCard({ report, stats, newlyUnlocked, onOpenLibrary }: Repo
   )
 }
 
-function ConceptChip({ id, hindi, isNew, onClick }: { id: ConceptId; hindi: boolean; isNew?: boolean; onClick: () => void }) {
-  const c = conceptView(id, hindi)
+function ConceptChip({ id, isNew, onClick }: { id: ConceptId; isNew?: boolean; onClick: () => void }) {
+  const { t, i18n } = useTranslation()
+  const c = conceptView(id, i18n.language)
   return (
     <button className={`rc-chip${isNew ? ' is-new' : ''}`} onClick={onClick}>
       <span aria-hidden="true">{c.emoji}</span> {c.title}
-      {isNew && <span className="rc-chip-new">{hindi ? 'नया' : 'NEW'}</span>}
+      {isNew && <span className="rc-chip-new">{t('econ.hand.new')}</span>}
     </button>
   )
 }

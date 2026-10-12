@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
 import { ALL_CONCEPT_IDS } from '../../data/concepts'
 import { progressOwnerKey } from '../../lib/libraryProgress'
-import { useIsHindi } from './conceptInfo'
 import { useLibraryProgress } from './useLibraryProgress'
 import './learning.css'
 
@@ -13,19 +13,16 @@ import './learning.css'
 export function LibraryEntryCard({ variant = 'banner', compact = false }: { variant?: 'banner' | 'tile'; compact?: boolean }) {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const hindi = useIsHindi()
-  const tx = (en: string, hi: string) => (hindi ? hi : en)
+  const { t } = useTranslation()
   const { unlocked, unseen } = useLibraryProgress(progressOwnerKey(user?.id))
   const total = ALL_CONCEPT_IDS.length
   const count = ALL_CONCEPT_IDS.filter(id => unlocked.includes(id)).length
   const newCount = unseen.length
   const badge = newCount > 0 && (
-    <span className="library-badge" aria-label={tx(`${newCount} new`, `${newCount} नए`)}>{newCount > 9 ? '9+' : newCount}</span>
+    <span className="library-badge" aria-label={t('library.newCount', { n: newCount })}>{newCount > 9 ? '9+' : newCount}</span>
   )
-  const subtitle = count === 0
-    ? tx('Money ideas unlock as you play.', 'खेलते-खेलते पैसे की बातें खुलती हैं।')
-    : tx(`${count} / ${total} money ideas unlocked`, `${count} / ${total} पैसे की बातें खुलीं`)
-  const label = `${tx('Gyaan Library', 'ज्ञान लाइब्रेरी')}${newCount > 0 ? tx(`, ${newCount} new`, `, ${newCount} नए`) : ''}`
+  const subtitle = count === 0 ? t('library.unlockAsYouPlay') : t('library.ideasUnlocked', { count, total })
+  const label = `${t('library.title')}${newCount > 0 ? `, ${t('library.newCount', { n: newCount })}` : ''}`
 
   if (variant === 'tile') {
     return (
@@ -37,7 +34,7 @@ export function LibraryEntryCard({ variant = 'banner', compact = false }: { vari
       >
         <span style={{ fontSize: 32 }} aria-hidden="true">📚</span>
         <span style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ display: 'block', fontWeight: 700, fontSize: 18, color: 'var(--text-dark)' }}>{tx('Gyaan Library', 'ज्ञान लाइब्रेरी')}</span>
+          <span style={{ display: 'block', fontWeight: 700, fontSize: 18, color: 'var(--text-dark)' }}>{t('library.title')}</span>
           <span style={{ display: 'block', fontSize: 14, color: 'var(--text-muted)' }}>{subtitle}</span>
         </span>
         {badge}
@@ -64,7 +61,7 @@ export function LibraryEntryCard({ variant = 'banner', compact = false }: { vari
       <span style={{ fontSize: compact ? 32 : 44, lineHeight: 1 }} aria-hidden="true">📚</span>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: compact ? 17 : 22, color: '#0B4232' }}>
-          {tx('Gyaan Library', 'ज्ञान लाइब्रेरी')} {badge}
+          {t('library.title')} {badge}
         </span>
         <span style={{ display: 'block', fontSize: compact ? 13 : 15, color: '#6b4e0e', marginTop: 2 }}>{subtitle}</span>
         <span style={{ display: 'block', height: 6, background: 'rgba(11,66,50,0.12)', borderRadius: 3, marginTop: 8, overflow: 'hidden', maxWidth: 320 }}>
@@ -72,7 +69,7 @@ export function LibraryEntryCard({ variant = 'banner', compact = false }: { vari
         </span>
       </span>
       <span style={{ fontSize: compact ? 13 : 16, fontWeight: 700, color: '#0B4232', whiteSpace: 'nowrap' }} aria-hidden="true">
-        {tx('Open →', 'खोलें →')}
+        {t('library.open')} →
       </span>
     </button>
   )
