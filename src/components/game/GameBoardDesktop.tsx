@@ -4,11 +4,14 @@ import { Button } from '../ui/Button'
 import { GameLog } from './GameLog'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
-import { formatWealth } from '../../types/game'
+import type { GameCard } from '../../types/game'
 import type { InnerBoardProps } from './GameBoard'
-import { TURN_TIME_LIMIT_MS } from '../../lib/gameEngine'
-import { formatSignedWealth, getDecisionPreview, getTargetableIndices, sortDecisionOptions } from './boardUtils'
+import { HAND_SIZE, TURN_TIME_LIMIT_MS } from '../../lib/gameEngine'
+import { getTargetableIndices } from './boardUtils'
 import { EmoteButton, PlayersStrip, TurnCountdown } from './BoardShared'
+import { DecisionOptions, HandActionBar, HandCardFrame, PortfolioPanel, YearNewsStrip, YearPill, useYearNews } from './EconomyPanels'
+import { cardPlayability, rupees } from './economyUi'
+import './GameBoardDesktop.css'
 
 function PlayerTimerRing({ turnStartTime, timeLimit }: { turnStartTime: number, timeLimit: number }) {
   const [now, setNow] = useState(Date.now())
@@ -28,33 +31,34 @@ function PlayerTimerRing({ turnStartTime, timeLimit }: { turnStartTime: number, 
   const pct = Math.max(0, Math.min(100, (remaining / timeLimit) * 100))
   const isDanger = remaining < 10000
 
-  const dash = 2 * Math.PI * 40 // r=40
-  
+  const r = 30
+  const dash = 2 * Math.PI * r
+
   return (
     <>
-      <svg style={{ position: 'absolute', top: -10, left: -10, width: 'calc(100% + 20px)', height: 'calc(100% + 20px)', pointerEvents: 'none', transform: 'rotate(-90deg)', zIndex: 10 }}>
-        <circle cx="50%" cy="50%" r="40" fill="none" 
-          stroke={isDanger ? '#ef4444' : '#10b981'} 
-          strokeWidth="4" 
-          strokeDasharray={dash} 
-          strokeDashoffset={dash * (1 - pct/100)}
+      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', transform: 'rotate(-90deg)', zIndex: 10 }}>
+        <circle cx="50%" cy="50%" r={r} fill="none"
+          stroke={isDanger ? '#ef4444' : '#10b981'}
+          strokeWidth="4"
+          strokeDasharray={dash}
+          strokeDashoffset={dash * (1 - pct / 100)}
           style={{ transition: 'stroke-dashoffset 0.1s linear' }}
         />
       </svg>
-      <motion.div 
+      <motion.div
         animate={isDanger ? { scale: [1, 1.2, 1], opacity: [1, 0.8, 1] } : { scale: 1, opacity: 1 }}
         transition={{ repeat: isDanger ? Infinity : 0, duration: 0.5 }}
-        style={{ 
-          position: 'absolute', 
-          bottom: -16, 
-          left: '50%', 
-          transform: 'translateX(-50%)', 
-          background: isDanger ? '#ef4444' : '#10b981', 
-          color: '#fff', 
-          padding: '2px 10px', 
-          borderRadius: 12, 
-          fontSize: 14, 
-          fontWeight: 800, 
+        style={{
+          position: 'absolute',
+          bottom: -8,
+          left: '50%',
+          x: '-50%',
+          background: isDanger ? '#ef4444' : '#10b981',
+          color: '#fff',
+          padding: '1px 8px',
+          borderRadius: 10,
+          fontSize: 12,
+          fontWeight: 800,
           zIndex: 20,
           boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
           whiteSpace: 'nowrap'
@@ -65,7 +69,6 @@ function PlayerTimerRing({ turnStartTime, timeLimit }: { turnStartTime: number, 
     </>
   )
 }
-
 
 export function GameBoardDesktop({
   gameState,
@@ -80,383 +83,211 @@ export function GameBoardDesktop({
   onCancelTargeting,
   activeEmotes,
   onSendEmote,
+  onPass,
+  onEquip,
   showOpponents,
   highlightPlayerId,
   narrowViewport,
 }: InnerBoardProps) {
   const { t, i18n } = useTranslation()
+  const hi = i18n.language === 'hi'
   const [showGameLog, setShowGameLog] = useState(false)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const yearNews = useYearNews(gameState)
   const myPlayerIndex = gameState.players.findIndex(p => p.id === myPlayerId)
   const isMyTurn = gameState.players[gameState.currentPlayerIndex]?.id === myPlayerId
   const myPlayer = myPlayerIndex >= 0 ? gameState.players[myPlayerIndex] : null
   const currentPlayer = gameState.players[gameState.currentPlayerIndex]
   const targetIndices = getTargetableIndices(gameState, myPlayerId)
-  const handCount = myPlayer?.hand.length ?? 0
+  const hand = myPlayer?.hand ?? []
+  const isPlayPhase = isMyTurn && gameState.phase === 'play' && uiPhase === 'playing'
+  /** Phase 3 pages pass onPass: pick a card first, then Play / Equip / Pass. Older pages: a click plays. */
+  const selectMode = !!onPass
+  const selectedCard = isPlayPhase ? hand.find(c => c.id === selectedId) ?? null : null
 
-  const progressRatio = myPlayer ? Math.min(1, myPlayer.wealth / gameState.wealthGoal) : 0;
+  useEffect(() => {
+    if (!isPlayPhase) setSelectedId(null)
+  }, [isPlayPhase])
+
+  const cardName = (c: GameCard) => (hi ? (c.shortNameHi || c.nameHi || c.shortName || c.name) : (c.shortName || c.name))
+
+  const primary = (card: GameCard) => {
+    setSelectedId(null)
+    if (card.type === 'defense' && onEquip) onEquip(card)
+    else onPlayCard(card)
+  }
+  const onCardClick = (card: GameCard) => {
+    if (!selectMode) { onPlayCard(card); return }
+    if (selectedId === card.id) {
+      // Second click on the selected card = its primary action
+      if (cardPlayability(gameState, myPlayerIndex, card, true).ok) primary(card)
+      return
+    }
+    setSelectedId(card.id)
+  }
+
+  const dense = hand.length > 5
+  const renderHand = (interactive: boolean) => (
+    <div className={`dk-hand${dense ? ' dense' : ''}${interactive ? '' : ' preview'}`} role="listbox" aria-label="Your hand">
+      <AnimatePresence>
+        {hand.map(card => (
+          <HandCardFrame
+            key={card.id}
+            play={cardPlayability(gameState, myPlayerIndex, card, interactive)}
+            selected={selectedCard?.id === card.id}
+            isNew={interactive && gameState.drawnCard?.id === card.id}
+          >
+            <GameCardComponent card={card} compact onClick={interactive ? () => onCardClick(card) : undefined} disabled={!interactive} />
+          </HandCardFrame>
+        ))}
+      </AnimatePresence>
+    </div>
+  )
+
+  const pending = gameState.pendingDecision
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      
-      {/* Central Glass Panel Stage - Fluid */}
-      <div className="game-stage-bg" style={{
-        width: '100%', height: '100%',
-        background: 'url("/avatars/most outher.png") center / 100% 100% no-repeat',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
-      }}>
-          {/* Second Outer Layer */}
-          <div style={{
-            width: 1205, height: 577,
-            background: 'url("/avatars/seocnd outer.png") center / 100% 100% no-repeat',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            padding: 40
-          }}>
-            
-          {/* Not my turn */}
-        {!isMyTurn && uiPhase === 'playing' && (
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 64, marginBottom: 20 }}>⏳</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: '#fff', marginBottom: 8 }}>
-              {t('game.waitingFor', { name: currentPlayer?.name })}
-            </div>
-            <div style={{ fontSize: 18, color: '#94a3b8', marginBottom: 16 }}>{t('game.theirTurnToPlay')}</div>
-            {gameState.phase !== 'game_over' && (
-              <TurnCountdown key={gameState.turnStartTime} turnStartTime={gameState.turnStartTime} timeLimit={TURN_TIME_LIMIT_MS} />
-            )}
-          </div>
-        )}
-
-        {/* Draw phase */}
-        {isMyTurn && gameState.phase === 'draw' && (
-          <div style={{
-            width: 1013,
-            height: 486,
-            background: 'url("/avatars/second inner.png") center / 100% 100% no-repeat',
-            borderRadius: 5,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            paddingTop: 20,
-            position: 'relative'
-          }}>
-            {/* Title */}
-            <div style={{
-              fontFamily: 'Clash Display Variable, sans-serif',
-              fontWeight: 600,
-              fontSize: 48,
-              color: '#B4FFBE',
-              marginBottom: 20
-            }}>
-              Your Turn
-            </div>
-
-            {/* Inner Container */}
-            <div style={{
-              width: 945,
-              height: 375,
-              background: 'url("/avatars/most inner.png") center / 100% 100% no-repeat',
-              borderRadius: 8,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
-              paddingTop: 14,
-              position: 'relative'
-            }}>
-              {/* Subtitle */}
-              <div style={{
-                fontFamily: 'Inter, sans-serif',
-                fontWeight: 400,
-                fontSize: 20,
-                color: '#FFFFFF',
-                marginTop: 20,
-                marginBottom: 20
-              }}>
-                your turn! draw a card to start.
-              </div>
-              
-              {/* Cards Fan */}
-              <img 
-                src="/avatars/cards in hand.png" 
-                alt="Card Fan" 
-                style={{ 
-                  width: 517, 
-                  position: 'absolute',
-                  top: '52%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  objectFit: 'contain',
-                  zIndex: 10,
-                  pointerEvents: 'none'
-                }} 
+    <div className="dk-root">
+      <div className="game-stage-bg dk-stage">
+        <div className="dk-frame">
+          {/* LEFT RAIL: your money */}
+          <aside className="dk-rail">
+            {myPlayer && (
+              <PortfolioPanel
+                player={myPlayer}
+                goal={gameState.wealthGoal}
+                variant="desktop"
+                header={(
+                  <div className="econ-id">
+                    <div className="econ-id-avatar">
+                      {isMyTurn && gameState.phase !== 'game_over' && (
+                        <PlayerTimerRing turnStartTime={gameState.turnStartTime} timeLimit={TURN_TIME_LIMIT_MS} />
+                      )}
+                      <img src={myPlayer.profile?.avatar_url || ('https://api.dicebear.com/9.x/avataaars/svg?seed=' + myPlayer.name)} alt="" />
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div className="econ-id-name">{myPlayer.name}</div>
+                      <div className="econ-id-sub">{isMyTurn ? 'Your turn' : `${currentPlayer?.name ?? ''} is playing`} · {hand.length}/{HAND_SIZE} cards</div>
+                    </div>
+                  </div>
+                )}
               />
+            )}
+          </aside>
 
-              {/* Draw Button */}
-              <button
-                className="btn-rebound"
-                onClick={onDrawCard}
-                style={{
-                  width: 250,
-                  height: 60,
-                  background: 'linear-gradient(180deg, #F4D27B 0%, #DDA20C 100%)',
-                  borderRadius: 8,
-                  border: 'none',
-                  color: '#4B3602',
-                  fontSize: 22,
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  position: 'absolute',
-                  bottom: -15,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  boxShadow: '0 8px 16px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.4), inset 0 -4px 8px rgba(0,0,0,0.2)',
-                  fontFamily: 'Space Grotesk, sans-serif',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  transition: 'transform 0.2s'
-                }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'translateX(-50%) scale(1.02)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'translateX(-50%) scale(1)'}
-              >
-                Draw Card
-              </button>
-            </div>
-          </div>
-        )}
+          {/* MAIN STAGE */}
+          <main className="dk-main">
+            <YearNewsStrip state={gameState} myPlayerId={myPlayerId} open={yearNews.open} onClose={yearNews.hide} variant="desktop" />
 
-        {/* Play phase — show full hand, pick one to play */}
-        {isMyTurn && gameState.phase === 'play' && uiPhase === 'playing' && (
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {/* Single row; switch to compact cards when the hand would not fit the stage */}
-            <div style={{ display: 'flex', flexWrap: handCount > 7 ? 'wrap' : 'nowrap', gap: 16, justifyContent: 'center', alignItems: 'center', marginBottom: 20, maxWidth: 1120 }}>
-              <AnimatePresence>
-                {myPlayer?.hand.map(card => (
-                  <GameCardComponent key={card.id} card={card} compact={handCount > 4} onClick={() => onPlayCard(card)} />
-                ))}
-              </AnimatePresence>
-            </div>
-          </div>
-        )}
+            {/* Not my turn: wait, but show the hand so you can plan */}
+            {!isMyTurn && uiPhase === 'playing' && (
+              <div className="dk-wait">
+                <div className="dk-wait-emoji" aria-hidden>⏳</div>
+                <div className="dk-wait-title">{t('game.waitingFor', { name: currentPlayer?.name })}</div>
+                <div className="dk-wait-sub">{t('game.theirTurnToPlay')}</div>
+                {gameState.phase !== 'game_over' && (
+                  <TurnCountdown key={gameState.turnStartTime} turnStartTime={gameState.turnStartTime} timeLimit={TURN_TIME_LIMIT_MS} />
+                )}
+                {hand.length > 0 && (
+                  <>
+                    <div className="dk-hand-label">Your hand — plan your next move</div>
+                    {renderHand(false)}
+                  </>
+                )}
+              </div>
+            )}
 
-        {/* Decision card */}
-        {uiPhase === 'decision' && gameState.pendingDecision && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
-            <div style={{
-              background: 'rgba(11, 40, 40, 0.8)',
-              border: '2px solid rgba(16, 185, 129, 0.4)',
-              borderRadius: 20,
-              padding: '40px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 40,
-              boxShadow: '0 0 40px rgba(16, 185, 129, 0.2)'
-            }}>
-              
-              <div style={{ display: 'flex', gap: 60, alignItems: 'center' }}>
-                {/* Left Side: Selected Card */}
-                <div>
-                  <GameCardComponent card={gameState.pendingDecision.card} compact={false} />
+            {/* Draw phase: refill the hand */}
+            {isMyTurn && gameState.phase === 'draw' && (
+              <div className="dk-draw">
+                <div className="dk-draw-title">Your Turn</div>
+                <div className="dk-draw-inner">
+                  <div className="dk-draw-sub">
+                    {hand.length < HAND_SIZE ? `Draw to refill your hand to ${HAND_SIZE} cards.` : 'Draw to start your turn.'}
+                  </div>
+                  <img src="/avatars/cards in hand.png" alt="" className="dk-draw-fan" />
+                  <button type="button" className="btn-rebound dk-draw-btn" onClick={onDrawCard}>Draw Card</button>
                 </div>
+              </div>
+            )}
 
-                {/* Right Side: Decision Options */}
-                <div style={{ 
-                  width: 480, 
-                  background: '#0F2A24', 
-                  border: '1px solid #10B981', 
-                  borderRadius: 16, 
-                  padding: '32px 24px',
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  gap: 16 
-                }}>
-                  <h3 style={{ fontSize: 28, fontWeight: 600, color: '#34D399', margin: '0 0 4px', fontFamily: 'system-ui, sans-serif' }}>
-                    {i18n.language === 'hi' 
-                      ? (gameState.pendingDecision.card.shortNameHi || gameState.pendingDecision.card.nameHi || gameState.pendingDecision.card.shortName || gameState.pendingDecision.card.name)
-                      : (gameState.pendingDecision.card.shortName || gameState.pendingDecision.card.name)}
-                  </h3>
-                  <p style={{ color: '#9CA3AF', fontSize: 14, margin: '0 0 24px', lineHeight: 1.4 }}>
-                    {i18n.language === 'hi' 
-                      ? (gameState.pendingDecision.card.shortFlavorHi || gameState.pendingDecision.card.flavorHi || gameState.pendingDecision.card.shortFlavor || gameState.pendingDecision.card.flavor)
-                      : (gameState.pendingDecision.card.shortFlavor || gameState.pendingDecision.card.flavor)}
-                  </p>
-                  
-                  {sortDecisionOptions(gameState.pendingDecision.card.options).map(opt => {
-                    const preview = getDecisionPreview(opt, myPlayer);
-                    const effectVal = preview.value;
-                    const failVal = preview.failValue;
+            {/* Play phase: pick a card */}
+            {isPlayPhase && (
+              <div className="dk-play">
+                <div className="dk-hand-label">
+                  {selectMode ? 'Pick a card — then Play, Equip or Pass' : 'Pick a card to play'}
+                  {gameState.equippedThisTurn && <span className="dk-equipped-note">🛡️ Defense equipped this turn</span>}
+                </div>
+                {renderHand(true)}
+                {selectMode && (
+                  <HandActionBar
+                    state={gameState}
+                    playerIndex={myPlayerIndex}
+                    card={selectedCard}
+                    onPlay={primary}
+                    onEquip={primary}
+                    onPass={id => { setSelectedId(null); onPass?.(id) }}
+                    variant="desktop"
+                    cardName={cardName}
+                  />
+                )}
+              </div>
+            )}
 
-                    const optColor = opt.type === 'spend' ? '#EF4444' : opt.type === 'save' ? '#10B981' : '#06B6D4';
-                    const optBg = opt.type === 'spend' ? '#FEE2E2' : opt.type === 'save' ? '#D1FAE5' : '#CFFAFE';
+            {/* Decision */}
+            {uiPhase === 'decision' && pending && (
+              <motion.div className="dk-decision" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}>
+                <div className="dk-decision-card">
+                  <GameCardComponent card={pending.card} compact />
+                </div>
+                <div className="dk-decision-panel">
+                  <div className="dk-decision-head">
+                    <h3>{cardName(pending.card)}</h3>
+                    {myPlayer && <span className="dk-decision-cash">💵 Cash <strong>{rupees(myPlayer.cash ?? myPlayer.wealth)}</strong></span>}
+                  </div>
+                  <p>{hi ? (pending.card.shortFlavorHi || pending.card.flavorHi || pending.card.shortFlavor || pending.card.flavor) : (pending.card.shortFlavor || pending.card.flavor)}</p>
+                  <DecisionOptions state={gameState} playerIndex={myPlayerIndex} card={pending.card} onDecision={onDecision} hi={hi} variant="desktop" />
+                  {onPass && (
+                    <div className="econ-decision-foot">
+                      <button type="button" className="econ-btn econ-btn-pass" onClick={onCancelTargeting}><span>← Back to hand</span></button>
+                      <button type="button" className="econ-btn econ-btn-pass" onClick={() => onPass(pending.card.id)}>
+                        <span>Pass</span><small>discard this card · ends turn</small>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
 
+            {/* Targeting */}
+            {uiPhase === 'targeting' && gameState.pendingTarget && (
+              <div className="dk-target">
+                <div style={{ fontSize: 44, marginBottom: 12 }}>🎯</div>
+                <div className="dk-wait-title">{t('game.selectTarget', { card: gameState.pendingTarget.card.name })}</div>
+                <div className="dk-wait-sub" style={{ marginBottom: 20 }}>Pick the rival to hit:</div>
+                <div className="dk-target-list">
+                  {targetIndices.map(i => {
+                    const p = gameState.players[i]
                     return (
-                      <div key={opt.type} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        <button
-                          type="button"
-                          onClick={() => onDecision(opt.type)}
-                          style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            border: `1px solid ${optColor}`,
-                            background: 'transparent',
-                            padding: '12px 16px',
-                            minHeight: 52,
-                            width: '100%',
-                            textAlign: 'left',
-                            fontFamily: 'inherit',
-                            borderRadius: 8,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            boxShadow: 'none'
-                          }}
-                          onMouseEnter={e => {
-                            e.currentTarget.style.background = `${optColor}11`;
-                            e.currentTarget.style.boxShadow = `0 0 0 1px ${optColor}`;
-                          }}
-                          onMouseLeave={e => {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.boxShadow = 'none';
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                            <div style={{ background: optBg, color: optColor, padding: '4px 16px', borderRadius: 999, fontSize: 13, fontWeight: 700, minWidth: 80, textAlign: 'center', textTransform: 'capitalize' }}>
-                              {opt.type}
-                            </div>
-                            <div style={{ color: '#fff', fontSize: 15, fontWeight: 400 }}>
-                              {opt.label}
-                            </div>
-                          </div>
-                          <div style={{ color: optColor, fontSize: 15, fontWeight: 700, textAlign: 'right' }}>
-                            {formatSignedWealth(effectVal)}
-                            {preview.multiplier !== 1 && (
-                              <span className="decision-mult">×{preview.multiplier.toFixed(2)}</span>
-                            )}
-                          </div>
-                        </button>
-                        {!!opt.investRisk && opt.failEffect && (
-                          <div style={{ marginLeft: 16, background: '#fff', color: '#EF4444', fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 4, alignSelf: 'flex-start' }}>
-                            {opt.investRisk}% Risk: {formatSignedWealth(failVal)}
-                          </div>
-                        )}
-                      </div>
+                      <button key={p.id} type="button" className="dk-target-btn" onClick={() => onTargetSelect(i)}>
+                        <span>Target {p.name}</span>
+                        <small>{rupees(p.wealth)} net worth · {(p.holdings ?? []).length} investments</small>
+                      </button>
                     )
                   })}
+                  {targetIndices.length === 0 && <div style={{ fontSize: 16, color: '#fca5a5' }}>No opponents left to target.</div>}
                 </div>
+                <Button variant="secondary" onClick={onCancelTargeting}>{t('common.cancel')}</Button>
               </div>
-
-
-            </div>
-          </div>
-        )}
-
-        {/* Action card targeting phase (Select opponent) */}
-        {uiPhase === 'targeting' && gameState.pendingTarget && (
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 48, marginBottom: 20 }}>🎯</div>
-            <div style={{ fontSize: 24, color: '#fff', fontWeight: 800, marginBottom: 12 }}>
-              {t('game.selectTarget', { card: gameState.pendingTarget.card.name })}
-            </div>
-            <div style={{ fontSize: 18, color: '#94a3b8', marginBottom: 30 }}>
-              {t('game.clickOpponentTarget')}
-            </div>
-            {/* Render buttons for opponents */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center', marginBottom: 30, maxWidth: 1000 }}>
-               {targetIndices.map(i => {
-                 const p = gameState.players[i];
-                 return (
-                   <button key={p.id} type="button" onClick={() => onTargetSelect(i)} style={{
-                     padding: '12px 28px', minHeight: 56, background: 'rgba(239, 68, 68, 0.2)', border: '2px solid #EF4444',
-                     borderRadius: 8, color: '#fff', fontSize: 18, fontWeight: 700, cursor: 'pointer',
-                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, fontFamily: 'inherit'
-                   }}>
-                     <span>Target {p.name}</span>
-                     <span style={{ fontSize: 14, fontWeight: 600, color: '#fca5a5' }}>{formatWealth(p.wealth)}</span>
-                   </button>
-                 )
-               })}
-               {targetIndices.length === 0 && (
-                 <div style={{ fontSize: 16, color: '#fca5a5' }}>No opponents left to target.</div>
-               )}
-            </div>
-            <Button variant="secondary" onClick={onCancelTargeting}>{t('common.cancel')}</Button>
-          </div>
-        )}
-
-          </div> {/* End Second Outer Layer */}
-      </div>
-      {/* END CENTRAL STAGE */}
-
-      {/* BOTTOM LEFT: Local Player HUD */}
-      {myPlayer && (
-        <div style={{ 
-          position: 'absolute', bottom: 40, left: 40, 
-          display: 'flex', alignItems: 'center', gap: 16,
-          background: 'url("/avatars/mainplayercard.webp") center / 100% 100% no-repeat',
-          padding: '16px 20px', width: 340, height: 110
-        }}>
-          {/* Avatar Area */}
-          <div style={{ 
-            width: 78, height: 78, 
-            background: 'url("/avatars/player avatar holder.webp") center / contain no-repeat',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
-            position: 'relative'
-          }}>
-            {/* SVG Timer Ring */}
-            {isMyTurn && gameState.phase !== 'game_over' && (
-              <PlayerTimerRing 
-                turnStartTime={gameState.turnStartTime} 
-                timeLimit={TURN_TIME_LIMIT_MS} 
-              />
             )}
-            
-            <img 
-              src={myPlayer.profile?.avatar_url || ('https://api.dicebear.com/9.x/avataaars/svg?seed=' + myPlayer.name)} 
-              style={{ width: 62, height: 62, borderRadius: '50%', objectFit: 'cover' }} 
-              alt="Avatar" 
-            />
-          </div>
-
-          {/* Info Area */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, paddingRight: 8 }}>
-            <div style={{ fontSize: 20, fontWeight: 500, color: '#6ee7b7', fontFamily: 'Inter, sans-serif' }}>
-              {myPlayer.name}
-            </div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: '#fff', fontFamily: 'Inter, sans-serif', marginTop: -4 }}>
-              {formatWealth(myPlayer.wealth)}
-            </div>
-            
-            {/* Real Progress Bar */}
-            <div style={{ position: 'relative', height: 12, width: '100%', marginTop: 6, display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: 6, overflow: 'hidden' }}>
-              {/* Fill */}
-              <div style={{ 
-                position: 'absolute', top: 0, left: 0, bottom: 0, 
-                width: `${Math.max(0, Math.min(100, progressRatio * 100))}%`, 
-                background: 'linear-gradient(90deg, #10b981, #34d399)',
-                transition: 'width 0.5s ease-in-out'
-              }} />
-              
-              {/* Stars Overlay (Optional visual flair) */}
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8px' }}>
-                {[0.33, 0.66, 1].map((threshold, idx) => (
-                  <img 
-                    key={idx} 
-                    src="/avatars/star.webp" 
-                    alt="star"
-                    style={{ 
-                      width: 14, 
-                      height: 14, 
-                      opacity: progressRatio >= threshold ? 1 : 0.2, 
-                      filter: progressRatio >= threshold ? 'drop-shadow(0 0 5px #FBBF24)' : 'none',
-                      zIndex: 2,
-                      transform: 'translateY(-1px)'
-                    }} 
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
+          </main>
         </div>
-      )}
+      </div>
+
+      {/* TOP LEFT: year */}
+      <div className="dk-year">
+        <YearPill state={gameState} onClick={yearNews.show} />
+      </div>
 
       {/* TOP CENTER: players strip (multiplayer / when the page has no opponent HUD) */}
       {(showOpponents ?? (isMultiplayer || narrowViewport)) && (
@@ -475,33 +306,23 @@ export function GameBoardDesktop({
       )}
 
       {/* BOTTOM RIGHT: Game Log Toggle Button (+ emotes) */}
-      <div style={{ position: 'absolute', bottom: 40, right: 40, display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div className="dk-log-btns">
         {onSendEmote && <EmoteButton onSendEmote={onSendEmote} direction="up" />}
         <button
           type="button"
           aria-label={t('game.gameLog')}
           onClick={() => setShowGameLog(!showGameLog)}
-          style={{
-            background: 'url("/avatars/gamelogbutton.webp") center / contain no-repeat',
-            width: 200, height: 60, border: 'none', cursor: 'pointer',
-            backgroundColor: 'transparent'
-          }}
-        >
-        </button>
+          className="dk-log-btn"
+        />
       </div>
 
-      {/* Game Log Modal Overlay */}
       {showGameLog && (
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', justifyContent: 'center', alignItems: 'center'
-        }} onClick={() => setShowGameLog(false)}>
+        <div className="dk-log-overlay" onClick={() => setShowGameLog(false)}>
           <div onClick={e => e.stopPropagation()} style={{ width: 600, maxHeight: 620, overflowY: 'auto' }}>
             <GameLog log={gameState.log} playerName={myPlayer?.name} />
           </div>
         </div>
       )}
-
     </div>
   )
 }
