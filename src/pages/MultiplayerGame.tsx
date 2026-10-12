@@ -1,18 +1,16 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { Button } from '../components/ui/Button'
-import type { GameState, GameCard as GameCardType } from '../types/game'
+import type { GameState, GameCard as GameCardType, DecisionChoice } from '../types/game'
 import { formatWealth } from '../types/game'
+import type { MpActionResponse, MpAction, MpEvent, MpPublicState } from '../types/multiplayer'
 import { Wealth } from '../components/Wealth'
-import {
-  processDecision, processAction, advanceTurn, startDrawPhase, forceSkipTurn, drawCard, equipDefense, TURN_TIME_LIMIT_MS,
-  canEquip, passTurn, previewDecision, assetLabel
-} from '../lib/gameEngine'
-import { pushGameState, leaveRoom } from '../lib/multiplayerEngine'
-import { saveGameResult } from '../lib/auth'
+import { canEquip, previewDecision, assetLabel, TURN_TIME_LIMIT_MS } from '../lib/gameEngine'
+import { computePlacements, toBoardState, withOwnHand, HEARTBEAT_MS } from '../lib/multiplayerAuthority'
+import { invokeGameAction, leaveRoom, sendHeartbeat, subscribeToGame } from '../lib/multiplayerEngine'
 import Confetti from 'react-confetti'
-import { supabase } from '../lib/supabase'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 import { ForfeitModal } from '../components/ForfeitModal'
 import { playSound } from '../lib/audio'
 import { GameBoard, UIPhase } from '../components/game/GameBoard'
@@ -43,6 +41,26 @@ function GameClock({ startTime, timeLimit }: { startTime: number; timeLimit: num
 
 type PagePhase = UIPhase | 'loading' | 'result'
 
+/** Local-only UI hint while the player picks a choice / target. Never sent anywhere. */
+type LocalPending =
+  | { kind: 'decision'; card: GameCardType }
+  | { kind: 'target'; card: GameCardType }
+  | null
+
+/** Wait this long past the (server) turn deadline before asking the server to tick. */
+const TICK_SLACK_MS = 1500
+/** While a deadline is overdue / someone looks offline, re-ask the server this often. */
+const TICK_RETRY_MS = 5000
+/** Someone merely looks offline (presence): check with the server at most this often. */
+const OFFLINE_TICK_MS = 15000
+const noop = () => { /* no extra-card purchase in multiplayer */ }
+
+/**
+ * Multiplayer game screen (Phase 5): the server owns the game. This page renders the
+ * public room state + our own hand row (both via realtime), sends intents to the
+ * `game-action` edge function, sends heartbeats and asks for a `tick` when a turn timer
+ * runs out. It never mutates the game locally.
+ */
 export function MultiplayerGame() {
   usePreloadImages()
   const { roomId } = useParams<{ roomId: string }>()
@@ -51,387 +69,273 @@ export function MultiplayerGame() {
   const { t } = useTranslation()
   const [showLog, setShowLog] = useState(false)
 
-  const [gameState, setGameState] = useState<GameState | null>(null)
-  const [uiPhase, setUiPhase] = useState<PagePhase>('loading')
-  const [notification, setNotification] = useState<string | null>(null)
+  const [publicGs, setPublicGs] = useState<MpPublicState | null>(null)
+  const [myHand, setMyHand] = useState<{ hand: GameCardType[]; version: number } | null>(null)
+  const [pending, setPending] = useState<LocalPending>(null)
+  const [busy, setBusy] = useState(false)
+  const [notification, setNotification] = useState<{ text: string; error?: boolean } | null>(null)
   const [showForfeitModal, setShowForfeitModal] = useState(false)
   const [onlinePlayers, setOnlinePlayers] = useState<Set<string>>(new Set())
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected'>('connected')
   const [activeEmotes, setActiveEmotes] = useState<Record<string, string>>({})
 
-  // "Year N" news (market, inflation, life event) whenever a new round starts
-  const lastNewsRoundRef = useRef(0)
-  useEffect(() => {
-    const news = gameState?.roundNews
-    if (!news || news.round <= lastNewsRoundRef.current || gameState?.phase === 'game_over') return
-    lastNewsRoundRef.current = news.round
-    setNotification(news.lines.slice(0, 4).join(' · '))
-    const timer = setTimeout(() => setNotification(null), 6000)
-    return () => clearTimeout(timer)
-  }, [gameState?.roundNews, gameState?.phase])
-
-  // Use a string representation for stable useEffect dependencies
-  const onlinePlayersStr = Array.from(onlinePlayers).sort().join(',')
-
-  // Use refs to avoid stale closures in async callbacks and subscriptions
-  const gameStateRef = useRef<GameState | null>(null)
-  const uiPhaseRef = useRef<PagePhase>('loading')
-  const resultSavedRef = useRef(false)
-  const profileRef = useRef(profile)
-  profileRef.current = profile
-
   const myPlayerId = profile?.id ?? ''
 
-  // Derive these from gameState on every render
-  const myPlayerIndex = gameState?.players.findIndex(p => p.id === myPlayerId) ?? -1
-  const myPlayer = myPlayerIndex >= 0 ? gameState?.players[myPlayerIndex] ?? null : null
+  const publicRef = useRef<MpPublicState | null>(null)
+  const handRef = useRef<{ hand: GameCardType[]; version: number } | null>(null)
+  const busyRef = useRef(false)
+  const tickInFlightRef = useRef(false)
+  const lastTickAtRef = useRef(0)
+  const channelRef = useRef<RealtimeChannel | null>(null)
+  /** server clock − local clock, learned from function responses */
+  const clockOffsetRef = useRef(0)
+  const eventsSeenRef = useRef(0)
+  const notifyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const resultHandledRef = useRef(false)
 
-  function setPhase(phase: PagePhase) {
-    uiPhaseRef.current = phase
-    setUiPhase(phase)
-  }
+  const notify = useCallback((text: string, error = false) => {
+    setNotification({ text, error })
+    if (notifyTimerRef.current) clearTimeout(notifyTimerRef.current)
+    notifyTimerRef.current = setTimeout(() => setNotification(null), error ? 4500 : 3000)
+  }, [])
 
-  function notify(msg: string) {
-    setNotification(msg)
-    setTimeout(() => setNotification(null), 3000)
-  }
-
-  async function saveResult(state: GameState) {
-    if (resultSavedRef.current) return
-    const p = profileRef.current
-    if (!p) return
-    resultSavedRef.current = true
-    const isWinner = state.winner?.id === p.id
-    const myFinalPlayer = state.players.find(pl => pl.id === p.id)
-    const myWealth = myFinalPlayer?.wealth ?? 0
-    const placement = [...state.players]
-      .sort((a, b) => b.wealth - a.wealth)
-      .findIndex(pl => pl.id === p.id) + 1
-    await saveGameResult(p.id, p.username, isWinner, myWealth, placement, state.players.length, p.win_streak ?? 0, {
-      investChoices: myFinalPlayer?.investChoices ?? 0,
-      emiDamageTaken: myFinalPlayer?.emiDamageTaken ?? false
-    })
-    await refreshProfile()
-  }
-
-  function applyRemoteState(gs: GameState) {
-    setGameState(gs)
-    gameStateRef.current = gs
-    if (gs.phase === 'game_over') {
-      setPhase('result')
-      saveResult(gs)
-      if (gs.winner?.id === myPlayerId) playSound('win')
-      else playSound('lose')
-    } else {
-      // Only reset to 'playing' if not mid-local-interaction
-      const cur = uiPhaseRef.current
-      if (cur !== 'decision' && cur !== 'targeting' && cur !== 'result') {
-        setPhase('playing')
-      }
-    }
-  }
-
-  // Helper to determine if we should accept remote state over local optimistic state
-  const shouldApplyRemoteState = useCallback((remoteState: GameState) => {
-    const localState = gameStateRef.current
-    if (!localState) return true
-
-    // Always accept if the remote state advanced to a newer turn
-    if (remoteState.turn > localState.turn) return true
-
-    // Always accept if the number of active players decreased (someone forfeited)
-    const remoteActiveCount = remoteState.players.filter(p => !p.hasForfeited).length
-    const localActiveCount = localState.players.filter(p => !p.hasForfeited).length
-    if (remoteActiveCount < localActiveCount) return true
-
-    // If it's NOT our turn, we must accept phase/log changes from the active player
-    const isMyTurnLocally = localState.players[localState.currentPlayerIndex]?.id === myPlayerId
-    if (!isMyTurnLocally) {
-      if (remoteState.phase !== localState.phase ||
-        remoteState.currentPlayerIndex !== localState.currentPlayerIndex ||
-        JSON.stringify(remoteState.log[0]) !== JSON.stringify(localState.log[0])) {
-        return true
-      }
-    }
-
-    return false
-  }, [myPlayerId])
-
-  // Single effect: subscribe first, then do initial fetch.
-  // This way we never miss an update that arrives between fetch and subscribe.
-  useEffect(() => {
-    if (!roomId) return
-
-    // Use a unique channel name for the game view so it doesn't clash with the lobby channel
-    const channel = supabase
-      .channel(`game-${roomId}`)
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState()
-        const onlineIds = new Set<string>()
-        Object.values(state).forEach(presences => {
-          presences.forEach((p: any) => {
-            if (p.player_id) onlineIds.add(p.player_id)
-          })
-        })
-        setOnlinePlayers(onlineIds)
-      })
-      .on('broadcast', { event: 'game_state_changed' }, (payload) => {
-        const updated = payload.payload as { game_state: GameState | null }
-        if (updated.game_state && shouldApplyRemoteState(updated.game_state)) {
-          applyRemoteState(updated.game_state)
-        }
-      })
-      .on('broadcast', { event: 'emote' }, (payload) => {
-        const data = payload.payload as { playerId: string, emoji: string }
-        if (data && data.playerId && data.emoji) {
-          setActiveEmotes(prev => ({ ...prev, [data.playerId]: data.emoji }))
-          setTimeout(() => {
-            setActiveEmotes(prev => {
-              const next = { ...prev }
-              delete next[data.playerId]
-              return next
-            })
-          }, 3000)
-        }
-      })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          setConnectionStatus('connected')
-          if (myPlayerId) await channel.track({ player_id: myPlayerId })
-
-          // Initial fetch after subscription is live — no missed updates
-          const { data } = await supabase
-            .from('multiplayer_rooms')
-            .select('game_state, status')
-            .eq('id', roomId)
-            .single()
-          if (data?.game_state) {
-            applyRemoteState(data.game_state as GameState)
-          }
-        } else if (status === 'TIMED_OUT' || status === 'CHANNEL_ERROR' || status === 'CLOSED') {
-          setConnectionStatus('disconnected')
-        }
-      })
-
-    return () => { channel.unsubscribe() }
-  }, [roomId, shouldApplyRemoteState])
-
-  const handleTimeout = useCallback(async () => {
-    const gs = gameStateRef.current
-    if (!gs || gs.phase === 'game_over') return
-
-    const activePlayerId = gs.players[gs.currentPlayerIndex].id
-    const isHost = gs.players[0].id === myPlayerId
-    const isMe = activePlayerId === myPlayerId
-
-    // If we are not host or active player, only allow timeout if active player is offline
-    if (!isHost && !isMe && onlinePlayers.has(activePlayerId)) return
-
-    const newState = forceSkipTurn(gs)
-    setGameState(newState)
-    gameStateRef.current = newState
-    setPhase(newState.phase === 'game_over' ? 'result' : 'playing')
-    await pushState(newState)
-    playSound('lose')
-    notify(t('game.timeRanOut', { name: gs.players[gs.currentPlayerIndex].name }))
-  }, [myPlayerId, onlinePlayers])
-
-  // Turn timer effect
-  useEffect(() => {
-    if (!gameState || gameState.phase === 'game_over') return
-
-    const elapsed = Date.now() - gameState.turnStartTime
-    const remaining = Math.max(0, TURN_TIME_LIMIT_MS - elapsed)
-
-    const timer = setTimeout(() => {
-      handleTimeout()
-    }, remaining)
-
-    return () => clearTimeout(timer)
-  }, [gameState, handleTimeout])
-
-  async function pushState(state: GameState) {
-    if (!roomId) return
-    await pushGameState(roomId, state)
-  }
-
-  // Auto-forfeit offline opponents after 15s grace period
-  useEffect(() => {
-    const gs = gameStateRef.current
-    if (!gs || gs.phase === 'game_over' || !roomId || !myPlayerId) return
-
-    // Find the first active player in the lobby to assume host duties if original host drops
-    const firstActivePlayer = gs.players.find(p => !p.hasForfeited && onlinePlayers.has(p.id))
-    const isHost = firstActivePlayer?.id === myPlayerId
-    if (!isHost) return
-
-    // Find players who are in the game but not in onlinePlayers
-    const offlinePlayerIds = gs.players
-      .filter(p => !p.hasForfeited)
-      .map(p => p.id)
-      .filter(id => !onlinePlayers.has(id))
-
-    if (offlinePlayerIds.length === 0) return
-
-    // Start 15s timer
-    const timer = setTimeout(async () => {
-      // Re-evaluate after 15s using latest refs
-      const currentGs = gameStateRef.current
-      if (!currentGs || currentGs.phase === 'game_over') return
-
-      let forfeitState = { ...currentGs }
-      let didForfeit = false
-
-      offlinePlayerIds.forEach(offlineId => {
-        if (!onlinePlayers.has(offlineId)) {
-          // They are STILL offline after 15s, force forfeit
-          const updatedPlayers = forfeitState.players.map(p =>
-            p.id === offlineId ? { ...p, wealth: 0, cash: 0, holdings: [], hasForfeited: true } : p
-          )
-          const offlinePlayer = forfeitState.players.find(p => p.id === offlineId)
-          forfeitState = {
-            ...forfeitState,
-            players: updatedPlayers,
-            log: [t('game.disconnected', { name: offlinePlayer?.name }), ...forfeitState.log].slice(0, 20)
-          }
-          didForfeit = true
-
-          // Pass turn if it was their turn
-          if (currentGs.players[currentGs.currentPlayerIndex].id === offlineId) {
-            forfeitState = advanceTurn(forfeitState)
-          }
-        }
-      })
-
-      if (didForfeit) {
-        // Check win condition
-        const activeCount = forfeitState.players.filter(p => !p.hasForfeited).length
-        if (activeCount <= 1) {
-          const winner = forfeitState.players.filter(p => !p.hasForfeited)[0] ?? forfeitState.players[0]
-          forfeitState = {
-            ...forfeitState,
-            winner,
-            phase: 'game_over',
-            log: [t('game.everyoneDisconnected', { name: winner.name }), ...forfeitState.log].slice(0, 20)
-          }
-        }
-
-        setGameState(forfeitState)
-        gameStateRef.current = forfeitState
-        await pushState(forfeitState)
-        if (forfeitState.phase === 'game_over') {
-          setPhase('result')
-          saveResult(forfeitState)
-        }
-      }
-    }, 15000)
-
-    return () => clearTimeout(timer)
-  }, [onlinePlayersStr, roomId, myPlayerId])
-
-  // --- Game action handlers ---
-
-  async function handleDrawCard() {
-    const gs = gameStateRef.current
-    if (!gs || gs.players[gs.currentPlayerIndex]?.id !== myPlayerId) return
-    if (gs.phase !== 'draw') return
-
-    const { state: drawn } = startDrawPhase(gs, myPlayerIndex)
-    const updated = { ...drawn, phase: 'play' as const }
-    setGameState(updated)
-    gameStateRef.current = updated
-    playSound('draw')
-    // Don't push yet — player needs to pick a card
-  }
-
-  async function handleBuyExtraCard() {
-    const gs = gameStateRef.current
-    if (!gs || gs.players[gs.currentPlayerIndex]?.id !== myPlayerId) return
-    if (gs.phase !== 'play') return
-
-    const currentCoins = profileRef.current?.daank_coins ?? 0
-    if (currentCoins < 25) return
-
-    // Deduct locally
-    if (profileRef.current) {
-      profileRef.current.daank_coins = currentCoins - 25
-    }
-
-    // Call Supabase to deduct
-    if (profileRef.current?.id) {
-      await supabase.from('profiles').update({ daank_coins: Math.max(0, currentCoins - 25) }).eq('id', profileRef.current.id)
-      await refreshProfile()
-    }
-
-    // Draw card
-    const { state: newState } = drawCard(gs, myPlayerIndex)
-    setGameState(newState)
-    gameStateRef.current = newState
-    playSound('draw')
-    notify(t('game.extraCardDrawn'))
-    await pushState(newState)
-  }
-
-  const sendEmote = useCallback(async (emoji: string) => {
-    if (!roomId || !myPlayerId) return
-    setActiveEmotes(prev => ({ ...prev, [myPlayerId]: emoji }))
+  const showEmote = useCallback((playerId: string, emoji: string) => {
+    setActiveEmotes(prev => ({ ...prev, [playerId]: emoji }))
     setTimeout(() => {
       setActiveEmotes(prev => {
         const next = { ...prev }
-        delete next[myPlayerId]
+        delete next[playerId]
         return next
       })
     }, 3000)
-    await supabase.channel(`game-${roomId}`).send({
-      type: 'broadcast',
-      event: 'emote',
-      payload: { playerId: myPlayerId, emoji }
+  }, [])
+
+  // --- Events (sounds + toasts) from the server, once per version ---
+  const handleEvents = useCallback((pub: MpPublicState) => {
+    if (pub.version <= eventsSeenRef.current) return
+    const first = eventsSeenRef.current === 0
+    eventsSeenRef.current = pub.version
+    if (first) return // initial load: don't replay the last move
+    const nameOf = (id?: string | null) => pub.players.find(p => p.id === id)?.name ?? ''
+    for (const ev of (pub.lastEvents ?? []) as MpEvent[]) {
+      switch (ev.type) {
+        case 'draw':
+          if (ev.playerId === myPlayerId) playSound('draw')
+          break
+        case 'decision':
+        case 'pass':
+          playSound('play')
+          break
+        case 'equip':
+          playSound('defend')
+          if (ev.playerId === myPlayerId) notify(t('game.equippedDefense'))
+          break
+        case 'action':
+          playSound('attack')
+          if (ev.targetId === myPlayerId) notify(t('game.hitTarget', { card: ev.cardName ?? '', name: nameOf(ev.targetId) }), true)
+          else if (ev.playerId === myPlayerId) {
+            notify(ev.targetId
+              ? t('game.hitTarget', { card: ev.cardName ?? '', name: nameOf(ev.targetId) })
+              : t('game.playedCard', { card: ev.cardName ?? '' }))
+          }
+          break
+        case 'timeout':
+          playSound('lose')
+          notify(t('game.timeRanOut', { name: nameOf(ev.playerId) }))
+          break
+        case 'forfeit':
+          notify(t('game.forfeited', { name: nameOf(ev.playerId) }))
+          break
+        case 'disconnect':
+          notify(t('game.disconnected', { name: nameOf(ev.playerId) }))
+          break
+        default:
+          break
+      }
+    }
+  }, [myPlayerId, notify, t])
+
+  // --- Apply server data (version-gated, so out-of-order realtime messages are ignored) ---
+  const applyPublic = useCallback((pub: MpPublicState) => {
+    const cur = publicRef.current
+    if (cur && pub.version < cur.version) return
+    publicRef.current = pub
+    setPublicGs(pub)
+    handleEvents(pub)
+  }, [handleEvents])
+
+  const applyHand = useCallback((hand: GameCardType[], version: number) => {
+    const cur = handRef.current
+    if (cur && version < cur.version) return
+    handRef.current = { hand, version }
+    setMyHand(handRef.current)
+  }, [])
+
+  const applyResponse = useCallback((res: MpActionResponse) => {
+    if (typeof res.serverNow === 'number') clockOffsetRef.current = res.serverNow - Date.now()
+    if (res.view) {
+      applyPublic(res.view)
+      const mine = res.view.players.find(p => p.id === myPlayerId)
+      if (mine && typeof res.version === 'number') applyHand(mine.hand, res.version)
+    }
+  }, [applyPublic, applyHand, myPlayerId])
+
+  // --- Realtime subscription + initial load ---
+  useEffect(() => {
+    if (!roomId || !myPlayerId) return
+    const channel = subscribeToGame(roomId, myPlayerId, {
+      onPublic: applyPublic,
+      onHand: applyHand,
+      onPresence: setOnlinePlayers,
+      onEmote: showEmote,
+      onStatus: setConnectionStatus,
     })
+    channelRef.current = channel
+    return () => {
+      channelRef.current = null
+      channel.unsubscribe()
+    }
+  }, [roomId, myPlayerId, applyPublic, applyHand, showEmote])
+
+  // --- Heartbeat every 10 s (the server forfeits players whose heartbeat goes stale) ---
+  useEffect(() => {
+    if (!roomId || !myPlayerId) return
+    const beat = () => { sendHeartbeat(roomId).catch(() => { /* the next beat retries */ }) }
+    beat()
+    const id = setInterval(beat, HEARTBEAT_MS)
+    return () => clearInterval(id)
   }, [roomId, myPlayerId])
 
-  async function handlePlayCard(card: GameCardType) {
-    const gs = gameStateRef.current
-    if (!gs || gs.players[gs.currentPlayerIndex]?.id !== myPlayerId) return
-    if (gs.phase !== 'play') return
+  // --- Send an intent; the action buttons are hidden while it is in flight ---
+  const send = useCallback(async (action: MpAction): Promise<MpActionResponse | null> => {
+    if (!roomId || busyRef.current) return null
+    busyRef.current = true
+    setBusy(true)
+    try {
+      const res = await invokeGameAction(roomId, action)
+      applyResponse(res)
+      if (!res.ok) notify(res.message ?? 'Something went wrong — please try again.', true)
+      return res
+    } finally {
+      busyRef.current = false
+      setBusy(false)
+    }
+  }, [roomId, applyResponse, notify])
 
+  /** Ask the server to apply timeouts / disconnects. Silent: the server decides. */
+  const requestTick = useCallback(async () => {
+    if (!roomId || tickInFlightRef.current) return
+    const pub = publicRef.current
+    if (!pub || pub.phase === 'game_over') return
+    tickInFlightRef.current = true
+    lastTickAtRef.current = Date.now()
+    try {
+      applyResponse(await invokeGameAction(roomId, { type: 'tick' }))
+    } finally {
+      tickInFlightRef.current = false
+    }
+  }, [roomId, applyResponse])
+
+  // --- Tick when the turn deadline (server time) passes, and keep nudging while it is overdue
+  //     or while an active player looks offline (the server forfeits stale heartbeats) ---
+  useEffect(() => {
+    if (!publicGs || publicGs.phase === 'game_over') return
+    const isMine = publicGs.players[publicGs.currentPlayerIndex]?.id === myPlayerId
+    // Spread the other clients' ticks out a little; the active player ticks first.
+    const jitter = isMine ? 0 : 500 + Math.floor(Math.random() * 1500)
+    const deadlineLocal = publicGs.turnStartTime + TURN_TIME_LIMIT_MS - clockOffsetRef.current
+    const first = setTimeout(requestTick, Math.max(0, deadlineLocal - Date.now()) + TICK_SLACK_MS + jitter)
+    const retry = setInterval(() => {
+      const overdue = Date.now() > deadlineLocal + TICK_SLACK_MS
+      const someoneOffline = onlinePlayers.size > 0 && publicGs.players.some(p => !p.hasForfeited && !onlinePlayers.has(p.id))
+      if (overdue || (someoneOffline && Date.now() - lastTickAtRef.current >= OFFLINE_TICK_MS)) requestTick()
+    }, TICK_RETRY_MS + jitter)
+    return () => {
+      clearTimeout(first)
+      clearInterval(retry)
+    }
+  }, [publicGs, myPlayerId, onlinePlayers, requestTick])
+
+  // --- View: public state + own hand (+ local pick hint), shifted onto the local clock ---
+  const gameState: GameState | null = useMemo(() => {
+    if (!publicGs) return null
+    const merged = toBoardState(withOwnHand(publicGs, myPlayerId, myHand?.hand ?? null))
+    const offset = clockOffsetRef.current
+    const myIndex = merged.players.findIndex(p => p.id === myPlayerId)
+    const board: GameState = {
+      ...merged,
+      startTime: merged.startTime - offset,
+      turnStartTime: merged.turnStartTime - offset,
+      pendingDecision: pending?.kind === 'decision' ? { card: pending.card, playerIndex: myIndex } : null,
+      pendingTarget: pending?.kind === 'target' && pending.card.effect
+        ? { card: pending.card, playerIndex: myIndex, effect: pending.card.effect }
+        : null,
+    }
+    // While a request is in flight, hide the action buttons (no double sends).
+    return busy && board.phase !== 'game_over' ? { ...board, phase: 'effect' } : board
+  }, [publicGs, myHand, myPlayerId, pending, busy])
+
+  const myPlayerIndex = gameState?.players.findIndex(p => p.id === myPlayerId) ?? -1
+  const myPlayer = myPlayerIndex >= 0 ? gameState?.players[myPlayerIndex] ?? null : null
+  const isMyTurn = !!publicGs && publicGs.phase === 'play' && publicGs.players[publicGs.currentPlayerIndex]?.id === myPlayerId
+
+  // Drop a half-made pick if the turn moved on (timeout, forfeit...) or the card is gone
+  useEffect(() => {
+    if (!pending) return
+    if (!isMyTurn || (myHand && !myHand.hand.some(c => c.id === pending.card.id))) setPending(null)
+  }, [isMyTurn, pending, myHand])
+
+  const uiPhase: PagePhase = !gameState
+    ? 'loading'
+    : gameState.phase === 'game_over'
+      ? 'result'
+      : pending?.kind === 'decision' ? 'decision' : pending?.kind === 'target' ? 'targeting' : 'playing'
+
+  // Game over: the server already settled RP / XP / coins — play the sound and refresh the profile.
+  useEffect(() => {
+    if (!publicGs || publicGs.phase !== 'game_over' || resultHandledRef.current) return
+    resultHandledRef.current = true
+    playSound(publicGs.winner?.id === myPlayerId ? 'win' : 'lose')
+    setTimeout(() => { refreshProfile() }, 1500)
+  }, [publicGs, myPlayerId, refreshProfile])
+
+  // "Year N" news (market, inflation, life event) whenever a new round starts
+  const lastNewsRoundRef = useRef(0)
+  useEffect(() => {
+    const news = publicGs?.roundNews
+    if (!news || news.round <= lastNewsRoundRef.current || publicGs?.phase === 'game_over') return
+    lastNewsRoundRef.current = news.round
+    notify(news.lines.slice(0, 4).join(' · '))
+  }, [publicGs?.roundNews, publicGs?.phase, notify])
+
+  // --- Game action handlers: intents only, the server applies the rules ---
+
+  async function handleDrawCard() {
+    if (!publicGs || publicGs.phase !== 'draw' || publicGs.players[publicGs.currentPlayerIndex]?.id !== myPlayerId) return
+    await send({ type: 'draw' })
+  }
+
+  const sendEmote = useCallback(async (emoji: string) => {
+    if (!myPlayerId) return
+    showEmote(myPlayerId, emoji)
+    // Emotes are cosmetic: realtime broadcast only, never part of the game state.
+    await channelRef.current?.send({ type: 'broadcast', event: 'emote', payload: { playerId: myPlayerId, emoji } })
+  }, [myPlayerId, showEmote])
+
+  async function handlePlayCard(card: GameCardType) {
+    if (!gameState || !isMyTurn || busyRef.current) return
     if (card.type === 'decision') {
-      const updated = { ...gs, pendingDecision: { card, playerIndex: myPlayerIndex } }
-      setGameState(updated)
-      gameStateRef.current = updated
-      setPhase('decision')
-      // Don't push — decision hasn't been made yet
+      setPending({ kind: 'decision', card })
     } else if (card.type === 'action') {
       if (card.effect?.target === 'target') {
-        const activeOpponents = gs.players.map((p, i) => ({ p, i })).filter(x => x.i !== myPlayerIndex && !x.p.hasForfeited)
-        if (activeOpponents.length === 1) {
-          const targetIndex = activeOpponents[0].i
-          const next = processAction(gs, myPlayerIndex, card, targetIndex)
-          const final = next.phase !== 'game_over' ? advanceTurn(next) : next
-          setGameState(final)
-          gameStateRef.current = final
-          setPhase(final.phase === 'game_over' ? 'result' : 'playing')
-          await pushState(final)
-          playSound('attack')
-          if (final.phase === 'game_over') saveResult(final)
-          notify(t('game.hitTarget', { card: card.name, name: gs.players[targetIndex].name }))
+        const opponents = gameState.players.map((p, i) => ({ p, i })).filter(x => x.i !== myPlayerIndex && !x.p.hasForfeited)
+        if (opponents.length === 1) {
+          await send({ type: 'action', cardId: card.id, targetIndex: opponents[0].i })
         } else {
-          const updated = { ...gs, pendingTarget: { card, playerIndex: myPlayerIndex, effect: card.effect } }
-          setGameState(updated)
-          gameStateRef.current = updated
-          setPhase('targeting')
-          // Don't push — target not picked yet
+          setPending({ kind: 'target', card })
         }
       } else {
-        // AoE or self action — apply immediately
-        const next = processAction(gs, myPlayerIndex, card, myPlayerIndex)
-        const final = next.phase !== 'game_over' ? advanceTurn(next) : next
-        setGameState(final)
-        gameStateRef.current = final
-        setPhase(final.phase === 'game_over' ? 'result' : 'playing')
-        await pushState(final)
-        playSound('play')
-        if (final.phase === 'game_over') saveResult(final)
-        notify(t('game.playedCard', { card: card.name }))
+        await send({ type: 'action', cardId: card.id })
       }
     } else if (card.type === 'defense') {
       await handleEquip(card)
@@ -440,20 +344,13 @@ export function MultiplayerGame() {
 
   /** Free equip (once per turn, max 3) — does not end the turn. */
   async function handleEquip(card: GameCardType) {
-    const gs = gameStateRef.current
-    if (!gs || gs.players[gs.currentPlayerIndex]?.id !== myPlayerId || gs.phase !== 'play') return
-    if (canEquip(gs, myPlayerIndex, card)) {
-      // equipDefense also arms the wealth floor for a Bankruptcy Shield
-      const next = equipDefense(gs, myPlayerIndex, card)
-      setGameState(next)
-      gameStateRef.current = next
-      await pushState(next)
-      playSound('defend')
-      notify(t('game.equippedDefense'))
+    if (!gameState || !isMyTurn || busyRef.current) return
+    if (canEquip(gameState, myPlayerIndex, card)) {
+      await send({ type: 'equip', cardId: card.id })
       return
     }
-    if (gs.players[myPlayerIndex].hand.some(c => c.type !== 'defense')) {
-      notify(gs.equippedThisTurn ? 'You can equip one defense per turn. Play a decision or action card.' : 'Defense slots full (3). Play a decision or action card.')
+    if ((myPlayer?.hand ?? []).some(c => c.type !== 'defense')) {
+      notify(gameState.equippedThisTurn ? 'You can equip one defense per turn. Play a decision or action card.' : 'Defense slots full (3). Play a decision or action card.', true)
       return
     }
     // Only un-equippable defenses left: discard this one as a Pass so the turn can't get stuck
@@ -462,117 +359,52 @@ export function MultiplayerGame() {
 
   /** Pass: discard one card and end the turn. */
   async function handlePass(cardId: string) {
-    const gs = gameStateRef.current
-    if (!gs || gs.players[gs.currentPlayerIndex]?.id !== myPlayerId || gs.phase !== 'play') return
-    const next = passTurn({ ...gs, pendingDecision: null, pendingTarget: null }, myPlayerIndex, cardId)
-    setGameState(next)
-    gameStateRef.current = next
-    setPhase(next.phase === 'game_over' ? 'result' : 'playing')
-    await pushState(next)
-    playSound('play')
-    if (next.phase === 'game_over') saveResult(next)
+    if (!isMyTurn || busyRef.current) return
+    setPending(null)
+    await send({ type: 'pass', cardId })
   }
 
-  async function handleDecision(choice: 'spend' | 'save' | 'invest') {
-    const gs = gameStateRef.current
-    if (!gs?.pendingDecision) return
-    const { card } = gs.pendingDecision
-    const preview = previewDecision(gs, myPlayerIndex, card, choice)
+  async function handleDecision(choice: DecisionChoice) {
+    if (!gameState || pending?.kind !== 'decision') return
+    const card = pending.card
+    const preview = previewDecision(gameState, myPlayerIndex, card, choice)
     if (preview.disabled) {
-      notify(preview.disabled)
+      notify(preview.disabled, true)
       return
     }
-    const next = processDecision(gs, myPlayerIndex, choice, card)
-    const final = next.phase !== 'game_over' ? advanceTurn(next) : next
-    const cleared = { ...final, pendingDecision: null }
-    setGameState(cleared)
-    gameStateRef.current = cleared
-    setPhase(final.phase === 'game_over' ? 'result' : 'playing')
-    await pushState(cleared)
-    playSound('play')
-    if (final.phase === 'game_over') saveResult(final)
-    const insight = card.options?.find(o => o.type === choice)?.mentorInsight
-    const moved = choice === 'invest' && preview.asset ? ` ₹${preview.investAmount.toLocaleString()} moved into ${assetLabel(preview.asset)}.` : ''
-    notify(`${choice.charAt(0).toUpperCase() + choice.slice(1)}!${moved}${insight ? ` 💡 ${insight}` : ''}`)
+    const res = await send({ type: 'decision', cardId: card.id, choice })
+    setPending(null)
+    if (res?.ok) {
+      const insight = card.options?.find(o => o.type === choice)?.mentorInsight
+      const moved = choice === 'invest' && preview.asset ? ` ₹${preview.investAmount.toLocaleString()} moved into ${assetLabel(preview.asset)}.` : ''
+      notify(`${choice.charAt(0).toUpperCase() + choice.slice(1)}!${moved}${insight ? ` 💡 ${insight}` : ''}`)
+    }
   }
 
   async function handleTargetSelect(targetIndex: number) {
-    const gs = gameStateRef.current
-    if (!gs?.pendingTarget) return
-    const { card } = gs.pendingTarget
-    const next = processAction(gs, myPlayerIndex, card, targetIndex)
-    const final = next.phase !== 'game_over' ? advanceTurn(next) : next
-    const cleared = { ...final, pendingTarget: null }
-    setGameState(cleared)
-    gameStateRef.current = cleared
-    setPhase(final.phase === 'game_over' ? 'result' : 'playing')
-    await pushState(cleared)
-    playSound('attack')
-    if (final.phase === 'game_over') saveResult(final)
-    notify(`${card.name} hit ${gs.players[targetIndex].name}!`)
+    if (pending?.kind !== 'target') return
+    await send({ type: 'action', cardId: pending.card.id, targetIndex })
+    setPending(null)
   }
 
-
+  const handleTimeout = useCallback(() => { requestTick() }, [requestTick])
 
   const handleForfeit = async () => {
     setShowForfeitModal(false)
-    const gs = gameStateRef.current
-    if (!gs || !roomId || !myPlayerId) {
-      if (roomId && myPlayerId) {
-        await leaveRoom(roomId, myPlayerId).catch(() => { })
-      }
+    if (!roomId || !myPlayerId) {
       navigate('/dashboard')
       return
     }
-
-    const updatedPlayers = gs.players.map(p => {
-      if (p.id === myPlayerId) {
-        return { ...p, wealth: 0, cash: 0, holdings: [], hasForfeited: true }
-      }
-      return p
-    })
-
-    let forfeitState = {
-      ...gs,
-      players: updatedPlayers,
-      log: [t('game.forfeited', { name: myPlayer?.name }), ...gs.log].slice(0, 20)
-    }
-
-    // If it's our turn, pass turn.
-    if (gs.currentPlayerIndex === myPlayerIndex) {
-      forfeitState = advanceTurn(forfeitState)
-    } else {
-      const activePlayers = updatedPlayers.filter(p => !p.hasForfeited)
-      if (activePlayers.length <= 1) {
-        const remainingWinner = activePlayers[0] ?? updatedPlayers[0]
-        forfeitState = {
-          ...forfeitState,
-          winner: remainingWinner,
-          phase: 'game_over',
-          log: [t('game.everyoneForfeited', { name: remainingWinner.name }), ...forfeitState.log].slice(0, 20),
-        }
-      }
-    }
-
-    setGameState(forfeitState)
-    gameStateRef.current = forfeitState
-
-    // Background the async tasks so navigation is instant
+    // The server records the forfeit as a last-place loss; no client-side result or coin writes.
+    const gameRunning = !!publicRef.current && publicRef.current.phase !== 'game_over'
     Promise.resolve().then(async () => {
       try {
-        await pushState(forfeitState)
-        await leaveRoom(roomId, myPlayerId).catch(() => { })
-
-        // Record loss and deduct 25 coins
-        if (profile) {
-          await saveGameResult(profile.id, profile.username, false, 0, gs.players.length, gs.players.length, profile.win_streak ?? 0)
-          await supabase.from('profiles').update({ daank_coins: Math.max(0, (profile.daank_coins || 0) - 25) }).eq('id', profile.id)
-        }
+        if (gameRunning) await invokeGameAction(roomId, { type: 'forfeit' })
+        await leaveRoom(roomId, myPlayerId).catch(() => { /* ignore */ })
       } catch (e) {
         console.error(e)
       }
     })
-
     navigate('/dashboard')
   }
 
@@ -594,7 +426,9 @@ export function MultiplayerGame() {
   }
 
   if (uiPhase === 'result') {
-    const sorted = [...gameState.players].sort((a, b) => b.wealth - a.wealth)
+    // Same order the server used for placements (winner first, forfeits last)
+    const byId = new Map(gameState.players.map(p => [p.id, p]))
+    const sorted = computePlacements(gameState).map(pl => byId.get(pl.playerId)!).filter(Boolean)
     const myFinalPlayer = gameState.players.find(p => p.id === myPlayerId)
     const isWinner = gameState.winner?.id === myPlayerId
     const placement = sorted.findIndex(p => p.id === myPlayerId) + 1
@@ -739,14 +573,24 @@ export function MultiplayerGame() {
       )}
 
       {notification && (
-        <div style={{
-          position: 'fixed', top: 68, right: 20,
-          background: '#1e293b', border: '1px solid rgba(255,255,255,0.12)',
+        <div role={notification.error ? 'alert' : 'status'} style={{
+          position: 'fixed', top: 68, right: 20, maxWidth: 'calc(100vw - 40px)',
+          background: notification.error ? '#450a0a' : '#1e293b',
+          border: `1px solid ${notification.error ? '#ef4444' : 'rgba(255,255,255,0.12)'}`,
           borderRadius: 10, padding: '11px 18px',
           fontSize: 18, color: '#f1f5f9', zIndex: 200,
           boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
         }}>
-          {notification}
+          {notification.error ? '⚠️ ' : ''}{notification.text}
+        </div>
+      )}
+      {busy && (
+        <div role="status" style={{
+          position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+          background: '#0f172a', color: '#e2e8f0', borderRadius: 999, padding: '8px 16px',
+          fontSize: 14, fontWeight: 600, zIndex: 210, boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+        }}>
+          Sending move…
         </div>
       )}
       {gameState && (
@@ -762,9 +606,10 @@ export function MultiplayerGame() {
           onTargetSelect={handleTargetSelect}
           onDecision={handleDecision}
           onTimeout={handleTimeout}
-          onCancelTargeting={() => setPhase('playing')}
-          daanikCoins={profile?.daank_coins ?? 0}
-          onBuyExtraCard={handleBuyExtraCard}
+          onCancelTargeting={() => setPending(null)}
+          // Multiplayer has no coin-bought advantages (Phase 5): no extra-card purchase.
+          daanikCoins={0}
+          onBuyExtraCard={noop}
           onSendEmote={sendEmote}
           onPass={handlePass}
           onEquip={handleEquip}
