@@ -9,7 +9,7 @@ import { Wealth } from '../components/Wealth'
 import {
   initGame, initLevelGame, startDrawPhase, processDecision, processAction,
   advanceTurn, doBotTurn, forceSkipTurn, drawCard, equipDefense, TURN_TIME_LIMIT_MS, calculateRPChange,
-  STARTING_WEALTH
+  STARTING_WEALTH, canEquip, passTurn, previewDecision, assetLabel, getNetWorth, getRoundLimit
 } from '../lib/gameEngine'
 import { ARTHA_YATRA_LEVELS } from '../data/levels'
 import { saveGameResult } from '../lib/auth'
@@ -24,6 +24,23 @@ import { usePreloadImages } from '../hooks/usePreloadImages'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 
 type GamePhaseUI = 'setup' | UIPhase | 'result'
+
+interface PopupInfo {
+  reason: string
+  reasonHi?: string
+  sourceName?: string
+  isSelf?: boolean
+  description?: string
+  descriptionHi?: string
+  amountStr: string
+  isGain: boolean
+  /** Overrides the computed title (e.g. "YEAR 3 / 20") */
+  title?: string
+  /** Mentor lesson for the choice just made */
+  insight?: string
+  /** Extra lines (round news, "₹X moved into ...") */
+  lines?: string[]
+}
 
 function GameClock({ startTime, timeLimit }: { startTime: number; timeLimit: number }) {
   const [now, setNow] = useState(Date.now())
@@ -66,23 +83,34 @@ export function Game() {
   const [animating, setAnimating] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
   const [showForfeitModal, setShowForfeitModal] = useState(false)
-  const [popupInfo, setPopupInfo] = useState<{ reason: string, reasonHi?: string, sourceName?: string, isSelf?: boolean, description?: string, descriptionHi?: string, amountStr: string, isGain: boolean } | null>(null)
+  // Outcome popups are queued so a decision result and a "new year" summary can both be shown.
+  const [popupQueue, setPopupQueue] = useState<PopupInfo[]>([])
+  const popupInfo = popupQueue[0] ?? null
   // When the outcome popup opens we remember when, so the human's turn timer can be
   // paused (turnStartTime shifted forward) for as long as the popup blocks the board.
   const popupOpenedAtRef = useRef<number | null>(null)
+  const enqueuePopup = useCallback((info: PopupInfo) => {
+    if (popupOpenedAtRef.current === null) popupOpenedAtRef.current = Date.now()
+    setPopupQueue(q => [...q, info])
+  }, [])
   const handlePopupContinue = useCallback(() => {
+    if (popupQueue.length > 1) {
+      setPopupQueue(q => q.slice(1))
+      return
+    }
     const openedAt = popupOpenedAtRef.current
     popupOpenedAtRef.current = null
-    setPopupInfo(null)
+    setPopupQueue([])
     if (openedAt === null) return
     const pausedFor = Date.now() - openedAt
     setGameState(gs => {
       if (!gs || gs.phase === 'game_over' || gs.currentPlayerIndex !== 0) return gs
       return { ...gs, turnStartTime: gs.turnStartTime + pausedFor }
     })
-  }, [])
+  }, [popupQueue.length])
   const botTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevWealthRef = useRef(STARTING_WEALTH)
+  const prevRoundRef = useRef(1)
 
   const humanPlayerIndex = 0
 
@@ -108,8 +136,9 @@ export function Game() {
     }
     // Baseline for the wealth-change popup is the actual starting wealth of this game
     prevWealthRef.current = state.players[humanPlayerIndex].wealth
+    prevRoundRef.current = state.round ?? 1
     popupOpenedAtRef.current = null
-    setPopupInfo(null)
+    setPopupQueue([])
     setGameState(state)
     setUiPhase('playing')
   }, [profile, guestProfile, botCount, levelId])
@@ -168,9 +197,22 @@ export function Game() {
     if (!humanPlayer) return
 
     const wealthDiff = humanPlayer.wealth - prevWealthRef.current
+    const round = gameState.round ?? 1
+    const newYear = round > prevRoundRef.current && !!gameState.roundNews
+    prevRoundRef.current = round
+    const inPlay = uiPhase !== 'setup' && uiPhase !== 'result' && gameState.phase !== 'game_over'
 
-    // Only show popup during active gameplay
-    if (wealthDiff !== 0 && uiPhase !== 'setup' && uiPhase !== 'result' && gameState.phase !== 'game_over') {
+    if (newYear && inPlay) {
+      // "Year N" summary: market moves, inflation, life event
+      const news = gameState.roundNews!
+      enqueuePopup({
+        title: `YEAR ${news.round} / ${getRoundLimit(gameState)}`,
+        reason: i18n.language === 'hi' ? 'एक साल बीत गया' : 'A year has passed',
+        lines: news.lines.slice(1),
+        amountStr: `${wealthDiff >= 0 ? '+' : '-'}₹${Math.abs(wealthDiff).toLocaleString()}`,
+        isGain: wealthDiff >= 0,
+      })
+    } else if (wealthDiff !== 0 && inPlay) {
       let reason = gameState.log[0] || 'Wealth updated'
       let description = ''
       let sourceName = ''
@@ -195,8 +237,7 @@ export function Game() {
         }
       }
 
-      if (popupOpenedAtRef.current === null) popupOpenedAtRef.current = Date.now()
-      setPopupInfo({
+      enqueuePopup({
         reason,
         reasonHi,
         sourceName,
@@ -209,7 +250,7 @@ export function Game() {
     }
 
     prevWealthRef.current = humanPlayer.wealth
-  }, [gameState, uiPhase])
+  }, [gameState, uiPhase, enqueuePopup, i18n.language])
 
   // Bot turn handler
   useEffect(() => {
@@ -332,20 +373,69 @@ export function Game() {
         notify(`Played ${card.name}!`)
       }
     } else if (card.type === 'defense') {
-      const equipped = equipDefense(currentState, humanPlayerIndex, card)
-      const newState = advanceTurn(equipped)
-      if (newState.phase === 'game_over') { handleGameOver(newState) } else { setGameState(newState) }
-      playSound('play')
-      if (equipped.players[humanPlayerIndex].activeDefenses.length > currentState.players[humanPlayerIndex].activeDefenses.length) {
-        notify(i18n.language === 'hi' ? 'रक्षा कार्ड सुसज्जित!' : 'Equipped defense card!')
-      }
+      handleEquip(card, currentState)
     }
+  }
+
+  /** Free equip: does not end the turn. Once per turn, max 3 active. */
+  const handleEquip = (card: GameCardType, base?: GameState) => {
+    const gs = base ?? gameState
+    if (!gs || animating || gs.phase !== 'play' || gs.currentPlayerIndex !== humanPlayerIndex) return
+    if (canEquip(gs, humanPlayerIndex, card)) {
+      setGameState(equipDefense(gs, humanPlayerIndex, card))
+      playSound('play')
+      notify(i18n.language === 'hi' ? 'रक्षा कार्ड सुसज्जित! अब एक और कार्ड खेलें।' : 'Defense equipped! Now play a card.')
+      return
+    }
+    const hand = gs.players[humanPlayerIndex].hand
+    if (hand.some(c => c.type !== 'defense')) {
+      notify(gs.equippedThisTurn ? 'You can equip one defense per turn. Play a decision or action card.' : 'Defense slots full (3). Play a decision or action card.')
+      return
+    }
+    // Only defenses left and none can be equipped: discard this one as a Pass (no soft-lock)
+    handlePass(card.id, gs)
+    notify(`Passed — discarded ${card.name}.`)
+  }
+
+  /** Pass: discard one card and end the turn. */
+  const handlePass = (cardId: string, base?: GameState) => {
+    const gs = base ?? gameState
+    if (!gs || animating || gs.phase !== 'play' || gs.currentPlayerIndex !== humanPlayerIndex) return
+    const newState = passTurn({ ...gs, pendingDecision: null, pendingTarget: null }, humanPlayerIndex, cardId)
+    if (newState.phase === 'game_over') { handleGameOver(newState) } else { setGameState(newState); setUiPhase('playing') }
+    playSound('play')
   }
 
   const handleDecision = (choice: 'spend' | 'save' | 'invest') => {
     if (!gameState?.pendingDecision) return
     const { card } = gameState.pendingDecision
+    const preview = previewDecision(gameState, humanPlayerIndex, card, choice)
+    if (preview.disabled) {
+      notify(preview.disabled)
+      return
+    }
     const newState = processDecision(gameState, humanPlayerIndex, choice, card)
+    // Outcome popup: what happened + the mentor's lesson for this option
+    const option = card.options?.find(o => o.type === choice)
+    const nwDiff = getNetWorth(newState.players[humanPlayerIndex]) - getNetWorth(gameState.players[humanPlayerIndex])
+    prevWealthRef.current = newState.players[humanPlayerIndex].wealth
+    if (newState.phase !== 'game_over') {
+      const invested = choice === 'invest' && preview.asset
+      enqueuePopup({
+        title: invested ? (i18n.language === 'hi' ? 'निवेश किया!' : 'INVESTED') : undefined,
+        reason: i18n.language === 'hi' && card.nameHi ? card.nameHi : card.name,
+        sourceName: newState.players[humanPlayerIndex].name,
+        isSelf: true,
+        description: option?.description,
+        descriptionHi: option?.descriptionHi,
+        insight: option?.mentorInsight ?? card.mentorInsight,
+        lines: invested
+          ? [`₹${preview.investAmount.toLocaleString()} moved into ${assetLabel(preview.asset!)}`]
+          : newState.log.slice(1, 4).filter(l => /Streak|had to sell|Shield/.test(l)),
+        amountStr: invested ? `₹${preview.investAmount.toLocaleString()}` : `${nwDiff >= 0 ? '+' : '-'}₹${Math.abs(nwDiff).toLocaleString()}`,
+        isGain: nwDiff >= 0,
+      })
+    }
     const finalState = newState.phase !== 'game_over' ? advanceTurn(newState) : newState
     const withClear = { ...finalState, pendingDecision: null }
     if (finalState.phase === 'game_over') { handleGameOver(withClear) } else { setGameState(withClear); setUiPhase('playing') }
@@ -470,6 +560,7 @@ export function Game() {
           display: 'flex', alignItems: 'center', gap: 12
         }}>
           <GameClock startTime={gameState.startTime} timeLimit={gameState.timeLimit} />
+          <span style={{ fontSize: 16, opacity: 0.85 }}>Year {gameState.round ?? 1}/{getRoundLimit(gameState)}</span>
         </div>
       </div>
 
@@ -545,6 +636,8 @@ export function Game() {
           }}
           daanikCoins={profile?.daank_coins ?? 0}
           onBuyExtraCard={handleBuyExtraCard}
+          onPass={(cardId: string) => handlePass(cardId)}
+          onEquip={(card: GameCardType) => handleEquip(card)}
         />
       </div>
 
@@ -556,20 +649,21 @@ export function Game() {
   )
 }
 
-function EventPopup({ info, onContinue }: { info: { reason: string, reasonHi?: string, sourceName?: string, isSelf?: boolean, description?: string, descriptionHi?: string, amountStr: string, isGain: boolean }, onContinue: () => void }) {
+function EventPopup({ info, onContinue }: { info: PopupInfo, onContinue: () => void }) {
   const { i18n } = useTranslation()
   useEffect(() => {
+    // Lessons and year summaries need a little longer to read
     const timer = setTimeout(() => {
       onContinue()
-    }, 4000) // Shorter duration so they don't have to wait 7s
+    }, info.insight || info.lines?.length ? 7000 : 4000)
     return () => clearTimeout(timer)
-  }, [onContinue])
+  }, [onContinue, info])
 
-  const title = info.isGain
+  const title = info.title ?? (info.isGain
     ? (i18n.language === 'hi' ? 'धन प्राप्त हुआ!' : 'WEALTH GAINED')
     : (info.sourceName && !info.isSelf && info.sourceName !== 'Game'
       ? (i18n.language === 'hi' ? `${info.sourceName} ने हमला किया!` : `${info.sourceName} ATTACKED!`)
-      : (i18n.language === 'hi' ? 'धन की हानि!' : 'WEALTH LOST'));
+      : (i18n.language === 'hi' ? 'धन की हानि!' : 'WEALTH LOST')));
 
   const reason = i18n.language === 'hi' && info.reasonHi ? info.reasonHi : info.reason;
   const description = info.description ? (i18n.language === 'hi' && info.descriptionHi ? info.descriptionHi : info.description) : '';
@@ -651,6 +745,18 @@ function EventPopup({ info, onContinue }: { info: { reason: string, reasonHi?: s
         }}>
           {info.amountStr}
         </div>
+
+        {info.lines && info.lines.length > 0 && (
+          <ul style={{ listStyle: 'none', margin: '12px 0 0', padding: 0, zIndex: 2, width: '90%', fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 600, color: '#ffffff', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {info.lines.map((line, i) => <li key={i}>{line}</li>)}
+          </ul>
+        )}
+
+        {info.insight && (
+          <div style={{ marginTop: 16, zIndex: 2, width: '90%', background: 'rgba(0,0,0,0.25)', borderRadius: 12, padding: '12px 16px', fontFamily: 'Inter, sans-serif', fontSize: 16, color: '#ffffff', textAlign: 'center' }}>
+            💡 {info.insight}
+          </div>
+        )}
       </motion.div>
     </div>
   )

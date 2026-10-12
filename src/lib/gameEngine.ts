@@ -992,7 +992,7 @@ export function botScamChance(bot: PlayerState): number {
 }
 
 /** Bot choice for a decision card: save below the cash buffer, otherwise invest (avoiding scams). */
-export function chooseBotDecision(state: GameState, bot: PlayerState, card: GameCard, r: number = rand()): DecisionChoice {
+export function chooseBotDecision(_state: GameState, bot: PlayerState, card: GameCard, r: number = rand()): DecisionChoice {
   const options = card.options ?? []
   const invest = options.find(o => o.type === 'invest')
   const hasSave = options.some(o => o.type === 'save')

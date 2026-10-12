@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import type { GameState, PlayerState, MultiplayerMode } from '../types/game'
 import { createGameDeck } from '../data/cards'
+import { newEconomyState, MAX_ROUNDS } from './gameEngine'
 
 // Default constants (overridden by mode)
 const STARTING_WEALTH = 500000
@@ -143,13 +144,13 @@ export function buildInitialGameState(players: (RoomPlayer & { avatar_url?: stri
   const sorted = [...players].sort((a, b) => a.seat_order - b.seat_order)
   
   let WEALTH_GOAL = 3500000
-  let TIME_LIMIT_MS = 25 * 60 * 1000
+  let TIME_LIMIT_MS = 20 * 60 * 1000
   if (mode === 'blitz') {
     WEALTH_GOAL = 1500000
     TIME_LIMIT_MS = 15 * 60 * 1000
   } else if (mode === 'epic') {
     WEALTH_GOAL = 5000000
-    TIME_LIMIT_MS = 40 * 60 * 1000
+    TIME_LIMIT_MS = 30 * 60 * 1000
   }
 
   const playerStates: PlayerState[] = sorted.map(p => ({
@@ -158,6 +159,9 @@ export function buildInitialGameState(players: (RoomPlayer & { avatar_url?: stri
     isBot: false,
     profile: p.avatar_url || p.rank_points !== undefined ? { avatar_url: p.avatar_url || null, rank_points: p.rank_points || 0 } : undefined,
     wealth: STARTING_WEALTH,
+    cash: STARTING_WEALTH,
+    holdings: [],
+    lifestyleLevel: 0,
     hand: [],
     activeDefenses: [],
     skippedTurns: 0,
@@ -171,12 +175,10 @@ export function buildInitialGameState(players: (RoomPlayer & { avatar_url?: stri
     emiDamageTaken: false,
   }))
 
-  const remaining = [...deck]
-
   return {
     id: crypto.randomUUID(),
     players: playerStates,
-    deck: remaining,
+    ...newEconomyState(deck, false),
     discardPile: [],
     currentPlayerIndex: 0,
     turn: 1,
@@ -186,7 +188,7 @@ export function buildInitialGameState(players: (RoomPlayer & { avatar_url?: stri
     pendingDecision: null,
     pendingTarget: null,
     winner: null,
-    log: [`Game started! First to ${mode === 'blitz' ? '₹15 Lakhs' : mode === 'epic' ? '₹50 Lakhs' : '₹35 Lakhs'} wins.`],
+    log: [`Game started! First to ${mode === 'blitz' ? '₹15 Lakhs' : mode === 'epic' ? '₹50 Lakhs' : '₹35 Lakhs'} wins — or richest after ${MAX_ROUNDS} years.`],
     wealthGoal: WEALTH_GOAL,
     timeLimit: TIME_LIMIT_MS,
     startTime: Date.now(),
