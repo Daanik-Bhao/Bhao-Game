@@ -1,272 +1,245 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GameBoard, UIPhase } from '../components/game/GameBoard'
-import { MentorDialog } from '../components/game/MentorDialog'
-import type { GameState, GameCard as GameCardType } from '../types/game'
+import { CoachMark } from '../components/tutorial/CoachMark'
+import { TutorialHook, TutorialSummary } from '../components/tutorial/TutorialScreens'
+import { LESSON_COUNT, STEPS, StepCtx } from '../components/tutorial/steps'
+import { TutorialModal } from '../components/TutorialModal'
+import {
+  advanceTurn, canEquip, doBotTurn, equipDefense, getNetWorth, passTurn, previewDecision, processDecision,
+  seededRng, setRng, startDrawPhase,
+} from '../lib/gameEngine'
+import {
+  CARD_IDS, TUTORIAL_BOT_POLICY, TUTORIAL_PLAYER_ID, TUTORIAL_SEED, buildTutorialState, isCard, markTutorialDone,
+} from '../data/tutorialScript'
+import { playSound } from '../lib/audio'
+import type { GameCard, GameState } from '../types/game'
 
+type Stage = 'hook' | 'play' | 'summary'
+
+const ME = 0
+const BOT_DELAY_MS = 1800
+/** Turn timers don't apply in the tutorial: a start time far in the future keeps the ring full. */
+const FROZEN_TURN_START = () => Date.now() + 365 * 24 * 60 * 60 * 1000
+
+/**
+ * Guided first match on the real engine + real GameBoard (docs/phase4-design.md §5).
+ * The script (decks, seed, Rahul's policy) lives in src/data/tutorialScript.ts;
+ * coach-mark steps in src/components/tutorial/steps.ts.
+ */
 export function TutorialGame() {
   const navigate = useNavigate()
-  const myPlayerId = 'tutorial-player'
-  const botPlayerId = 'tutorial-bot'
-
-  const [step, setStep] = useState(0)
+  const [stage, setStage] = useState<Stage>('hook')
+  const [showRules, setShowRules] = useState(false)
+  const [skipped, setSkipped] = useState(false)
+  const [gs, setGs] = useState<GameState>(() => buildTutorialState('You'))
   const [uiPhase, setUiPhase] = useState<UIPhase>('playing')
-  
-  // Initial Mock State
-  const [gameState, setGameState] = useState<GameState>({
-    id: 'tutorial',
-    turn: 1,
-    phase: 'draw',
-    currentPlayerIndex: 0,
-    players: [
-      { id: myPlayerId, name: 'You', isBot: false, wealth: 50000, wealthFloor: 0, hand: [], activeDefenses: [], skippedTurns: 0, pendingGains: [], doubleInvestActive: false, investChoices: 0, spendChoices: 0, savingStreak: 0, greedIndex: 0, emiDamageTaken: false },
-      { id: botPlayerId, name: 'Rival CEO', isBot: true, wealth: 50000, wealthFloor: 0, hand: [], activeDefenses: [], skippedTurns: 0, pendingGains: [], doubleInvestActive: false, investChoices: 0, spendChoices: 0, savingStreak: 0, greedIndex: 0, emiDamageTaken: false }
-    ],
-    deck: [],
-    discardPile: [],
-    wealthGoal: 1500000,
-    turnStartTime: Date.now(),
-    startTime: Date.now(),
-    timeLimit: 900000,
-    drawnCard: null,
-    playedCard: null,
-    pendingDecision: null,
-    pendingTarget: null,
-    winner: null,
-    log: [],
-    multiplayerMode: 'blitz'
-  })
+  const [stepIdx, setStepIdx] = useState(0)
+  const [notice, setNotice] = useState<string | null>(null)
+  const gsRef = useRef(gs)
+  gsRef.current = gs
 
-  // Tutorial Steps Logic
-  const tutorialSteps = [
-    {
-      message: "Welcome to BHAO! The goal is to reach ₹15 Lakhs. It's your turn. Click your player card or the deck to DRAW your first card.",
-      action: 'draw'
-    },
-    {
-      message: "This is a Decision Card. You can Spend, Save, or Invest. Saving builds your 'Wealth Floor' so you can't drop below it. Click SAVE.",
-      action: 'save'
-    },
-    {
-      message: "Great! Notice your Wealth Floor increased. Now it's the Rival's turn.",
-      action: 'next'
-    },
-    {
-      message: "Your turn again! Draw a card.",
-      action: 'draw'
-    },
-    {
-      message: "Let's learn a pro strategy. Click SPEND. It costs money, but gives you the 'Clarity Buff', which guarantees and boosts your NEXT investment!",
-      action: 'spend'
-    },
-    {
-      message: "Awesome. You now have the 🧠 Clarity Buff. Draw your next card.",
-      action: 'draw'
-    },
-    {
-      message: "Now click INVEST. Since you have the Clarity Buff, it is 100% safe from Risk and you get 1.3x returns!",
-      action: 'invest'
-    },
-    {
-      message: "Now let's try an Action Card! Draw your next card.",
-      action: 'draw'
-    },
-    {
-      message: "This is 'Cyber Heist'. Action cards let you attack rivals or steal money! Click the card to play it.",
-      action: 'play_action'
-    },
-    {
-      message: "Select the Rival CEO to steal some cash.",
-      action: 'target'
-    },
-    {
-      message: "Great! You stole the cash! Now let's learn how to protect yourself! Draw your next card.",
-      action: 'draw'
-    },
-    {
-      message: "This is a Defense Card! They protect you from rival attacks. Click the card to EQUIP it to your profile.",
-      action: 'play_defense'
-    },
-    {
-      message: "Great! You now have an active defense. Let's see what the Rival does on their turn.",
-      action: 'next'
-    },
-    {
-      message: "Oh no! The Rival launched a Cyber Attack! But your Defense Card automatically blocked it! You're ready for the real market. You can access this tutorial anytime from the Dashboard.",
-      action: 'finish'
-    }
-  ]
+  const step = STEPS[Math.min(stepIdx, STEPS.length - 1)]
+  const ctx: StepCtx = useMemo(() => ({ gs, uiPhase }), [gs, uiPhase])
 
-  const currentStep = tutorialSteps[step]
+  // Restore the normal random source when leaving the page.
+  useEffect(() => () => setRng(), [])
 
-  // Handlers
-  const handleDrawCard = () => {
-    if (currentStep?.action !== 'draw') return
-    
-    if (step === 7) {
-      const actionCard: GameCardType = { id: `mock-${step}`, name: 'Cyber Heist', flavor: 'Steal cash from a rival.', type: 'action', tier: 'epic', effect: { type: 'steal', value: 10000, target: 'target' } }
-      setGameState(prev => ({
-        ...prev,
-        phase: 'play',
-        players: prev.players.map((p, i) => i === 0 ? { ...p, hand: [actionCard] } : p),
-      }))
-      setUiPhase('playing')
-    } else if (step === 10) {
-      const defCard: GameCardType = { id: `mock-${step}`, name: 'Firewall', flavor: 'Blocks 1 attack.', type: 'defense', tier: 'common', blocksCardTypes: ['action'] }
-      setGameState(prev => ({
-        ...prev,
-        phase: 'play',
-        players: prev.players.map((p, i) => i === 0 ? { ...p, hand: [defCard] } : p),
-      }))
-      setUiPhase('playing')
-    } else {
-      const mockCard: GameCardType = {
-        id: `mock-${step}`, name: 'Monthly Salary', flavor: 'Make a choice.', type: 'decision', tier: 'common',
-        options: [
-          { type: 'spend', label: 'Spend', description: 'Gain Clarity', effect: { type: 'wealth_change', value: -5000, target: 'self' } },
-          { type: 'save', label: 'Save', description: 'Build Floor', effect: { type: 'wealth_floor', value: 10000, target: 'self' } },
-          { type: 'invest', label: 'Invest', description: 'High Risk', investRisk: 25, effect: { type: 'wealth_pct', value: 20, target: 'self' } }
-        ]
-      }
-      setGameState(prev => ({
-        ...prev,
-        phase: 'play',
-        players: prev.players.map((p, i) => i === 0 ? { ...p, hand: [mockCard] } : p),
-        pendingDecision: { card: mockCard, playerIndex: 0 }
-      }))
-      setUiPhase('decision')
-    }
-    setStep(s => s + 1)
+  const nudge = useCallback((msg: string) => {
+    setNotice(msg)
+  }, [])
+  useEffect(() => {
+    if (!notice) return
+    const t = setTimeout(() => setNotice(null), 3500)
+    return () => clearTimeout(t)
+  }, [notice])
+
+  const start = () => {
+    // Same seed + same decks = the same story every time.
+    setRng(seededRng(TUTORIAL_SEED))
+    const fresh = buildTutorialState('You')
+    setGs({ ...fresh, turnStartTime: FROZEN_TURN_START() })
+    setUiPhase('playing')
+    setStepIdx(0)
+    setSkipped(false)
+    setStage('play')
   }
 
-  const handlePlayCard = (card: GameCardType) => {
-    if (currentStep?.action === 'play_action' && card.type === 'action') {
-      setGameState(prev => ({ 
-        ...prev, 
-        phase: 'effect', 
-        pendingTarget: { card, playerIndex: 0, effect: card.effect! },
-        log: [`You played ${card.name}. Choose target!`, ...prev.log]
-      }))
-      setUiPhase('targeting')
-      setStep(s => s + 1)
-    } else if (currentStep?.action === 'play_defense' && card.type === 'defense') {
-      // Equip defense
-      const newState = { ...gameState }
-      newState.players[0].hand = []
-      newState.players[0].activeDefenses = [card]
-      newState.phase = 'draw'
-      newState.log = [`You equipped ${card.name}!`, ...newState.log]
-      setGameState(newState)
-      setStep(s => s + 1)
-      
-      // Simulate bot turn and attack
-      setTimeout(() => {
-        const finalState = { ...newState }
-        finalState.currentPlayerIndex = 1
-        finalState.log = [`Rival CEO played Cyber Attack! Your Firewall blocked it!`, ...finalState.log]
-        finalState.players[0].activeDefenses = [] // consumed
-        setGameState(finalState)
-        setStep(s => s + 1)
-      }, 3000)
+  const finish = useCallback((wasSkipped: boolean) => {
+    markTutorialDone()
+    setRng()
+    setSkipped(wasSkipped)
+    setStage('summary')
+  }, [])
+
+  // Your turn: draw automatically (the real game has a Draw button; one less thing to explain here).
+  useEffect(() => {
+    if (stage !== 'play') return
+    if (gs.phase === 'game_over') { finish(false); return }
+    if (gs.currentPlayerIndex === ME && gs.phase === 'draw') {
+      const drawn = startDrawPhase(gs, ME).state
+      setGs({ ...drawn, phase: 'play', turnStartTime: FROZEN_TURN_START() })
     }
+  }, [gs, stage, finish])
+
+  // Rahul's turn: only while the current step lets him play.
+  useEffect(() => {
+    if (stage !== 'play' || !step.allowBot) return
+    if (gs.phase === 'game_over' || !gs.players[gs.currentPlayerIndex]?.isBot) return
+    const t = setTimeout(() => {
+      const next = doBotTurn(gsRef.current, TUTORIAL_BOT_POLICY).state
+      setGs({ ...next, turnStartTime: FROZEN_TURN_START() })
+    }, BOT_DELAY_MS)
+    return () => clearTimeout(t)
+  }, [gs, stage, step.allowBot])
+
+  // Action / wait steps advance when the board reaches the expected state.
+  useEffect(() => {
+    if (stage !== 'play') return
+    if (step.kind !== 'next' && step.done?.(ctx)) {
+      setNotice(null)
+      setStepIdx(i => i + 1)
+    }
+  }, [ctx, step, stage])
+
+  // Backed out of the decision sheet during the invest lesson: go back to "pick the card".
+  useEffect(() => {
+    if (stage !== 'play') return
+    const backedOut = uiPhase !== 'decision' && !gs.pendingDecision && gs.currentPlayerIndex === ME && (gs.round ?? 1) === 1
+    if ((step.id === 'preview' || step.id === 'invest') && backedOut) {
+      setStepIdx(STEPS.findIndex(s => s.id === 'pickChai'))
+    }
+  }, [step.id, uiPhase, stage, gs])
+
+  const onNext = () => {
+    if (stepIdx >= STEPS.length - 1) finish(false)
+    else setStepIdx(i => i + 1)
   }
 
-  const handleTargetSelect = (targetIndex: number) => {
-    if (currentStep?.action === 'target' && targetIndex === 1) {
-      // Steal money
-      const newState = { ...gameState }
-      newState.players[0].wealth += 10000
-      newState.players[1].wealth -= 10000
-      newState.pendingTarget = null
-      newState.phase = 'draw'
-      newState.players[0].hand = []
-      newState.log = [`You stole ₹10,000 from Rival CEO!`, ...newState.log]
-      
-      setGameState(newState)
-      setUiPhase('playing')
-      setStep(s => s + 1)
-    }
+  // ---------------------------------------------------------------------------
+  // Board handlers: the real engine, gated to what the current step teaches.
+  // ---------------------------------------------------------------------------
+  const myTurn = gs.currentPlayerIndex === ME && gs.phase === 'play'
+
+  const openDecision = (card: GameCard) => {
+    setGs({ ...gs, pendingDecision: { card, playerIndex: ME }, pendingTarget: null })
+    setUiPhase('decision')
   }
 
-  const handleCancelTargeting = () => {
-    if (currentStep?.action === 'target') {
-      const actionCard: GameCardType = { id: `mock-7`, name: 'Cyber Heist', flavor: 'Steal cash from a rival.', type: 'action', tier: 'epic', effect: { type: 'steal', value: 10000, target: 'target' } }
-      setGameState(prev => ({
-        ...prev,
-        phase: 'play',
-        pendingTarget: null,
-        players: prev.players.map((p, i) => i === 0 ? { ...p, hand: [actionCard] } : p)
-      }))
-      setUiPhase('playing')
-      setStep(s => s - 1)
+  const handlePlayCard = (card: GameCard) => {
+    if (!myTurn) return
+    if (card.type === 'defense') { handleEquip(card); return }
+    switch (step.id) {
+      case 'pickChai':
+        if (!isCard(card, CARD_IDS.chai)) return nudge('For this lesson, play “Daily Convenience Habit” — the ₹150-a-day card.')
+        return openDecision(card)
+      case 'pickSave':
+        if (card.type !== 'decision') return nudge('Play a decision card and choose Save.')
+        return openDecision(card)
+      case 'equip':
+        return nudge('Equip Health Insurance first — it’s free and your turn continues.')
+      case 'freePlay':
+        if (card.type !== 'decision') return nudge('Play a decision card.')
+        return openDecision(card)
+      default:
+        return nudge(step.kind === 'next' ? 'Tap Next in the tip first.' : 'Wait a moment…')
     }
   }
 
   const handleDecision = (choice: 'spend' | 'save' | 'invest') => {
-    if (currentStep?.action !== choice) return
-    
-    const newState = { ...gameState, phase: 'draw' as const, pendingDecision: null }
-    const player = newState.players[0]
-    
-    if (choice === 'save') {
-      player.wealth += 10000
-      player.wealthFloor = Math.max(player.wealthFloor, player.wealth)
-      newState.log = [`You decided to Save. Wealth floor increased!`, ...newState.log]
-    } else if (choice === 'spend') {
-      player.wealth -= 5000
-      player.doubleInvestActive = true
-      newState.log = [`You Spent cash and gained the Clarity Buff!`, ...newState.log]
-    } else if (choice === 'invest') {
-      const profit = Math.floor(player.wealth * (player.doubleInvestActive ? 0.56 : 0.2))
-      player.wealth += profit
-      player.doubleInvestActive = false
-      newState.log = [`You Invested safely with Clarity Buff! +₹${profit}`, ...newState.log]
-    }
-    
-    player.hand = [] // discard
-    newState.players[0] = player
+    const pending = gs.pendingDecision
+    if (!pending || !myTurn) return
+    if (step.id === 'preview') return nudge('Read the tip, then tap Next.')
+    if (step.id === 'invest' && choice !== 'invest') return nudge('For this lesson, choose Invest.')
+    if (step.id === 'pickSave' && choice !== 'save') return nudge('Choose Save — build your cash buffer first.')
+    if (step.id !== 'invest' && step.id !== 'pickSave' && step.id !== 'freePlay') return
+    const pv = previewDecision(gs, ME, pending.card, choice)
+    if (pv.disabled) return nudge(pv.disabled)
+    const decided = processDecision(gs, ME, choice, pending.card)
+    const next = decided.phase === 'game_over' ? decided : advanceTurn(decided)
+    setGs({ ...next, pendingDecision: null, turnStartTime: FROZEN_TURN_START() })
+    setUiPhase('playing')
+    playSound('play')
+  }
 
-    if (choice === 'save') {
-      // Advance to bot turn
-      newState.currentPlayerIndex = 1
-      setGameState(newState)
-      setUiPhase('playing')
-      setStep(s => s + 1)
-      
-      // Simulate bot turn
-      setTimeout(() => {
-        setGameState(prev => ({ ...prev, currentPlayerIndex: 0, turn: 2 }))
-        setStep(s => s + 1)
-      }, 3000)
-    } else {
-      setGameState(newState)
-      setUiPhase('playing')
-      setStep(s => s + 1)
-    }
+  const handleEquip = (card: GameCard) => {
+    if (!myTurn) return
+    if (step.id !== 'equip' && step.id !== 'freePlay') return nudge('You’ll get to defenses in a moment.')
+    if (!canEquip(gs, ME, card)) return nudge('One free equip per turn.')
+    setGs(equipDefense(gs, ME, card))
+    playSound('play')
+  }
+
+  const handlePass = (cardId: string) => {
+    if (!myTurn) return
+    if (step.id !== 'freePlay') return nudge('Passing discards a card and ends your turn — not now.')
+    const next = passTurn({ ...gs, pendingDecision: null }, ME, cardId)
+    setGs({ ...next, turnStartTime: FROZEN_TURN_START() })
+    setUiPhase('playing')
+  }
+
+  const handleBack = () => {
+    setGs({ ...gs, pendingDecision: null, pendingTarget: null })
+    setUiPhase('playing')
+  }
+
+  // ---------------------------------------------------------------------------
+
+  if (stage === 'hook') {
+    return (
+      <>
+        <TutorialHook onStart={start} onSkip={() => finish(true)} onRules={() => setShowRules(true)} />
+        {showRules && <TutorialModal onClose={() => setShowRules(false)} onStartTutorial={() => { setShowRules(false); start() }} />}
+      </>
+    )
+  }
+
+  if (stage === 'summary') {
+    return (
+      <TutorialSummary
+        skipped={skipped}
+        yourNetWorth={skipped ? undefined : getNetWorth(gs.players[0])}
+        rahulNetWorth={skipped ? undefined : getNetWorth(gs.players[1])}
+        onPlay={() => navigate('/game?mode=practice')}
+        onLibrary={() => navigate('/library')}
+        onBack={() => navigate('/dashboard')}
+        onReplay={start}
+      />
+    )
   }
 
   return (
-    <div style={{ background: 'url("/avatars/image copy.webp") center / cover no-repeat', minHeight: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
-      <MentorDialog 
-        message={currentStep?.message || ''} 
-        onNext={currentStep?.action === 'finish' ? () => navigate('/dashboard') : undefined} 
-        position="bottom-right"
-      />
-      
+    <div className="tut-board-page">
       <GameBoard
-        gameState={gameState}
-        myPlayerId={myPlayerId}
+        gameState={gs}
+        myPlayerId={TUTORIAL_PLAYER_ID}
         isMultiplayer={false}
+        showOpponents
         uiPhase={uiPhase}
-        onlinePlayers={new Set([myPlayerId, botPlayerId])}
-        onDrawCard={handleDrawCard}
+        onDrawCard={() => {}}
         onPlayCard={handlePlayCard}
-        onTargetSelect={handleTargetSelect}
+        onTargetSelect={() => {}}
         onDecision={handleDecision}
         onTimeout={() => {}}
-        onCancelTargeting={handleCancelTargeting}
-        daanikCoins={100}
+        onCancelTargeting={handleBack}
+        daanikCoins={0}
         onBuyExtraCard={() => {}}
+        onPass={handlePass}
+        onEquip={handleEquip}
+      />
+      <CoachMark
+        stepKey={step.id}
+        kind={step.kind}
+        title={step.title}
+        body={step.body(ctx)}
+        todo={step.todo?.(ctx)}
+        target={step.target(ctx)}
+        handIds={gs.players[0].hand.map(c => c.id)}
+        lesson={step.lesson}
+        lessons={LESSON_COUNT}
+        notice={notice}
+        onNext={onNext}
+        onSkip={() => finish(true)}
       />
     </div>
   )
