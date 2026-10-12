@@ -64,9 +64,9 @@ export const ARTHA_YATRA_LEVELS: LevelConfig[] = [
     turnLimit: 60,
     botCount: 2,
     botDifficulty: 'hard',
-    description: 'Family life brings new responsibilities. Protect your wealth from sudden shocks while maintaining growth.',
+    description: 'Family life brings new responsibilities: a home loan, your children\'s education, your parents\' health and your own retirement. Protect your wealth from sudden shocks while keeping it growing.',
     mechanicName: 'Risk Mitigation',
-    mechanicDescription: 'Random life events will test your emergency fund and insurance coverage.',
+    mechanicDescription: 'Medical bills, job loss and market crashes will test your emergency fund and insurance cover. Plan ahead and the shocks hurt far less.',
     bossSpecialAttackTrigger: () => false
   }
 ]
