@@ -1,6 +1,6 @@
 import type { GameState, PlayerState, GameCard, CardEffect, DecisionChoice, DecisionOption, AssetClass } from '../types/game'
 import type { LevelConfig } from '../types/level'
-import { createGameDeck, createLevelDeck } from '../data/cards'
+import { createGameDeck, createLevelDeck, DEFENSE_CARDS } from '../data/cards'
 import { SEASONS } from '../data/mockData'
 import { ASSETS, MAX_LIFESTYLE_LEVEL, inferAsset } from '../data/assets'
 import { BUILTIN_LIFE_EVENTS } from '../data/lifeEvents'
@@ -14,6 +14,10 @@ import type { ConceptId, PlayerGameStats } from '../types/learning'
 import {
   emptyStats, addConcepts, conceptsFromText, assetConcepts, categoryConcepts, speculativeValue, cashShare,
 } from './learning'
+import {
+  createLevelState, withLevelExtras, levelDecisionBlock, noteBlockedDecision, applyLevelDecision,
+  applyLevelRoundStart, canWinByTarget,
+} from './levelRules'
 
 export {
   getCash, getHoldings, getNetWorth, syncWealth, applyLoss, setRng, seededRng, rand,
@@ -261,7 +265,7 @@ export function initLevelGame(humanPlayer: { id: string; name: string; avatar_ur
   return {
     id: newId(),
     players,
-    ...newEconomyState(createLevelDeck(levelIndex, level.botDifficulty), true),
+    ...newEconomyState(withLevelExtras(createLevelDeck(levelIndex, level.botDifficulty), level, DEFENSE_CARDS), true),
     discardPile: [],
     currentPlayerIndex: 0,
     turn: 1,
@@ -277,15 +281,7 @@ export function initLevelGame(humanPlayer: { id: string; name: string; avatar_ur
     startTime: Date.now(),
     turnStartTime: Date.now(),
     levelConfig: level,
-    levelState: {
-      currentLevelId: level.id,
-      savingStreak: 0,
-      lifestyleCreep: 0,
-      investmentSlots: 0,
-      activeInvestments: [],
-      bossTriggered: false,
-      starsEarned: 0
-    }
+    levelState: createLevelState(level),
   }
 }
 
@@ -663,6 +659,8 @@ export function previewDecision(state: GameState, playerIndex: number, card: Gam
   const option = card.options?.find(o => o.type === choice)
   const player = state.players[playerIndex]
   if (!option || !player) return { cashDelta: 0, investAmount: 0, netWorthDelta: 0, disabled: 'Not available' }
+  const blocked = levelDecisionBlock(state, playerIndex, option)
+  if (blocked) return { cashDelta: 0, investAmount: 0, asset: getInvestAsset(option), netWorthDelta: 0, disabled: blocked }
   const out = resolveDecision(player, card, option, state.round ?? 1)
   return {
     cashDelta: getCash(out.player) - getCash(player),
@@ -711,6 +709,8 @@ export function processDecision(state: GameState, playerIndex: number, choice: D
   if (!option) return state
 
   const player = state.players[playerIndex]
+  const blocked = levelDecisionBlock(state, playerIndex, option)
+  if (blocked) return noteBlockedDecision({ ...state, log: pushLogs(state.log, `⚠️ ${blocked}`) })
   const oldNW = getNetWorth(player)
   const out = resolveDecision(player, card, option, state.round ?? 1)
   if (out.disabled) {
@@ -737,18 +737,13 @@ export function processDecision(state: GameState, playerIndex: number, choice: D
   let logEntry = `${player.name} played ${card.name} → ${choice.toUpperCase()}${diffStr}`
   if (choice === 'invest' && out.asset) logEntry += ` — ${formatINR(out.investAmount)} moved into ${assetLabel(out.asset)}`
 
+  // Campaign level rule (docs/phase5-design.md Track N); no-op outside campaign levels
+  const ruled = applyLevelDecision(newState, playerIndex, choice, player)
+  newState = ruled.state
+  logs.push(...ruled.lines)
+
   const hand = newState.players[playerIndex].hand.filter(c => c.id !== card.id)
   const updatedPlayers = newState.players.map((p, i) => (i === playerIndex ? { ...p, hand } : p))
-
-  // Update legacy level state
-  if (newState.levelState) {
-    const ls = { ...newState.levelState }
-    if (newState.levelConfig?.id === 'level_2') {
-      if (choice === 'save') ls.savingStreak += 1
-      else ls.savingStreak = 0
-    }
-    newState = { ...newState, levelState: ls }
-  }
 
   return checkWinCondition({
     ...newState,
@@ -1109,6 +1104,16 @@ export function startNewRound(state: GameState): GameState {
     return endByLimit({ ...s, roundNews: { round: newRound, lines } }, lines)
   }
 
+  // Campaign level rule for the new year (salary, Auto-SIP, desire, family goals); no-op otherwise
+  const ruled = applyLevelRoundStart(s)
+  if (ruled.playerIndex >= 0) {
+    s = ruled.state
+    lines.push(...ruled.lines)
+    if (ruled.forcedSales.length) {
+      s = { ...s, players: s.players.map((p, i) => (i === ruled.playerIndex ? patchStats(p, s, st => recordForcedSales(st, ruled.forcedSales, newRound)) : p)) }
+    }
+  }
+
   // 3. Life event (50%)
   let lastEvent = state.lastEvent ?? null
   if (rand() < LIFE_EVENT_CHANCE) {
@@ -1211,7 +1216,7 @@ export function checkWinCondition(input: GameState): GameState {
   if (input.phase === 'game_over' && input.winner) return input
   let state = trackPeaks(input)
   const reached = state.players
-    .filter(p => !p.hasForfeited && getNetWorth(p) >= state.wealthGoal)
+    .filter(p => !p.hasForfeited && getNetWorth(p) >= state.wealthGoal && canWinByTarget(state, p))
     .sort((a, b) => getNetWorth(b) - getNetWorth(a))
   if (reached.length) {
     state = recordFinal(state)

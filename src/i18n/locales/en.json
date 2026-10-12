@@ -384,7 +384,108 @@
       "level_4": "Risk & Protection"
     },
     "play": "Play",
-    "locked": "Locked"
+    "locked": "Locked",
+    "starsTotal": "{{n}}/{{total}} ★",
+    "unlockHint": "Earn ★ on Level {{n}} to unlock",
+    "best": "Best {{nw}}",
+    "replay": "Replay",
+    "intro": {
+      "levelOf": "Level {{n}} · Age {{age}}",
+      "oneIdea": "The one idea",
+      "rule": "This level's rule",
+      "goal": "Goal: reach {{target}} in {{years}} years",
+      "rivals": "{{n}} rival bot(s) attack you, but only YOUR target matters.",
+      "earnStars": "Earn stars",
+      "start": "Start level",
+      "close": "Close",
+      "yourBest": "Your best: {{nw}}"
+    },
+    "stars": {
+      "title": "Stars",
+      "earned": "{{n}}/3 stars",
+      "reachTarget": "Reach {{target}} within {{years}} years",
+      "clean": "No forced sales, and a report-card average of B or better",
+      "habit": {
+        "desire_meter": "Enjoy at least one planned treat and never splurge on impulse",
+        "saving_streak": "Reach a pay-yourself-first streak of {{n}} years",
+        "lifestyle_creep": "Finish with lifestyle at or below {{pct}}% of salary",
+        "grihastha": "Meet every family goal: home and education from ready money, parents insured",
+        "none": "Play smart"
+      }
+    },
+    "rules": {
+      "desire_meter": {
+        "name": "Desire Meter",
+        "idea": "Plan your wants. Bottled-up wants explode — a planned treat costs less than an impulse splurge.",
+        "how1": "The meter rises every year, and every time you Save or Invest (resisting).",
+        "how2": "Spend when the meter is 50+ = a planned treat: meter back to 0, no lifestyle creep.",
+        "how3": "If the meter reaches 100, next year you splurge on impulse: 15% of your net worth gone."
+      },
+      "saving_streak": {
+        "name": "Saving Streak",
+        "idea": "Pay yourself first. Small amounts every single year beat big amounts once in a while.",
+        "how1": "Every year you Save or Invest, your streak grows by 1.",
+        "how2": "Each new year an Auto-SIP goes into your index fund — bigger with a longer streak (max at 5).",
+        "how3": "One Spend breaks the streak and the Auto-SIP stops until you rebuild it."
+      },
+      "lifestyle_creep": {
+        "name": "Lifestyle Creep & Slots",
+        "idea": "When your income rises, don't let your lifestyle rise with it — invest the raise in a few good assets.",
+        "how1": "You get a salary every year with a 10% raise — but lifestyle quietly takes 5% more of it each year.",
+        "how2": "Spend: lifestyle +12%. Save = budget review: lifestyle −10%.",
+        "how3": "Only 3 investment slots (different assets). Choose quality: index funds, equity, debt."
+      },
+      "grihastha": {
+        "name": "Family Goals & Insurance",
+        "idea": "Money for known goals should be ready in safe places, and insurance should carry big health shocks.",
+        "how1": "Year 4: home down payment. Year 7: kids' education. Pay from cash, FD or debt fund.",
+        "how2": "Not enough ready money? Investments are sold in a hurry and you pay 20% extra on the shortfall.",
+        "how3": "Boss, year 9: parents in hospital (20% of net worth). Health insurance equipped = you pay only a fifth."
+      }
+    },
+    "goals": {
+      "home": "Home down payment",
+      "education": "Kids' education",
+      "parents_health": "Parents' health",
+      "status": {
+        "pending": "Due year {{year}}",
+        "met": "Done ✓",
+        "strained": "Paid in a hurry",
+        "missed": "Missed"
+      }
+    },
+    "hud": {
+      "desire": "Desire Meter",
+      "plannedZone": "Treat zone",
+      "treats": "Treats {{n}}",
+      "splurges": "Splurges {{n}}",
+      "streak": "Streak {{n}}",
+      "bestStreak": "Best {{n}}",
+      "nextSip": "Next Auto-SIP {{amount}}",
+      "salary": "Salary {{amount}}",
+      "lifestyle": "Lifestyle {{pct}}% of salary",
+      "slots": "Slots {{used}}/{{total}}",
+      "insured": "Health insured",
+      "notInsured": "No health cover"
+    },
+    "events": {
+      "impulse_splurge": "Impulse splurge! Bottled-up wants burst out: {{amount}} gone.",
+      "planned_treat": "Planned treat! Enjoyed it guilt-free — Desire Meter back to 0.",
+      "desire_warning": "Desire Meter is high — plan a treat now, or you'll splurge on impulse.",
+      "auto_sip": "Auto-SIP: {{amount}} went into your index fund (streak {{n}}).",
+      "streak_broken": "Streak of {{n}} broken — your Auto-SIP bonus is gone.",
+      "salary": "Raise! Salary {{salary}}, lifestyle takes {{pct}}% — {{left}} left for you.",
+      "slots_full": "All {{n}} investment slots are full — add to one you already hold.",
+      "goal_met_home": "Home down payment of {{amount}} paid from ready money. Well planned!",
+      "goal_met_education": "Kids' education ({{amount}}) paid from ready money. Well planned!",
+      "goal_strained_home": "Home down payment ({{amount}}) due — not enough ready money, investments sold in a hurry.",
+      "goal_strained_education": "Kids' education ({{amount}}) due — not enough ready money, investments sold in a hurry.",
+      "due_soon_home": "Home down payment ({{amount}}) due in {{n}} year(s) — keep cash / FD / debt fund ready.",
+      "due_soon_education": "Kids' education ({{amount}}) due in {{n}} year(s) — keep cash / FD / debt fund ready.",
+      "due_soon_parents_health": "Parents' health check-up in {{n}} year(s) — keep health insurance equipped.",
+      "boss_insured": "Parents in hospital: bill {{bill}}, insurance paid most — you paid {{paid}}.",
+      "boss_uninsured": "Parents in hospital with no health cover: you paid {{paid}}."
+    }
   },
   "landing": {
     "signIn": "Sign In",

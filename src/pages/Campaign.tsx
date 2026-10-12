@@ -3,13 +3,21 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ARTHA_YATRA_LEVELS } from '../data/levels'
 import type { LevelConfig } from '../types/level'
+import { formatWealth } from '../types/game'
 import { useAuth } from '../hooks/useAuth'
 import {
   CAMPAIGN_PROGRESS_EVENT,
   getCompletedLevels,
-  getCurrentLevelId,
+  getLevelResults,
+  getLevelStars,
+  isLevelUnlocked,
   progressOwnerKey,
+  syncCampaignProgress,
+  totalStars,
 } from '../lib/campaignProgress'
+import type { LevelResults } from '../lib/campaignProgress'
+import { getLevelRule } from '../lib/levelRules'
+import { LevelIntro, LevelStars, RULE_ICONS } from '../components/campaign'
 
 
 export function Campaign() {
@@ -18,11 +26,18 @@ export function Campaign() {
   const { user } = useAuth()
   const ownerKey = progressOwnerKey(user?.id)
 
-  // Real progress, persisted per player (localStorage for now; see lib/campaignProgress.ts)
+  // Progress per player: localStorage, merged up to Supabase for signed-in players (lib/campaignProgress.ts)
   const [completedLevels, setCompletedLevels] = useState<string[]>(() => getCompletedLevels(ownerKey))
+  const [stars, setStars] = useState<Record<string, number>>(() => getLevelStars(ownerKey))
+  const [results, setResults] = useState<LevelResults>(() => getLevelResults(ownerKey))
+  const [introLevelId, setIntroLevelId] = useState<string | null>(null)
 
   useEffect(() => {
-    const reload = () => setCompletedLevels(getCompletedLevels(ownerKey))
+    const reload = () => {
+      setCompletedLevels(getCompletedLevels(ownerKey))
+      setStars(getLevelStars(ownerKey))
+      setResults(getLevelResults(ownerKey))
+    }
     reload()
     window.addEventListener(CAMPAIGN_PROGRESS_EVENT, reload)
     window.addEventListener('storage', reload)
@@ -32,12 +47,21 @@ export function Campaign() {
     }
   }, [ownerKey])
 
+  // Signed in: merge this device's progress up and the server's best down (no-op offline)
+  useEffect(() => {
+    if (user?.id) void syncCampaignProgress(user.id)
+  }, [user?.id])
+
   const levelIds = ARTHA_YATRA_LEVELS.map(l => l.id)
-  const currentLevelId = getCurrentLevelId(levelIds, completedLevels)
+  const unlocked = (id: string) => isLevelUnlocked(levelIds, id, stars)
+  const currentLevelId = levelIds.find(id => unlocked(id) && !completedLevels.includes(id)) ?? null
 
   const totalLevels = ARTHA_YATRA_LEVELS.length
   const completedCount = levelIds.filter(id => completedLevels.includes(id)).length
-  const progressPercentage = totalLevels > 0 ? (completedCount / totalLevels) * 100 : 0
+  const starCount = totalStars(levelIds, stars)
+  const progressPercentage = totalLevels > 0 ? (starCount / (totalLevels * 3)) * 100 : 0
+  const introIndex = introLevelId ? levelIds.indexOf(introLevelId) : -1
+  const introLevel = introIndex >= 0 ? ARTHA_YATRA_LEVELS[introIndex] : null
 
   return (
     <div style={{
@@ -87,7 +111,9 @@ export function Campaign() {
       <div style={{ position: 'relative', zIndex: 10, background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(4px)', padding: '8px 16px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <span style={{ color: '#065f46', fontSize: 12, fontWeight: 600 }}>{t('campaign.progress')}</span>
-          <span style={{ color: '#047857', fontSize: 12 }}>{t('campaign.complete', { n: completedCount, total: totalLevels })}</span>
+          <span style={{ color: '#047857', fontSize: 12 }}>
+            {t('campaign.complete', { n: completedCount, total: totalLevels })} · <span style={{ color: '#b45309', fontWeight: 700 }}>{t('campaign.starsTotal', { n: starCount, total: totalLevels * 3 })}</span>
+          </span>
         </div>
         <div style={{ height: 8, background: '#e5e7eb', borderRadius: 9999, overflow: 'hidden' }}>
           <div
@@ -101,8 +127,8 @@ export function Campaign() {
         <div style={{ maxWidth: 448, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
           {ARTHA_YATRA_LEVELS.map((level, index) => {
             const isCompleted = completedLevels.includes(level.id)
-            const isCurrent = level.id === currentLevelId
-            const status = isCurrent ? 'current' : isCompleted ? 'completed' : 'locked'
+            const isUnlocked = unlocked(level.id)
+            const status = !isUnlocked ? 'locked' : isCompleted ? 'completed' : 'current'
 
             return (
               <LeaderboardCard
@@ -110,19 +136,41 @@ export function Campaign() {
                 level={level}
                 position={index + 1}
                 status={status}
-                onClick={status !== 'locked' ? () => {
-                  navigate(`/game/level/${level.id}`)
-                } : undefined}
+                stars={stars[level.id] ?? 0}
+                bestNetWorth={results[level.id]?.bestNetWorth ?? 0}
+                onClick={status !== 'locked' ? () => setIntroLevelId(level.id) : undefined}
               />
             )
           })}
         </div>
       </div>
+
+      {introLevel && (
+        <LevelIntro
+          level={introLevel}
+          levelNumber={introIndex + 1}
+          best={results[introLevel.id] ?? null}
+          onClose={() => setIntroLevelId(null)}
+          onStart={() => {
+            setIntroLevelId(null)
+            navigate(`/game/level/${introLevel.id}`)
+          }}
+        />
+      )}
     </div>
   )
 }
 
-function LeaderboardCard({ level, position, status, onClick }: { level: LevelConfig, position: number, status: 'current' | 'completed' | 'locked', onClick?: () => void }) {
+interface LeaderboardCardProps {
+  level: LevelConfig
+  position: number
+  status: 'current' | 'completed' | 'locked'
+  stars: number
+  bestNetWorth: number
+  onClick?: () => void
+}
+
+function LeaderboardCard({ level, position, status, stars, bestNetWorth, onClick }: LeaderboardCardProps) {
   const { t } = useTranslation()
   const getCardStyle = () => {
     if (status === 'current') {
@@ -158,7 +206,9 @@ function LeaderboardCard({ level, position, status, onClick }: { level: LevelCon
   const style = getCardStyle()
   const isClickable = onClick !== undefined
   
+  const rule = getLevelRule(level)
   const getIcon = () => {
+    if (rule) return RULE_ICONS[rule]
     if (position === 1) return "📚"
     if (position === 2) return "💼"
     if (position === 3) return "📊"
@@ -170,7 +220,7 @@ function LeaderboardCard({ level, position, status, onClick }: { level: LevelCon
     ? t('campaign.current', { n: position })
     : status === 'completed'
     ? t('campaign.completed', { n: position })
-    : t('campaign.notUnlocked')
+    : t('campaign.unlockHint', { n: position - 1 })
 
   return (
     <div 
@@ -208,7 +258,20 @@ function LeaderboardCard({ level, position, status, onClick }: { level: LevelCon
             <span style={{ fontSize: 11 }}>📈</span>
             <span style={{ fontSize: 11, color: style.textColor, fontWeight: 700 }}>{t(`campaign.learning.${level.id}`, { defaultValue: level.mainLearning || t('campaign.learningFallback') })}</span>
           </div>
+          {rule && (
+            <span style={{ fontSize: 11, color: style.textColor, fontWeight: 600, opacity: 0.85 }}>
+              {t(`campaign.rules.${rule}.name`)}
+            </span>
+          )}
         </div>
+        {status !== 'locked' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+            <LevelStars stars={stars} size={16} />
+            {bestNetWorth > 0 && (
+              <span style={{ fontSize: 11, color: style.textColor, opacity: 0.75 }}>{t('campaign.best', { nw: `₹${formatWealth(bestNetWorth)}` })}</span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Action Button */}
@@ -225,7 +288,7 @@ function LeaderboardCard({ level, position, status, onClick }: { level: LevelCon
         }}
       >
         <span style={{ fontSize: 14, marginLeft: -4 }}>{isClickable ? '▶️' : '🔒'}</span>
-        {isClickable ? t('campaign.play') : t('campaign.locked')}
+        {isClickable ? (status === 'completed' ? t('campaign.replay') : t('campaign.play')) : t('campaign.locked')}
       </button>
     </div>
   )

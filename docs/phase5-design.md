@@ -75,3 +75,72 @@ Migrations `20261013200000_*`.
   and on sign-in local progress is merged up. No coins from campaign stars (cosmetic), so client-reported is acceptable.
 - `Campaign.tsx` shows stars, mechanic intro per level, unlocks by stars; a `LevelIntro` and `LevelStars` component.
   Game.tsx integration is done by the integrator (me) after merge.
+
+## Track N results
+
+### Level rules (`src/lib/levelRules.ts`, hooks in `gameEngine.ts`)
+Rules apply to the human learner only (bots play normal BHAO) and run only when `state.levelState.rule` is set
+(campaign levels), so quick/ranked/multiplayer/tutorial games are unchanged. In a campaign only the human can end the
+level by reaching the target (bots are rivals, not racers). Engine hooks: `createLevelState` / `withLevelExtras`
+(init), `levelDecisionBlock` (preview + process), `applyLevelDecision` (after a decision), `applyLevelRoundStart`
+(each new year, after market + inflation, before the life event; forced sales go into stats), `canWinByTarget`.
+UI state lives in `state.levelState.{desire|streak|creep|family}` + `ruleEvents` (newest first, i18n key + params).
+
+| Level | Rule (one sentence) | ★★ habit |
+|---|---|---|
+| L1 Brahmacharya (5L → 15L, 14 yrs, 1 easy bot) | **Desire Meter**: wants rise +20 every year and +10 each time you Save/Invest; a Spend at 50+ is a *planned treat* (meter → 0, no lifestyle creep); if the meter hits 100 you *splurge on impulse* next year (−15% net worth, lifestyle +1). | ≥1 planned treat and 0 impulse splurges |
+| L2 Vidyarthi→Yuva (7L → 32L, 12 yrs, 2 medium) | **Saving Streak**: every Save/Invest year grows the streak, and each new year an Auto-SIP of streak × 2% of the starting corpus (max ×5) lands in your index fund; one Spend breaks it. | best streak ≥ 6 |
+| L3 Aarambh Grihastha (10L → 55L, 14 yrs, 2 medium) | **Lifestyle Creep & slots**: salary (12% of corpus) arrives yearly with a 10% raise, but lifestyle eats 5% more of it each year (+12% per Spend, −10% per Save, floor 30%); only 3 different investments allowed. | lifestyle ≤ 60% of salary at the end |
+| L4 Grihastha Dharma (15L → 65L, 16 yrs, 2 hard) | **Family goals & insurance**: home down payment (yr 4, 25% of corpus → becomes property) and kids' education (yr 7, 20%) are paid from *ready money* (cash, FD, debt fund), otherwise forced sales + a 20% rush cost on the shortfall; boss yr 9: parents' hospital bill (20% of net worth) — with health insurance equipped you pay a fifth. The learner's opening hand includes Health Insurance (+2 copies in the deck); goals are announced 2 years ahead. | every goal `met` (both from ready money, insured at the boss) |
+
+**Stars** (`computeLevelStars(state, playerId)`): ★ = reach the target within the limit (and win); then +★ habit (table)
+and +★ clean finish = no forced sales all game **and** report-card average ≥ B (A=4…D=1, avg ≥ 3). Habit/clean stars only
+count once the target is reached. Criteria carry `labelKey` (+`params`) for i18n plus `label`/`labelHi` fallbacks.
+
+**Progress**: `recordLevelResult(ownerKey, levelId, stars, netWorth)` keeps the best per level in localStorage (≥1★ also
+marks completed) and pushes signed-in results to `record_level_result`; `syncCampaignProgress(userId)` merges this
+device's user + guest progress up and the server's best down (no-op without Supabase). Unlock rule: the next level needs
+≥1★ on the previous one (`isLevelUnlocked`). Migration `20261013200000_campaign_progress.sql`.
+
+### Balance (throwaway simulation, not committed)
+Method: full games through the real engine (`doBotTurn` with a decision override for the learner's seat, same
+equip/attack/pass policy for everyone; seeded rng per game, 500 games per row, shipped levels and bots). Strategies:
+**smart** = level-aware sensible play (shipped bot logic + L1 spends when desire ≥ 70, L3 saves when lifestyle ≥ 55% and
+respects slots, L4 parks goal money in FD/debt or saves in the 3 years before a goal); **bot** = shipped balanced bot
+(15% cash buffer, then invest; level-unaware); **save** / **spend** / **invest** = always that choice.
+
+| Level | strategy | win | median final NW | median win year | ≥2★ | 3★ |
+|---|---|---|---|---|---|---|
+| L1 | smart | **71%** | ₹15.5L | 11 | 52% | 24% |
+| L1 | bot (never spends) | 60% | ₹15.2L | 12 | 2% | 0% |
+| L1 | always invest | 33% | ₹11.5L | 12 | 0% | 0% |
+| L1 | always save | 0% | ₹1.6L | – | 0% | 0% |
+| L1 | always spend | 0% | ₹0.3L | – | 0% | 0% |
+| L2 | smart | **71%** | ₹33.0L | 11 | 71% | 48% |
+| L2 | bot | 72% | ₹33.0L | 11 | 72% | 50% |
+| L2 | always invest | 53% | ₹32.2L | 12 | 45% | 16% |
+| L2 | always save | 0% | ₹20.7L | – | 0% | 0% |
+| L2 | always spend | 0% | ₹1.0L | – | 0% | 0% |
+| L3 | smart | **75%** | ₹56.9L | 13 | 74% | 59% |
+| L3 | bot | 71% | ₹56.5L | 13 | 70% | 47% |
+| L3 | always invest | 48% | ₹54.0L | 14 | 11% | 0% |
+| L3 | always save | 0% | ₹23.6L | – | 0% | 0% |
+| L3 | always spend | 0% | ₹0.0L | – | 0% | 0% |
+| L4 | smart | **71%** | ₹67.2L | 14 | 16% | 8% |
+| L4 | bot | 72% | ₹66.8L | 14 | 18% | 10% |
+| L4 | always invest | 51% | ₹65.2L | 15 | 0% | 0% |
+| L4 | always save | 0% | ₹21.2L | – | 0% | 0% |
+| L4 | always spend | 0% | ₹4.8L | – | 0% | 0% |
+
+Takeaways and tuning:
+- The original limits (40–60 years) were winnable by everyone, incl. always-save. Limits are now 12–16 years and targets
+  3–4.3× the starting corpus (L2 7L→32L, L3 10L→55L, L4 15L→65L), so a level lasts ~11–14 years.
+- L1: the never-spending bot wins less (60%) and almost never earns ★★ — repressed wants become impulse splurges and
+  forced sales; planned treats are the winning habit. Always-invest suffers the same (33%).
+- L2: the shipped bot already pays itself first, so smart ≈ bot; one Spend costs the Auto-SIP and spenders never win.
+  Always-save only reaches ~₹21L: saving without investing loses to inflation even with the Auto-SIP.
+- L3: always-invest never reviews the budget, lifestyle creeps past 100% and eats the salary (48%, ★★ 11%).
+- L4: a first version (cash-only goals) rewarded ignoring the goals because selling an index fund costs only 1%. Goals now
+  count FD/debt funds as ready money and charge a 20% rush cost on any shortfall; planning then wins as often as ignoring
+  and earns the goal star. ★★ stays hard (~16–25%) because it needs both goals met *and* insurance at year 9; 3★ is rare on
+  L4 (hard bots attack, ~3.6 forced sales per game).
