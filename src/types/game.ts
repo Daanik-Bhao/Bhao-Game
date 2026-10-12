@@ -9,6 +9,8 @@ export interface CardEffect {
   target?: 'self' | 'target' | 'all' | 'others'
   condition?: string
   blocks?: string[]
+  /** AoE attacks (attack_all_pct) only hit opponents unless this is explicitly true */
+  includeSelf?: boolean
 }
 
 export interface DecisionOption {
