@@ -898,12 +898,9 @@ input, textarea, select {
    portrait layout, so portrait phones are no longer forced to rotate.
    `.mobile-portrait-overlay` therefore stays hidden; the compact page HUD
    (exit button + clock) is shown in both orientations instead.
-   On these screens the compact board renders its own players strip, so the
-   HUD's centre opponents bar (last child of .mobile-landscape-flex) is hidden
-   — it would otherwise cover the board's status bar. TODO(page owner): drop
-   that bar from Game.tsx on compact screens and remove the selector below. */
+   The compact board renders its own players strip, so the page HUD only
+   carries the exit button, level bar and clock. */
 @media (max-width: 950px) {
-  .mobile-landscape-flex > div:last-child { display: none !important; }
   @media (orientation: portrait) {
     .desktop-game-flex { display: none !important; }
     .mobile-landscape-flex { display: flex !important; }

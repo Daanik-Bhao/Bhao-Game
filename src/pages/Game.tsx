@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { markLevelCompleted, progressOwnerKey } from '../lib/campaignProgress'
 import { ForfeitModal } from '../components/ForfeitModal'
 import { Button } from '../components/ui/Button'
 import { GameState, PlayerState, GameCard as GameCardType, formatWealth } from '../types/game'
@@ -50,7 +51,7 @@ export function Game() {
   const [params] = useSearchParams()
   const mode = levelId ? 'campaign' : (params.get('mode') ?? 'ranked')
   const navigate = useNavigate()
-  const { profile, refreshProfile } = useAuth()
+  const { user, profile, guestProfile, refreshProfile } = useAuth()
   usePreloadImages()
 
   const [gameState, setGameState] = useState<GameState | null>(null)
@@ -91,18 +92,19 @@ export function Game() {
   }
 
   const startGame = useCallback(() => {
-    const humanName = profile?.username ?? 'You'
+    const humanName = profile?.username ?? guestProfile?.username ?? 'You'
+    const humanAvatar = profile?.avatar_url ?? guestProfile?.avatar_url ?? undefined
     let state: GameState
     if (levelId) {
       const level = ARTHA_YATRA_LEVELS.find(l => l.id === levelId)
       if (level) {
         // Campaign levels define their own opponent count
-        state = initLevelGame({ id: profile?.id ?? 'human', name: humanName, avatar_url: profile?.avatar_url }, level)
+        state = initLevelGame({ id: profile?.id ?? 'human', name: humanName, avatar_url: humanAvatar }, level)
       } else {
-        state = initGame({ id: profile?.id ?? 'human', name: humanName, avatar_url: profile?.avatar_url }, botCount)
+        state = initGame({ id: profile?.id ?? 'human', name: humanName, avatar_url: humanAvatar }, botCount)
       }
     } else {
-      state = initGame({ id: profile?.id ?? 'human', name: humanName, avatar_url: profile?.avatar_url }, botCount)
+      state = initGame({ id: profile?.id ?? 'human', name: humanName, avatar_url: humanAvatar }, botCount)
     }
     // Baseline for the wealth-change popup is the actual starting wealth of this game
     prevWealthRef.current = state.players[humanPlayerIndex].wealth
@@ -110,13 +112,16 @@ export function Game() {
     setPopupInfo(null)
     setGameState(state)
     setUiPhase('playing')
-  }, [profile, botCount, levelId])
+  }, [profile, guestProfile, botCount, levelId])
 
 
 
   const handleGameOver = useCallback((finalState: GameState) => {
     setGameState(finalState)
     setUiPhase('result')
+    if (levelId && finalState.winner?.id === finalState.players[humanPlayerIndex]?.id) {
+      markLevelCompleted(progressOwnerKey(user?.id), levelId)
+    }
     if (profile?.id && profile?.username) {
       const humanPlayer = finalState.players[humanPlayerIndex]
       const isWinner = finalState.winner?.id === humanPlayer.id
@@ -131,7 +136,7 @@ export function Game() {
         { investChoices: humanPlayer.investChoices, emiDamageTaken: humanPlayer.emiDamageTaken }
       ).then(() => { refreshProfile() })
     }
-  }, [profile, humanPlayerIndex, refreshProfile])
+  }, [profile, user, levelId, humanPlayerIndex, refreshProfile])
 
   const handleForfeit = () => {
     setShowForfeitModal(false)
@@ -391,18 +396,7 @@ export function Game() {
         onPlayAgain={() => { setGameState(null); setUiPhase('setup') }}
         onDashboard={() => navigate('/dashboard')}
       />
-      
-      {/* LANDSCAPE OVERLAY (Rotate Back to Portrait) - Only visible on Result screen in landscape */}
-      <div className="mobile-landscape-overlay">
-        <div style={{
-          width: 80, height: 80,
-          background: 'url("/avatars/rotate screen.webp") center / contain no-repeat',
-          marginBottom: 24
-        }} />
-        <h2 style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif' }}>
-          Rotate back to Portrait view
-        </h2>
-      </div>
+
       </>
     )
   }
@@ -511,29 +505,6 @@ export function Game() {
         }}>
           <GameClock startTime={gameState.startTime} timeLimit={gameState.timeLimit} />
         </div>
-
-        {/* Center Opponents HUD */}
-        <div style={{
-          marginTop: 45,
-          background: 'url("/avatars/player bar.webp") center / 100% 100% no-repeat',
-          padding: '16px 40px 12px 40px', display: 'flex', gap: 24, pointerEvents: 'auto',
-          justifyContent: 'center', position: 'relative', zIndex: 30, transform: 'scale(0.8)', transformOrigin: 'top center'
-        }}>
-          {gameState.players.map((p) => {
-            if (p.id === (profile?.id ?? 'human')) return null; // Skip local player
-            return (
-              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  <img src={'https://api.dicebear.com/9.x/avataaars/svg?seed=' + p.name} style={{ width: '100%', height: '100%' }} alt="Avatar" />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ color: '#4b5563', fontSize: 14, fontWeight: 600 }}>{p.name}</span>
-                  <span style={{ color: '#ef4444', fontSize: 12, fontWeight: 700 }}>{formatWealth(p.wealth)}</span>
-                </div>
-              </div>
-            )
-          })}
-        </div>
       </div>
 
 
@@ -581,17 +552,6 @@ export function Game() {
         <EventPopup info={popupInfo} onContinue={handlePopupContinue} />
       )}
 
-      {/* PORTRAIT OVERLAY (Rotate Screen) */}
-      <div className="mobile-portrait-overlay">
-        <div style={{
-          width: 80, height: 80,
-          background: 'url("/avatars/rotate screen.webp") center / contain no-repeat',
-          marginBottom: 24
-        }} />
-        <h2 style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Space Grotesk, sans-serif' }}>
-          Rotate Your Screen
-        </h2>
-      </div>
     </div>
   )
 }
