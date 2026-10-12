@@ -1,10 +1,61 @@
 // Simple Web Audio API synthesizer for game sound effects
 
-const audioCtx = typeof window !== 'undefined' ? new (window.AudioContext || (window as any).webkitAudioContext)() : null
+type AudioCtor = typeof AudioContext
+
+function createAudioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const Ctor: AudioCtor | undefined =
+      window.AudioContext || (window as unknown as { webkitAudioContext?: AudioCtor }).webkitAudioContext
+    return Ctor ? new Ctor() : null
+  } catch {
+    return null
+  }
+}
+
+const audioCtx = createAudioContext()
+
+/** Resume the shared AudioContext; safe to call any time. */
+function resumeContext(ctx: AudioContext | null) {
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume().catch(() => {
+      /* resume can be rejected outside a user gesture; ignore */
+    })
+  }
+}
+
+// iOS Safari (and Chrome autoplay policy) keeps the AudioContext suspended until
+// it is resumed inside a user gesture. Unlock it on the first interaction.
+if (typeof window !== 'undefined' && audioCtx) {
+  const unlockEvents = ['pointerdown', 'touchstart', 'touchend', 'keydown', 'click'] as const
+  const unlock = () => {
+    resumeContext(audioCtx)
+    try {
+      // Playing a silent buffer is what actually unlocks audio on older iOS versions.
+      const buffer = audioCtx.createBuffer(1, 1, 22050)
+      const source = audioCtx.createBufferSource()
+      source.buffer = buffer
+      source.connect(audioCtx.destination)
+      source.start(0)
+    } catch {
+      /* ignore: unlocking is best-effort */
+    }
+    unlockEvents.forEach(evt => window.removeEventListener(evt, unlock, true))
+  }
+  unlockEvents.forEach(evt => window.addEventListener(evt, unlock, { capture: true, passive: true }))
+}
+
+function readSoundPref(): boolean {
+  try {
+    return localStorage.getItem('bhao_sound') !== 'false'
+  } catch {
+    return true
+  }
+}
 
 function playTone(freq: number, type: OscillatorType, duration: number, vol = 0.1) {
   if (!audioCtx) return
-  if (audioCtx.state === 'suspended') audioCtx.resume()
+  resumeContext(audioCtx)
 
   const osc = audioCtx.createOscillator()
   const gain = audioCtx.createGain()
@@ -22,12 +73,14 @@ function playTone(freq: number, type: OscillatorType, duration: number, vol = 0.
   osc.stop(audioCtx.currentTime + duration)
 }
 
-export let isSoundEnabled = typeof window !== 'undefined' ? localStorage.getItem('bhao_sound') !== 'false' : true
+export let isSoundEnabled = typeof window !== 'undefined' ? readSoundPref() : true
 
 export function toggleSound() {
   isSoundEnabled = !isSoundEnabled
-  if (typeof window !== 'undefined') {
+  try {
     localStorage.setItem('bhao_sound', String(isSoundEnabled))
+  } catch {
+    /* storage unavailable (private mode); keep in-memory value */
   }
   return isSoundEnabled
 }
@@ -69,16 +122,8 @@ class AudioManager {
   private ctx: AudioContext | null = null;
 
   private init() {
-    try {
-      if (!this.ctx) {
-        this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      }
-      if (this.ctx.state === 'suspended') {
-        this.ctx.resume();
-      }
-    } catch (e) {
-      console.warn("AudioContext init failed", e);
-    }
+    if (!this.ctx) this.ctx = audioCtx;
+    resumeContext(this.ctx);
   }
 
   public playThump() {
@@ -101,7 +146,9 @@ class AudioManager {
       
       osc.start();
       osc.stop(this.ctx.currentTime + 0.3);
-    } catch(e) {}
+    } catch {
+      /* sound effects are best-effort */
+    }
   }
 
   public playSwoosh() {
@@ -134,7 +181,9 @@ class AudioManager {
       gain.connect(this.ctx.destination);
       
       noise.start();
-    } catch(e) {}
+    } catch {
+      /* sound effects are best-effort */
+    }
   }
 
   public playChaChing() {
@@ -163,7 +212,9 @@ class AudioManager {
 
       playNote(1200, 0);
       playNote(1600, 0.1);
-    } catch(e) {}
+    } catch {
+      /* sound effects are best-effort */
+    }
   }
 }
 

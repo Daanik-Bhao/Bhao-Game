@@ -1,6 +1,7 @@
 {
   "auth": {
-    "title": "Welcome to Paisa War",
+    "title": "Welcome to BHAO",
+    "signIn": "Sign In",
     "subtitle": "The Ultimate Wealth Strategy Game",
     "usernameLabel": "Username",
     "usernamePlaceholder": "Enter a cool name",

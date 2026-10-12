@@ -15,7 +15,7 @@ export function Auth() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const { login, register, loginWithGoogle, user } = useAuth()
+  const { login, register, loginWithGoogle, user, playAsGuest, isOnlineAvailable } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -40,6 +40,11 @@ export function Auth() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handlePlayAsGuest = () => {
+    playAsGuest()
+    navigate('/dashboard')
   }
 
   const handleGoogleLogin = async () => {
@@ -186,6 +191,11 @@ export function Auth() {
  
         {/* Auth Card */}
         <GlassPanel padding="md">
+          {!isOnlineAvailable && (
+            <div role="status" style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#92400e', marginBottom: 20 }}>
+              Online sign-in is unavailable right now. You can still play the tutorial, campaign and practice games as a guest.
+            </div>
+          )}
           {/* Mode Toggle */}
           <div style={{ display: 'flex', marginBottom: 28, borderBottom: '2px solid #f3f4f6' }}>
             {(['login', 'register'] as const).map(m => (
@@ -314,6 +324,20 @@ export function Auth() {
             Sign in with Google
           </button>
 
+          <button
+            type="button"
+            onClick={handlePlayAsGuest}
+            style={{
+              width: '100%', marginTop: 12, background: 'transparent', border: '1px dashed #15803D', borderRadius: 8, padding: '12px',
+              fontSize: 15, fontWeight: 700, color: '#15803D', cursor: 'pointer', fontFamily: 'inherit'
+            }}
+          >
+            Play as Guest
+          </button>
+          <p style={{ textAlign: 'center', fontSize: 12, color: '#6b7280', margin: '8px 0 0' }}>
+            Guests can play the tutorial, campaign and bots. Online play needs an account.
+          </p>
+
           <div style={{ textAlign: 'center', marginTop: 28, fontSize: 14, color: '#6b7280' }}>
             {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
             <button
@@ -331,6 +355,10 @@ export function Auth() {
           </svg>
           Learn. Decide. Invest. Win.
         </div>
+        <p style={{ textAlign: 'center', marginTop: 12, fontSize: 12, color: '#6b7280' }}>
+          By continuing you agree to our <Link to="/terms" style={{ color: '#15803D' }}>Terms</Link> and{' '}
+          <Link to="/privacy" style={{ color: '#15803D' }}>Privacy Policy</Link>.
+        </p>
       </div>
 
       <style>{`
