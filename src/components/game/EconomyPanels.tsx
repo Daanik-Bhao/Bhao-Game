@@ -254,7 +254,7 @@ interface YearSummary {
   market: { asset: AssetClass; pct: number; mine: boolean; crash: boolean }[]
   inflation?: string
   wiped: string[]
-  event?: { card: GameCard; who: string; blockedBy: string[]; myDelta?: string; good: boolean }
+  event?: { card: GameCard; who: string; blockedBy: string[]; myDelta?: string; good: boolean; lure?: string }
 }
 
 function escapeRe(s: string) {
@@ -303,7 +303,10 @@ function summarize(state: GameState, me: PlayerState | null): YearSummary | null
       if (m) myDelta = m.split(': ').pop()?.replace('-', '−')
     }
     const good = (ev.card.effect?.value ?? 0) > 0
-    event = { card: ev.card, who: everyone ? 'everyone' : names.join(', '), blockedBy, myDelta, good }
+    // Lure events (scam tips): money moved into a risky asset instead of a cash loss
+    const lureLine = ev.card.lureAsset ? lines.find(l => l.startsWith('🎣 ')) : undefined
+    const lure = lureLine && me ? lureLine.replace('🎣 ' + me.name + ' fell', '🎣 You fell') : lureLine
+    event = { card: ev.card, who: everyone ? 'everyone' : names.join(', '), blockedBy, myDelta, good, lure }
   }
 
   return { round: news.round, market, inflation, wiped, event }
@@ -366,6 +369,7 @@ export function YearNewsStrip({ state, myPlayerId, open, onClose, variant }: Yea
                   {summary.event.myDelta && <> · you {summary.event.myDelta}</>}
                 </span>
               )}
+              {summary.event?.lure && <span className="econ-year-line loss">{summary.event.lure}</span>}
               {!summary.inflation && !summary.event && summary.wiped.length === 0 && (
                 <span className="econ-year-line">Quiet year — no life event.</span>
               )}
