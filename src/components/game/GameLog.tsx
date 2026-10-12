@@ -9,7 +9,7 @@ const cardTranslationMap: Record<string, string> = {}
   if (c.nameHi) cardTranslationMap[c.name] = c.nameHi
 })
 
-function translateLogEntry(text: string, lang: string) {
+export function translateLogEntry(text: string, lang: string) {
   if (lang !== 'hi') return text
   
   let translated = text

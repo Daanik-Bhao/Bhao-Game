@@ -5,8 +5,10 @@ import { GameLog } from './GameLog'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
 import { formatWealth } from '../../types/game'
-import type { GameBoardProps } from './GameBoard'
+import type { InnerBoardProps } from './GameBoard'
 import { TURN_TIME_LIMIT_MS } from '../../lib/gameEngine'
+import { formatSignedWealth, getDecisionPreview, getTargetableIndices, sortDecisionOptions } from './boardUtils'
+import { EmoteButton, PlayersStrip, TurnCountdown } from './BoardShared'
 
 function PlayerTimerRing({ turnStartTime, timeLimit }: { turnStartTime: number, timeLimit: number }) {
   const [now, setNow] = useState(Date.now())
@@ -69,21 +71,27 @@ export function GameBoardDesktop({
   gameState,
   myPlayerId,
   uiPhase,
+  isMultiplayer,
+  onlinePlayers,
   onDrawCard,
   onPlayCard,
   onTargetSelect,
   onDecision,
   onCancelTargeting,
-}: GameBoardProps) {
+  activeEmotes,
+  onSendEmote,
+  showOpponents,
+  highlightPlayerId,
+  narrowViewport,
+}: InnerBoardProps) {
   const { t, i18n } = useTranslation()
   const [showGameLog, setShowGameLog] = useState(false)
   const myPlayerIndex = gameState.players.findIndex(p => p.id === myPlayerId)
   const isMyTurn = gameState.players[gameState.currentPlayerIndex]?.id === myPlayerId
   const myPlayer = myPlayerIndex >= 0 ? gameState.players[myPlayerIndex] : null
   const currentPlayer = gameState.players[gameState.currentPlayerIndex]
-
-  // const [scale, setScale] = useState(1);
-
+  const targetIndices = getTargetableIndices(gameState, myPlayerId)
+  const handCount = myPlayer?.hand.length ?? 0
 
   const progressRatio = myPlayer ? Math.min(1, myPlayer.wealth / gameState.wealthGoal) : 0;
 
@@ -111,7 +119,10 @@ export function GameBoardDesktop({
             <div style={{ fontSize: 24, fontWeight: 700, color: '#fff', marginBottom: 8 }}>
               {t('game.waitingFor', { name: currentPlayer?.name })}
             </div>
-            <div style={{ fontSize: 18, color: '#94a3b8' }}>{t('game.theirTurnToPlay')}</div>
+            <div style={{ fontSize: 18, color: '#94a3b8', marginBottom: 16 }}>{t('game.theirTurnToPlay')}</div>
+            {gameState.phase !== 'game_over' && (
+              <TurnCountdown key={gameState.turnStartTime} turnStartTime={gameState.turnStartTime} timeLimit={TURN_TIME_LIMIT_MS} />
+            )}
           </div>
         )}
 
@@ -217,10 +228,11 @@ export function GameBoardDesktop({
         {/* Play phase — show full hand, pick one to play */}
         {isMyTurn && gameState.phase === 'play' && uiPhase === 'playing' && (
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div className="grid grid-cols-4 gap-4" style={{ justifyItems: 'center', marginBottom: 40 }}>
+            {/* Single row; switch to compact cards when the hand would not fit the stage */}
+            <div style={{ display: 'flex', flexWrap: handCount > 7 ? 'wrap' : 'nowrap', gap: 16, justifyContent: 'center', alignItems: 'center', marginBottom: 20, maxWidth: 1120 }}>
               <AnimatePresence>
                 {myPlayer?.hand.map(card => (
-                  <GameCardComponent key={card.id} card={card} onClick={() => onPlayCard(card)} />
+                  <GameCardComponent key={card.id} card={card} compact={handCount > 4} onClick={() => onPlayCard(card)} />
                 ))}
               </AnimatePresence>
             </div>
@@ -269,33 +281,28 @@ export function GameBoardDesktop({
                       : (gameState.pendingDecision.card.shortFlavor || gameState.pendingDecision.card.flavor)}
                   </p>
                   
-                  {[...(gameState.pendingDecision.card.options || [])].sort((a, b) => {
-                    const order = { spend: 1, save: 2, invest: 3 };
-                    return (order[a.type as keyof typeof order] || 0) - (order[b.type as keyof typeof order] || 0);
-                  }).map(opt => {
-                    const effectValBase = opt.effect.value ?? 0;
-                    let effectVal = effectValBase;
-                    if (opt.effect.type === 'wealth_pct' && myPlayer) {
-                      effectVal = Math.floor(myPlayer.wealth * (effectVal / 100));
-                    }
-
-                    let failVal = opt.failEffect?.value ?? 0;
-                    if (opt.failEffect?.type === 'wealth_pct' && myPlayer) {
-                      failVal = Math.floor(myPlayer.wealth * (failVal / 100));
-                    }
+                  {sortDecisionOptions(gameState.pendingDecision.card.options).map(opt => {
+                    const preview = getDecisionPreview(opt, myPlayer);
+                    const effectVal = preview.value;
+                    const failVal = preview.failValue;
 
                     const optColor = opt.type === 'spend' ? '#EF4444' : opt.type === 'save' ? '#10B981' : '#06B6D4';
                     const optBg = opt.type === 'spend' ? '#FEE2E2' : opt.type === 'save' ? '#D1FAE5' : '#CFFAFE';
 
                     return (
                       <div key={opt.type} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        <div
-                          onClick={() => onDecision(opt.type as any)}
+                        <button
+                          type="button"
+                          onClick={() => onDecision(opt.type)}
                           style={{
                             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                             border: `1px solid ${optColor}`,
                             background: 'transparent',
                             padding: '12px 16px',
+                            minHeight: 52,
+                            width: '100%',
+                            textAlign: 'left',
+                            fontFamily: 'inherit',
                             borderRadius: 8,
                             cursor: 'pointer',
                             transition: 'all 0.2s',
@@ -318,13 +325,16 @@ export function GameBoardDesktop({
                               {opt.label}
                             </div>
                           </div>
-                          <div style={{ color: optColor, fontSize: 15, fontWeight: 700 }}>
-                            {effectVal >= 0 ? '+' : ''}{formatWealth(Math.abs(effectVal))}
+                          <div style={{ color: optColor, fontSize: 15, fontWeight: 700, textAlign: 'right' }}>
+                            {formatSignedWealth(effectVal)}
+                            {preview.multiplier !== 1 && (
+                              <span className="decision-mult">×{preview.multiplier.toFixed(2)}</span>
+                            )}
                           </div>
-                        </div>
-                        {opt.investRisk && (
+                        </button>
+                        {!!opt.investRisk && opt.failEffect && (
                           <div style={{ marginLeft: 16, background: '#fff', color: '#EF4444', fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 4, alignSelf: 'flex-start' }}>
-                            {opt.investRisk}% Risk: {failVal < 0 ? '-' : '+'}{formatWealth(Math.abs(failVal))}
+                            {opt.investRisk}% Risk: {formatSignedWealth(failVal)}
                           </div>
                         )}
                       </div>
@@ -349,18 +359,23 @@ export function GameBoardDesktop({
               {t('game.clickOpponentTarget')}
             </div>
             {/* Render buttons for opponents */}
-            <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 30 }}>
-               {gameState.players.map((p, i) => {
-                 if (i === myPlayerIndex) return null;
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center', marginBottom: 30, maxWidth: 1000 }}>
+               {targetIndices.map(i => {
+                 const p = gameState.players[i];
                  return (
-                   <button key={p.id} onClick={() => onTargetSelect(i)} style={{
-                     padding: '16px 32px', background: 'rgba(239, 68, 68, 0.2)', border: '2px solid #EF4444',
-                     borderRadius: 8, color: '#fff', fontSize: 18, fontWeight: 700, cursor: 'pointer'
+                   <button key={p.id} type="button" onClick={() => onTargetSelect(i)} style={{
+                     padding: '12px 28px', minHeight: 56, background: 'rgba(239, 68, 68, 0.2)', border: '2px solid #EF4444',
+                     borderRadius: 8, color: '#fff', fontSize: 18, fontWeight: 700, cursor: 'pointer',
+                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, fontFamily: 'inherit'
                    }}>
-                     Target {p.name}
+                     <span>Target {p.name}</span>
+                     <span style={{ fontSize: 14, fontWeight: 600, color: '#fca5a5' }}>{formatWealth(p.wealth)}</span>
                    </button>
                  )
                })}
+               {targetIndices.length === 0 && (
+                 <div style={{ fontSize: 16, color: '#fca5a5' }}>No opponents left to target.</div>
+               )}
             </div>
             <Button variant="secondary" onClick={onCancelTargeting}>{t('common.cancel')}</Button>
           </div>
@@ -443,9 +458,28 @@ export function GameBoardDesktop({
         </div>
       )}
 
-      {/* BOTTOM RIGHT: Game Log Toggle Button */}
-      <div style={{ position: 'absolute', bottom: 40, right: 40 }}>
+      {/* TOP CENTER: players strip (multiplayer / when the page has no opponent HUD) */}
+      {(showOpponents ?? (isMultiplayer || narrowViewport)) && (
+        <PlayersStrip
+          className="desktop-players-strip"
+          gameState={gameState}
+          myPlayerId={myPlayerId}
+          isMultiplayer={isMultiplayer}
+          onlinePlayers={onlinePlayers}
+          targeting={uiPhase === 'targeting'}
+          onTargetSelect={onTargetSelect}
+          activeEmotes={activeEmotes}
+          highlightPlayerId={highlightPlayerId}
+          includeMe={false}
+        />
+      )}
+
+      {/* BOTTOM RIGHT: Game Log Toggle Button (+ emotes) */}
+      <div style={{ position: 'absolute', bottom: 40, right: 40, display: 'flex', alignItems: 'center', gap: 12 }}>
+        {onSendEmote && <EmoteButton onSendEmote={onSendEmote} direction="up" />}
         <button
+          type="button"
+          aria-label={t('game.gameLog')}
           onClick={() => setShowGameLog(!showGameLog)}
           style={{
             background: 'url("/avatars/gamelogbutton.webp") center / contain no-repeat',
@@ -462,7 +496,7 @@ export function GameBoardDesktop({
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
           background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', justifyContent: 'center', alignItems: 'center'
         }} onClick={() => setShowGameLog(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 600, maxHeight: '80vh', overflowY: 'auto' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 600, maxHeight: 620, overflowY: 'auto' }}>
             <GameLog log={gameState.log} playerName={myPlayer?.name} />
           </div>
         </div>

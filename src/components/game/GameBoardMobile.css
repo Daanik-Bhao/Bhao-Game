@@ -1,415 +1,356 @@
-/* GameBoardMobile.css */
+/* GameBoardMobile.css — compact board for phones / small tablets (portrait & landscape).
+   Fills the box GameBoard gives it; nothing here may overflow that box. */
 
-.mobile-board-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 12px 16px;
-  gap: 16px;
+.mb-board {
+  position: relative;
   width: 100%;
-  height: calc(100vh - 60px);
-  overflow: hidden;
-  background: var(--bg-color, #eef8ef);
-}
-
-/* Horizontal Players Row */
-.mobile-players-row {
-  display: flex;
-  flex-direction: row;
-  overflow-x: auto;
-  gap: 12px;
-  padding-bottom: 8px;
-  flex-shrink: 0;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
-}
-
-.mobile-players-row::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
-}
-
-.mobile-player-item {
-  flex-shrink: 0;
-}
-
-.mobile-main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  overflow-y: auto;
-  padding-bottom: 16px;
-}
-
-.mobile-level-hud-container {
-  padding: 0;
-  margin-bottom: 16px;
-}
-
-.mobile-action-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.mobile-action-title {
-  margin: 0;
-  font-size: 23px;
-  color: var(--text-dark);
-  font-weight: 700;
-}
-
-.mobile-wait-state {
-  text-align: center;
-  padding: 36px 0;
-  border-radius: 20px;
-}
-
-.mobile-draw-state {
-  text-align: center;
-  padding: 28px 0;
-  border-radius: 20px;
-}
-
-.mobile-play-phase-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Drawn Card Section */
-.mobile-drawn-card-section {
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 16px;
-  padding: 16px;
-  border: 1px solid rgba(0,0,0,0.05);
-}
-
-.mobile-drawn-header {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--text-muted, #64748b);
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.mobile-drawn-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-}
-
-.mobile-drawn-text {
-  flex: 1;
-}
-
-.mobile-drawn-text h3 {
-  font-size: 20px;
-  font-weight: 800;
-  margin: 0 0 4px 0;
-  color: var(--text-dark);
-}
-
-.mobile-drawn-category {
-  display: inline-block;
-  background: #dcfce7;
-  color: #16a34a;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.mobile-drawn-text p {
-  font-size: 14px;
-  color: #475569;
-  margin: 0;
-  line-height: 1.4;
-}
-
-.mobile-drawn-image {
-  width: 80px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.card-illustration-placeholder {
-  font-size: 60px;
-  opacity: 0.8;
-}
-
-/* Pick Action Header */
-.mobile-pick-action-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 8px;
-}
-
-.mobile-pick-title {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--text-muted, #64748b);
-  text-transform: uppercase;
-}
-
-/* Hand Grid */
-.mobile-hand-grid {
+  height: 100%;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  justify-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+  color: #f8fafc;
+  background: rgba(6, 30, 20, 0.55);
 }
 
-.mobile-hand-grid .game-card-premium {
-  width: 100% !important;
-  max-width: 150px !important;
-  height: 160px !important;
-  min-width: unset !important;
-  min-height: unset !important;
-  padding: 12px 8px 8px !important;
+/* Portrait: players / status / main / footer stacked */
+.mb-board.mb-portrait {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-areas: 'players' 'status' 'main' 'footer';
 }
 
-.mobile-hand-grid .game-card-premium .icon-circle {
-  margin-bottom: 4px !important;
+/* Landscape: players in a left rail, everything else on the right */
+.mb-board.mb-landscape {
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'players status'
+    'players main'
+    'players footer';
+  padding: 6px 12px;
+  gap: 6px 12px;
 }
 
-.mobile-hand-grid .game-card-premium .card-title {
-  font-size: 13px !important;
-  line-height: 1.2 !important;
-  flex-grow: 1 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin: 0 !important;
-}
-
-.mobile-hand-grid .game-card-premium .card-button,
-.mobile-hand-grid .game-card-premium .bottom-bars {
-  margin-top: auto !important;
-}
-
-/* Action Buttons Bar */
-.mobile-action-buttons-bar {
+/* ---------- Players ---------- */
+.mb-players {
+  grid-area: players;
   display: flex;
   gap: 8px;
-  margin-top: 16px;
+  min-width: 0;
+  min-height: 0;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.mb-players::-webkit-scrollbar { display: none; }
+.mb-portrait .mb-players {
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 10px 2px 2px;
+}
+.mb-landscape .mb-players {
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 6px 2px 2px;
+  align-items: center;
 }
 
-.action-bar-btn {
-  flex: 1;
-  padding: 12px 8px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 14px;
-  border: none;
-  cursor: pointer;
+/* ---------- Status bar ---------- */
+.mb-statusbar {
+  grid-area: status;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.2s;
+  gap: 8px;
+  min-width: 0;
+}
+.mb-ticker {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  text-align: left;
+  background: rgba(11, 16, 32, 0.7);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
   font-family: inherit;
 }
 
-.action-bar-btn.secondary {
-  background: rgba(0, 0, 0, 0.05);
-  color: #475569;
+/* ---------- Main ---------- */
+.mb-main {
+  grid-area: main;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  -webkit-overflow-scrolling: touch;
 }
 
-.action-bar-btn.confirm {
-  background: #facc15; /* Yellow/Gold */
-  color: #854d0e;
-  flex: 1.5; /* make it slightly wider */
-}
-
-.action-bar-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.mobile-targeting-state {
-  text-align: center;
-  padding: 16px;
-  background: rgba(15,23,42,0.6);
-  border-radius: 12px;
-  margin: 0 12px;
-}
-
-/* Game Log Section at bottom */
-.mobile-log-section {
-  width: 100%;
-  flex-shrink: 0;
-  background: rgba(255,255,255,0.6);
+.mb-panel {
+  background: rgba(11, 40, 40, 0.8);
+  border: 1px solid rgba(16, 185, 129, 0.35);
   border-radius: 16px;
-  padding: 12px;
-  border: 1px solid rgba(0,0,0,0.05);
+  padding: 16px;
+}
+.mb-center {
+  margin: auto 0;
+  text-align: center;
+}
+.mb-big-emoji { font-size: 40px; margin-bottom: 8px; }
+.mb-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.mb-sub { font-size: 14px; color: #94a3b8; }
+.mb-muted { color: #94a3b8; }
+
+.mb-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #b4ffbe;
+}
+.mb-drawn-chip {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 700;
+  background: rgba(250, 204, 21, 0.18);
+  color: #fde68a;
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
 }
 
-/* Decision Modal */
-.mobile-decision-overlay {
+/* ---------- Hand ---------- */
+.mb-hand {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 6px 2px 10px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  flex-shrink: 0;
+}
+.mb-hand::-webkit-scrollbar { display: none; }
+
+.mb-card {
+  position: relative;
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  border-radius: 16px;
+  transition: transform 0.15s ease;
+}
+.mb-card > button {
+  width: var(--mb-card-w, 120px) !important;
+  height: var(--mb-card-h, 170px) !important;
+}
+.mb-card.selected {
+  transform: translateY(-4px);
+  outline: 3px solid #facc15;
+  outline-offset: 2px;
+}
+.mb-new-badge {
+  position: absolute;
+  top: -6px;
+  left: -4px;
+  z-index: 5;
+  background: #facc15;
+  color: #422006;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.mb-selected-info {
+  font-size: 13px;
+  line-height: 1.35;
+  color: #e2e8f0;
+  background: rgba(11, 16, 32, 0.55);
+  border-radius: 12px;
+  padding: 8px 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.mb-landscape .mb-selected-info { -webkit-line-clamp: 1; padding: 4px 10px; }
+
+/* ---------- Targeting ---------- */
+.mb-target-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.mb-target-btn {
+  flex: 1 1 140px;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 2px solid #ef4444;
+  background: rgba(239, 68, 68, 0.18);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.mb-target-btn:active { background: rgba(239, 68, 68, 0.35); }
+.mb-target-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mb-target-wealth { color: #fca5a5; font-size: 14px; }
+
+/* ---------- Footer / primary action ---------- */
+.mb-footer {
+  grid-area: footer;
+  display: flex;
+  gap: 8px;
+}
+.mb-primary-btn {
+  flex: 1;
+  min-height: 52px;
+  border-radius: 14px;
+  border: none;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mb-landscape .mb-primary-btn { min-height: 46px; font-size: 16px; }
+.mb-primary-btn.gold {
+  background: linear-gradient(180deg, #f4d27b 0%, #dda20c 100%);
+  color: #4b3602;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+}
+.mb-primary-btn.secondary {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+.mb-primary-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.mb-primary-btn:active:not(:disabled) { transform: scale(0.98); }
+
+/* ---------- Overlays (decision + log) ---------- */
+.mb-overlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding:
+    max(12px, env(safe-area-inset-top))
+    max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
 }
 
-.mobile-decision-modal {
+.mb-decision-modal {
   background: #ffffff;
-  border-radius: 24px;
-  width: 100%;
-  max-width: 360px;
-  padding: 20px 16px;
-  position: relative;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-}
-
-.mobile-decision-close {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  background: transparent;
-  border: none;
-  font-size: 18px;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.mobile-decision-header {
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.mobile-decision-title {
-  font-size: 22px;
-  font-weight: 800;
   color: #0f172a;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+.mb-decision-header { text-align: center; margin-bottom: 12px; }
+.mb-decision-header h3 {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 4px;
   font-family: var(--font-display);
-  margin-bottom: 4px;
 }
+.mb-decision-header p { margin: 0; color: #0ea5e9; font-size: 14px; font-weight: 600; }
 
-.mobile-decision-options {
+.mb-decision-options { display: flex; flex-direction: column; gap: 8px; }
+.mb-decision-btn {
+  width: 100%;
+  min-height: 56px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.mobile-decision-btn {
-  padding: 10px 14px;
-  border-radius: 16px;
-  display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  color: var(--text-dark);
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-  width: 100%;
-}
-
-.mobile-decision-badge {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 800;
-  padding: 2px 8px;
-  border-radius: 8px;
-  margin-bottom: 4px;
-}
-
-/* Preview Modal */
-.mobile-preview-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-
-.mobile-preview-modal {
-  background: #ffffff;
-  border-radius: 24px;
-  width: 100%;
-  max-width: 320px;
-  padding: 24px 20px;
-  position: relative;
-  box-shadow: 0 24px 48px rgba(0,0,0,0.4);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.mobile-preview-title {
-  font-size: 18px;
-  font-weight: 800;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 2px solid;
   color: #0f172a;
-  margin-bottom: 20px;
-  text-align: center;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+.mb-decision-btn:active { transform: scale(0.99); }
+.mb-decision-text { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
+.mb-decision-badge { font-size: 12px; font-weight: 800; padding: 2px 8px; border-radius: 8px; }
+.mb-decision-desc { font-size: 13px; color: #475569; font-weight: 600; line-height: 1.3; }
+.mb-decision-risk {
+  font-size: 11px;
+  color: #dc2626;
+  font-weight: 700;
+  background: rgba(220, 38, 38, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.mb-decision-value {
+  font-size: 20px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  text-align: right;
+  white-space: nowrap;
 }
 
-.mobile-preview-card-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 12px;
+/* Short landscape screens: options side by side */
+@media (orientation: landscape) and (max-height: 520px) {
+  .mb-decision-modal { max-width: 760px; padding: 12px; }
+  .mb-decision-header { margin-bottom: 8px; }
+  .mb-decision-header h3 { font-size: 18px; }
+  .mb-decision-options { flex-direction: row; }
+  .mb-decision-btn { flex: 1 1 0; flex-direction: column; align-items: stretch; }
+  .mb-decision-value { text-align: left; font-size: 18px; }
 }
 
-.mobile-preview-card-wrapper .game-card-premium {
-  width: 240px !important;
-  height: 336px !important;
-  min-width: 240px !important;
-  min-height: 336px !important;
-  padding: 12px 10px 12px !important;
-  transform: scale(1) !important;
-  box-shadow: 0 12px 24px rgba(0,0,0,0.3) !important;
+.mb-log-sheet {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: 100%;
+  overflow-y: auto;
+  border-radius: 20px;
 }
-
-.mobile-preview-card-wrapper .game-card-premium .rarity {
-  font-size: 10px !important;
-  margin-bottom: 6px !important;
-}
-
-.mobile-preview-card-wrapper .game-card-premium .icon-circle {
-  width: 44px !important;
-  height: 44px !important;
-  margin-bottom: 8px !important;
-}
-
-.mobile-preview-card-wrapper .game-card-premium .card-icon {
-  width: 22px !important;
-  height: 22px !important;
-}
-
-.mobile-preview-card-wrapper .game-card-premium .card-title {
-  font-size: 18px !important;
-  margin-bottom: 8px !important;
-  line-height: 1.2 !important;
-}
-
-.mobile-preview-card-wrapper .game-card-premium .card-desc {
-  display: -webkit-box !important;
-  font-size: 14px !important;
-  line-height: 1.4 !important;
-  -webkit-line-clamp: 6 !important;
-}
-
-.mobile-preview-card-wrapper .game-card-premium .card-button {
-  height: 28px !important;
-  min-height: 28px !important;
-  font-size: 10px !important;
+.mb-log-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
 }
