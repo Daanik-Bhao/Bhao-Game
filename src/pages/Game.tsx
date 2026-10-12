@@ -8,17 +8,18 @@ import { GameState, PlayerState, GameCard as GameCardType, formatWealth } from '
 import { Wealth } from '../components/Wealth'
 import {
   initGame, initLevelGame, startDrawPhase, processDecision, processAction,
-  advanceTurn, doBotTurn, forceSkipTurn, drawCard, equipDefense, TURN_TIME_LIMIT_MS, calculateRPChange,
+  advanceTurn, doBotTurn, forceSkipTurn, drawCard, equipDefense, TURN_TIME_LIMIT_MS,
   STARTING_WEALTH, canEquip, passTurn, previewDecision, getNetWorth, getRoundLimit
 } from '../lib/gameEngine'
 import { ARTHA_YATRA_LEVELS } from '../data/levels'
-import { saveGameResult } from '../lib/auth'
+import { startMatch, saveMatchResult, spendCoins, type SinglePlayerMode } from '../lib/auth'
+import { calculateRankRP, EXTRA_CARD_COST } from '../data/rankRules'
+import type { MatchResultSummary } from '../types/database'
 import { useTranslation } from 'react-i18next'
 import { ALL_CARDS } from '../data/cards'
 import { playSound } from '../lib/audio'
 import Confetti from 'react-confetti'
 import { GameBoard, UIPhase } from '../components/game/GameBoard'
-import { supabase } from '../lib/supabase'
 import { motion } from 'framer-motion'
 import { usePreloadImages } from '../hooks/usePreloadImages'
 import { TrendingUp, TrendingDown } from 'lucide-react'
@@ -47,6 +48,15 @@ interface PopupInfo {
   lines?: string[]
 }
 
+/**
+ * Placement reported to the server: the winner is always 1st, and a non-winner is
+ * never 1st (the winner can differ from the richest player, e.g. by reaching the
+ * target net worth first or when the richest player went bankrupt).
+ */
+function rankedPlacement(isWinner: boolean, wealthPlacement: number): number {
+  return isWinner ? 1 : Math.max(2, wealthPlacement)
+}
+
 function GameClock({ startTime, timeLimit }: { startTime: number; timeLimit: number }) {
   const [now, setNow] = useState(Date.now())
 
@@ -72,9 +82,15 @@ export function Game() {
   const { levelId } = useParams()
   const [params] = useSearchParams()
   const mode = levelId ? 'campaign' : (params.get('mode') ?? 'ranked')
+  // Server match mode for signed-in games (unknown query modes count as practice).
+  const matchMode: SinglePlayerMode = mode === 'campaign' ? 'campaign' : mode === 'ranked' ? 'ranked' : 'practice'
   const navigate = useNavigate()
   const { user, profile, guestProfile, refreshProfile } = useAuth()
   usePreloadImages()
+  // Server match for this game (signed-in only). Resolves to null if it could not be opened.
+  const matchIdRef = useRef<Promise<string | null> | null>(null)
+  const gameSeqRef = useRef(0)
+  const [serverResult, setServerResult] = useState<MatchResultSummary | null>(null)
 
   const [gameState, setGameState] = useState<GameState | null>(null)
   const gameStateRef = useRef<GameState | null>(null)
@@ -144,9 +160,35 @@ export function Game() {
     prevRoundRef.current = state.round ?? 1
     popupOpenedAtRef.current = null
     setPopupQueue([])
+    setServerResult(null)
+    gameSeqRef.current += 1
+    // Signed-in games open a server match; guests skip all server calls.
+    matchIdRef.current = profile?.id
+      ? startMatch(matchMode, levelId ?? null, state.players.length).catch(err => {
+          console.error('Failed to start match:', err)
+          return null
+        })
+      : null
     setGameState(state)
     setUiPhase('playing')
-  }, [profile, guestProfile, botCount, levelId])
+  }, [profile, guestProfile, botCount, levelId, matchMode])
+
+  /** Reports the result of the current server match (no-op for guests or if start_match failed). */
+  const reportResult = useCallback(async (result: { won: boolean; placement: number; totalPlayers: number; finalWealth: number; forfeit?: boolean; stats?: { investChoices: number; emiDamageTaken: boolean } }) => {
+    const pending = matchIdRef.current
+    const seq = gameSeqRef.current
+    matchIdRef.current = null
+    const matchId = pending ? await pending : null
+    if (!matchId) return
+    try {
+      const saved = await saveMatchResult({ matchId, ...result })
+      // Ignore a late answer if another game has started meanwhile.
+      if (saved && seq === gameSeqRef.current) setServerResult(saved)
+    } catch {
+      /* logged in saveMatchResult; the result screen falls back to the local estimate */
+    }
+    await refreshProfile()
+  }, [refreshProfile])
 
 
 
@@ -164,13 +206,15 @@ export function Game() {
         .findIndex(p => p.id === humanPlayer.id) + 1
       if (isWinner) playSound('win')
       else playSound('lose')
-      saveGameResult(
-        profile.id, profile.username, isWinner, humanPlayer.wealth,
-        placement, finalState.players.length, profile.win_streak ?? 0,
-        { investChoices: humanPlayer.investChoices, emiDamageTaken: humanPlayer.emiDamageTaken }
-      ).then(() => { refreshProfile() })
+      void reportResult({
+        won: isWinner,
+        placement: rankedPlacement(isWinner, placement),
+        totalPlayers: finalState.players.length,
+        finalWealth: humanPlayer.wealth,
+        stats: { investChoices: humanPlayer.investChoices, emiDamageTaken: humanPlayer.emiDamageTaken },
+      })
     }
-  }, [profile, user, levelId, humanPlayerIndex, refreshProfile])
+  }, [profile, user, levelId, humanPlayerIndex, reportResult])
 
   const handleForfeit = () => {
     setShowForfeitModal(false)
@@ -185,11 +229,10 @@ export function Game() {
     if (profile?.id && profile?.username) {
       const humanPlayer = forfeitState.players[humanPlayerIndex]
       playSound('lose')
-      saveGameResult(profile.id, profile.username, false, humanPlayer.wealth).then(async () => {
-        await supabase.from('profiles').update({ daank_coins: Math.max(0, (profile.daank_coins || 0) - 25) }).eq('id', profile.id)
-        await refreshProfile()
-        navigate('/dashboard')
-      })
+      // A forfeit is recorded server-side as a loss in last place (no XP/coins).
+      const total = forfeitState.players.length
+      reportResult({ won: false, placement: total, totalPlayers: total, finalWealth: humanPlayer.wealth, forfeit: true })
+        .finally(() => navigate('/dashboard'))
     } else {
       navigate('/dashboard')
     }
@@ -308,20 +351,17 @@ export function Game() {
     if (!gameState || animating) return
     if (gameState.phase !== 'play') return
     if (gameState.currentPlayerIndex !== humanPlayerIndex) return
+    // Ranked has no coin-bought advantages; guests have no coins.
+    if (mode === 'ranked' || !profile?.id) return
+    if ((profile.daanik_coins ?? 0) < EXTRA_CARD_COST) return
 
-    const currentCoins = profile?.daank_coins ?? 0
-    if (currentCoins < 25) return
-
-    // Deduct coins locally first for immediate feedback
-    if (profile) {
-      profile.daank_coins = currentCoins - 25
+    try {
+      await spendCoins(EXTRA_CARD_COST, 'extra_card')
+    } catch {
+      notify(t('game.notEnoughCoins', { defaultValue: 'Not enough DAANIK coins' }))
+      return
     }
-
-    // Call Supabase to deduct
-    if (profile?.id) {
-      await supabase.from('profiles').update({ daank_coins: Math.max(0, currentCoins - 25) }).eq('id', profile.id)
-      await refreshProfile()
-    }
+    void refreshProfile()
 
     // Draw card
     const { state: newState } = drawCard(gameState, humanPlayerIndex)
@@ -463,7 +503,11 @@ export function Game() {
     const placement = [...gameState.players]
       .sort((a, b) => b.wealth - a.wealth)
       .findIndex(p => p.id === humanPlayer.id) + 1
-    const rpChange = mode === 'ranked' ? calculateRPChange(placement, gameState.players.length, profile?.win_streak ?? 0) : 0
+    // Prefer the RP the server actually applied; before it answers, show the local estimate
+    // (same table as the server: src/data/rankRules.ts).
+    const rpChange = mode !== 'ranked' ? 0
+      : serverResult ? serverResult.rp_change
+      : calculateRankRP(rankedPlacement(isWinner, placement), gameState.players.length, profile?.win_streak ?? 0)
     // Near-miss: player was within 20% of the goal but didn't win
     const wealthGap = gameState.wealthGoal - humanPlayer.wealth
     const nearMiss = !isWinner && wealthGap > 0 && wealthGap < gameState.wealthGoal * 0.2
@@ -639,7 +683,7 @@ export function Game() {
             setGameState({ ...gameState, pendingTarget: null })
             setUiPhase('playing')
           }}
-          daanikCoins={profile?.daank_coins ?? 0}
+          daanikCoins={mode === 'ranked' ? 0 : profile?.daanik_coins ?? 0}
           onBuyExtraCard={handleBuyExtraCard}
           onPass={(cardId: string) => handlePass(cardId)}
           onEquip={(card: GameCardType) => handleEquip(card)}

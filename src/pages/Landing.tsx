@@ -9,9 +9,9 @@ const FEATURE_CARDS = [
   { icon: '🎴', key: 'decisions' },
   { icon: '⚔️', key: 'attack' },
   { icon: '👑', key: 'rank' },
-  { icon: '🏦', key: 'economy' },
-  { icon: '📅', key: 'seasons' },
   { icon: '⚡', key: 'contracts' },
+  // 'economy' (card trading, guilds, stock market) and 'seasons' are not built yet,
+  // so they are not advertised. Their copy stays in the locale files for later.
 ]
 
 const PREVIEW_CARDS = [

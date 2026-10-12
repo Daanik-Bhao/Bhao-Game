@@ -2,35 +2,50 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Confetti from 'react-confetti'
 import { playSound } from '../lib/audio'
+import { DAILY_REWARDS } from '../data/rankRules'
+import type { DailyRewardResult } from '../types/database'
 
 interface DailyRewardModalProps {
   onClose: () => void
-  onClaim: (day: number, rewardAmount: number) => void
+  /** Calls the claim_daily_reward RPC; resolves null on network/server error. */
+  onClaim: () => Promise<DailyRewardResult | null>
+  /** Called after the claim animation (refresh the profile and close). */
+  onDone: () => void
+  /** Streak before today's claim (0 when broken). Display hint only; the server decides. */
   currentStreak: number
 }
 
-export function DailyRewardModal({ onClose, onClaim, currentStreak }: DailyRewardModalProps) {
-  const [claimed, setClaimed] = useState(false)
-  
-  const REWARDS = [
-    { day: 1, amount: 10 },
-    { day: 2, amount: 20 },
-    { day: 3, amount: 30 },
-    { day: 4, amount: 50 },
-    { day: 5, amount: 100 },
-    { day: 6, amount: 200 },
-    { day: 7, amount: 500 },
-  ]
+type ClaimState = 'idle' | 'claiming' | 'claimed' | 'already' | 'error'
 
-  const todayIndex = Math.min(currentStreak, 6)
+const REWARDS = DAILY_REWARDS.map((amount, i) => ({ day: i + 1, amount }))
+
+export function DailyRewardModal({ onClose, onClaim, onDone, currentStreak }: DailyRewardModalProps) {
+  const [state, setState] = useState<ClaimState>('idle')
+  const [result, setResult] = useState<DailyRewardResult | null>(null)
+
+  // After a claim, highlight the day the server actually paid.
+  const paidIndex = result && !result.already_claimed ? result.streak - 1 : currentStreak
+  const todayIndex = Math.max(0, Math.min(paidIndex, REWARDS.length - 1))
   const currentReward = REWARDS[todayIndex]
+  const claimed = state === 'claimed'
 
-  const handleClaim = () => {
+  const handleClaim = async () => {
+    if (state !== 'idle' && state !== 'error') return
+    setState('claiming')
+    const res = await onClaim()
+    if (!res) {
+      setState('error')
+      return
+    }
+    setResult(res)
+    if (res.already_claimed) {
+      setState('already')
+      setTimeout(onDone, 1800)
+      return
+    }
     playSound('win')
-    setClaimed(true)
-    setTimeout(() => {
-      onClaim(todayIndex + 1, currentReward.amount)
-    }, 2500)
+    setState('claimed')
+    setTimeout(onDone, 2500)
   }
 
   return (
@@ -85,10 +100,11 @@ export function DailyRewardModal({ onClose, onClaim, currentStreak }: DailyRewar
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-          {!claimed ? (
-            <button 
-              onClick={handleClaim} 
-              style={{ 
+          {state === 'idle' || state === 'claiming' || state === 'error' ? (
+            <button
+              onClick={handleClaim}
+              disabled={state === 'claiming'}
+              style={{
                 width: 322, height: 59,
                 background: 'linear-gradient(180deg, #001733 0%, #163E6F 100%)',
                 color: '#66D575',
@@ -100,7 +116,7 @@ export function DailyRewardModal({ onClose, onClaim, currentStreak }: DailyRewar
               onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
               onMouseLeave={e => e.currentTarget.style.opacity = '1'}
             >
-              Claim {currentReward.amount}DC
+              {state === 'error' ? 'Try again' : state === 'claiming' ? '…' : `Claim ${currentReward.amount}DC`}
             </button>
           ) : (
             <motion.div
@@ -115,7 +131,7 @@ export function DailyRewardModal({ onClose, onClaim, currentStreak }: DailyRewar
                 display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}
             >
-              ✓ Claimed!
+              {state === 'already' ? 'Already claimed today' : `✓ +${result?.reward ?? currentReward.amount} DC`}
             </motion.div>
           )}
         </div>
@@ -124,7 +140,7 @@ export function DailyRewardModal({ onClose, onClaim, currentStreak }: DailyRewar
   )
 }
 
-function RewardBox({ reward, isToday, isPast }: { reward: any, isToday: boolean, isPast: boolean }) {
+function RewardBox({ reward, isToday, isPast }: { reward: { day: number; amount: number }, isToday: boolean, isPast: boolean }) {
   const bg = isToday ? '#FEF18B' : isPast ? '#DCFD9C' : '#FFFFFF'
   const border = isToday ? '1px solid #DDB668' : isPast ? '1px solid #66D575' : 'none'
   const opacity = isPast ? 0.67 : 1
