@@ -7,6 +7,7 @@ export type AssetClass = 'fd' | 'debt' | 'gold' | 'index' | 'equity' | 'smallcap
 /** What kind of trouble a card causes; defense cards block whole categories. */
 export type EventCategory = 'medical' | 'job' | 'market' | 'fraud' | 'tax' | 'property' | 'legal' | 'personal' | 'travel' | 'debt'
 import type { LevelConfig, LevelState } from './level'
+import type { PlayerGameStats } from './learning'
 export interface CardEffect {
   type: 'wealth_change' | 'wealth_pct' | 'wealth_next_turn' | 'wealth_end_game' | 'skip_turn' | 'steal' | 'steal_pct' | 'attack_all_pct' | 'block_card' | 'reduce_attack_pct' | 'copy_card' | 'set_goal' | 'market_crash_player' | 'wealth_floor' | 'double_invest'
   value?: number
@@ -104,6 +105,8 @@ export interface PlayerState {
   holdings?: Holding[]
   /** Rises with each Spend: raises the inflation hit on cash (lifestyle creep) */
   lifestyleLevel?: number
+  /** Phase 4: what this player did during the game, for the report card */
+  stats?: PlayerGameStats
   profile?: {
     rank_points: number
     avatar_url: string | null
