@@ -6,7 +6,7 @@ import type { GameState, GameCard as GameCardType } from '../types/game'
 import { formatWealth } from '../types/game'
 import { Wealth } from '../components/Wealth'
 import {
-  processDecision, processAction, advanceTurn, startDrawPhase, forceSkipTurn, drawCard, TURN_TIME_LIMIT_MS
+  processDecision, processAction, advanceTurn, startDrawPhase, forceSkipTurn, drawCard, equipDefense, TURN_TIME_LIMIT_MS
 } from '../lib/gameEngine'
 import { pushGameState, leaveRoom } from '../lib/multiplayerEngine'
 import { saveGameResult } from '../lib/auth'
@@ -420,10 +420,8 @@ export function MultiplayerGame() {
       }
     } else if (card.type === 'defense') {
       // Playing defense as regular turn action — equip it for future protection
-      const activeDefenses = [...gs.players[myPlayerIndex].activeDefenses, card]
-      const hand = gs.players[myPlayerIndex].hand.filter(c => c.id !== card.id)
-      const players = gs.players.map((p, i) => i === myPlayerIndex ? { ...p, hand, activeDefenses } : p)
-      const next = advanceTurn({ ...gs, players })
+      // equipDefense also arms the wealth floor for a Bankruptcy Shield
+      const next = advanceTurn(equipDefense(gs, myPlayerIndex, card))
       setGameState(next)
       gameStateRef.current = next
       setPhase(next.phase === 'game_over' ? 'result' : 'playing')
@@ -613,7 +611,12 @@ export function MultiplayerGame() {
 
           <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginTop: 12 }}>
             <div className="btn-rebound" style={{ boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)', borderRadius: 8 }}>
-              <Button style={{ minWidth: 200, height: 48 }} onClick={() => navigate('/lobby')}>Play Again</Button>
+              <Button style={{ minWidth: 200, height: 48 }} onClick={async () => {
+                if (roomId && myPlayerId) {
+                  await leaveRoom(roomId, myPlayerId).catch(() => { })
+                }
+                navigate('/multiplayer')
+              }}>Play Again</Button>
             </div>
             <div className="btn-rebound">
               <Button variant="secondary" style={{ minWidth: 200, height: 48 }} onClick={async () => {
