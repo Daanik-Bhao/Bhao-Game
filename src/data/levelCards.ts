@@ -20,7 +20,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "गुल्लक में सहेजें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Put it aside to grow, not to sit idle",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -64,7 +64,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "बाद के लिए भत्ता बचाकर रखें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'fd',
         label: "Invest",
         description: "Grow the trip fund over the next few months",
         effect: { type: 'wealth_pct', value: 11, target: 'self' },
@@ -108,7 +108,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "गुल्लक में उपहार सहेजें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'fd',
         label: "Invest",
         description: "Open a minor FD with parents and earn interest",
         effect: { type: 'wealth_pct', value: 8, target: 'self' },
@@ -152,7 +152,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "टिफ़िन खाने के पैसे बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Carry tiffin and invest the monthly savings",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -196,7 +196,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "पुरानी साइकिल खरीदें और बचत करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Buy used and put the difference to work",
         effect: { type: 'wealth_pct', value: 9, target: 'self' },
@@ -240,7 +240,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "अपनी छात्रवृत्ति का पैसा बैंक में जमा करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'equity',
         label: "Invest",
         description: "Spend it on a course or books that build skills",
         effect: { type: 'wealth_pct', value: 11, target: 'self' },
@@ -284,7 +284,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "बचत करने के लिए सप्ताहांत छोड़ें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Skip a few and invest the savings",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -330,7 +330,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Saving part of your first income starts a habit that will matter more than the amount. Pay yourself first, always."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Put your first earnings to work", shortDescriptionHi: "पहली कमाई निवेश करें", shortDescription: "Invest your first earnings",
         effect: { type: 'wealth_pct', value: 11, target: 'self' },
@@ -366,7 +366,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "कम से काम चलाओ"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'fd',
         label: "Invest",
         description: "Keep a small buffer aside so this doesn't hurt next time",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -410,7 +410,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "एक गुणवत्तापूर्ण पेन खरीदें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'fd',
         label: "Invest",
         description: "Buy what you need and keep the extra aside",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -454,7 +454,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "पाए गए पैसे को सुरक्षित रूप से सहेजें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "If no owner turns up, put it to work",
         effect: { type: 'wealth_pct', value: 8, target: 'self' },
@@ -498,7 +498,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "कुछ उधार दो और कुछ रखो"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Help a little, keep your savings growing",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -542,7 +542,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "वर्चुअल गेम खरीदारी छोड़ें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Put that real money somewhere it can grow",
         effect: { type: 'wealth_pct', value: 11, target: 'self' },
@@ -586,7 +586,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "टिफ़िन खाओ और बचा लो"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Eat tiffin and invest what you save",
         effect: { type: 'wealth_pct', value: 9, target: 'self' },
@@ -630,7 +630,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "कॉमिक बिक्री के पैसे बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Sell and grow the money for a bigger goal",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -674,7 +674,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "मेस का खाना खाओ और बचाओ"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Eat at the mess and invest the difference",
         effect: { type: 'wealth_pct', value: 9, target: 'self' },
@@ -718,7 +718,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "बचत खाते में बचत करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Start your first SIP with part of it",
         effect: { type: 'wealth_pct', value: 11, target: 'self' },
@@ -762,7 +762,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "मासिक भत्ते से बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'fd',
         label: "Invest",
         description: "Park the fee money safely until it's due",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -806,7 +806,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "प्रयुक्त पुस्तकें खरीदें और बचत करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Buy used and invest the difference",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -850,7 +850,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "ना कहें और पहले शोध करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'crypto',
         label: "Invest",
         description: "Only a small amount you can afford to lose",
         effect: { type: 'wealth_pct', value: 8, target: 'self' },
@@ -894,7 +894,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "बूटकैंप के लिए बचत करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'equity',
         label: "Invest",
         description: "Invest in the skill, the ROI is a better job",
         effect: { type: 'wealth_pct', value: 8, target: 'self' },
@@ -938,7 +938,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "फ्रीलांस लोगो आय बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Put half in a SIP, spend half",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -982,7 +982,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "मुफ़्त क्रेडिट कार्ड से इनकार करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'fd',
         label: "Invest",
         description: "Skip the card, build savings instead",
         effect: { type: 'wealth_pct', value: 11, target: 'self' },
@@ -1026,7 +1026,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "पहले से विभाजित करें और एकत्र करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'fd',
         label: "Invest",
         description: "Agree on a split, use UPI requests to collect",
         effect: { type: 'wealth_pct', value: 8, target: 'self' },
@@ -1070,7 +1070,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "ऑडिट करें और सदस्यताएँ रद्द करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Cancel extras and invest the savings",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -1114,7 +1114,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "घर पर पढ़ाई करें और बचत करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Study at home and invest the café money",
         effect: { type: 'wealth_pct', value: 9, target: 'self' },
@@ -1158,7 +1158,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "आपातकालीन निधि के लिए बचत करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'equity',
         label: "Invest",
         description: "Start your first mutual fund investment",
         effect: { type: 'wealth_pct', value: 11, target: 'self' },
@@ -1202,7 +1202,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "गोवा छोड़ें और ठीक से योजना बनाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Skip it and invest the trip budget",
         effect: { type: 'wealth_pct', value: 9, target: 'self' },
@@ -1246,7 +1246,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "पुस्तकालय से उधार लें और बचत करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Borrow it and invest the money saved",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -1290,7 +1290,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "पुरस्कार राशि सुरक्षित रूप से सहेजें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Put the prize in an index fund",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -1334,7 +1334,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "पहले मरम्मत करें और बाद में बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Repair it and invest the difference",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -1378,7 +1378,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "अंशकालिक नौकरी की कमाई बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Start a small SIP from the pay",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -1422,7 +1422,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "बाहर खाने के खर्च में कटौती करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Trim the budget and invest what's left",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -1486,13 +1486,13 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
     flavorHi: "यदि आप क्रेडिट कार्ड ईएमआई के माध्यम से भुगतान करते हैं तो वार्षिक जिम सदस्यता पर भारी छूट।",
     options: [
       {
-        type: 'invest',
-        label: "Take EMI",
-        description: "Pay for the gym via credit card EMI",
+        type: 'invest', asset: 'index',
+        label: "Skip & SIP",
+        description: "Skip the annual EMI plan, pay monthly once the habit sticks, and SIP the difference in an index fund",
         effect: { type: 'wealth_pct', value: 17, target: 'self' },
         investRisk: 30,
         failEffect: { type: 'wealth_pct', value: -11, target: 'self' },
-        mentorInsight: "Fitness is a great investment, but only if you actually go. Converting to card EMI adds interest or fees - check the real cost before you sign up for a year."
+        mentorInsight: "A 'discount' paid through credit card EMI usually hides interest or processing fees, and most annual gym plans go unused. Pay monthly until the habit is real, and let the money you didn't lock up compound in an index fund."
       },
       {
         type: 'save',
@@ -1526,7 +1526,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "अपना आपातकालीन कोष शुरू करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Start your first SIP",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -1570,7 +1570,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "जबरन बचत का विकल्प चुनें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'debt',
         label: "Invest",
         description: "It's investing in 60-year-you",
         effect: { type: 'wealth_pct', value: 11, target: 'self' },
@@ -1614,7 +1614,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "पुराने फोन की मरम्मत करें और बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Buy a budget phone, invest the rest",
         effect: { type: 'wealth_pct', value: 11, target: 'self' },
@@ -1658,7 +1658,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "पहले बाजार दर पर शोध करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'equity',
         label: "Invest",
         description: "Negotiate! Salary is your biggest asset",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -1702,7 +1702,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "अपनी बचत दर बढ़ाएँ"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Save 50% of hike",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -1746,7 +1746,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "आपातकालीन निधि के लिए बोनस बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'equity',
         label: "Invest",
         description: "Invest the bonus in a mutual fund",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -1790,7 +1790,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "समान रूप से विभाजित करें और बजट चिपकाएँ"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Skip the extras and invest the savings",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -1834,7 +1834,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "आवागमन और भोजन के पैसे बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Step up SIP",
         effect: { type: 'wealth_pct', value: 8, target: 'self' },
@@ -1878,7 +1878,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "नई ईएमआई लोन लेने से बचें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Invest while still paying EMIs",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -1922,7 +1922,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "वेतन वृद्धि से पैसे बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Step up your SIP with the hike",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -1966,7 +1966,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "पैसे बचाने के लिए टिफ़िन लाएँ"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Pack lunch and invest the difference",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -2010,7 +2010,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "सामग्री लेखन आय बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Put the side income into a SIP",
         effect: { type: 'wealth_pct', value: 11, target: 'self' },
@@ -2054,7 +2054,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "पहले आरओआई और प्लेसमेंट पर शोध करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'equity',
         label: "Invest",
         description: "Go only if placement data is strong",
         effect: { type: 'wealth_pct', value: 8, target: 'self' },
@@ -2098,7 +2098,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "टिप और रिपोर्ट चैनल पर ध्यान न दें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Stick to index funds",
         effect: { type: 'wealth_pct', value: 9, target: 'self' },
@@ -2142,7 +2142,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "पहले निःशुल्क YouTube वर्कआउट आज़माएँ"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Work out free and invest the gym fee",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -2186,7 +2186,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "आपातकालीन निधि में धनवापसी बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'equity',
         label: "Invest",
         description: "Invest the refund in ELSS",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -2230,7 +2230,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "प्रतीक्षा करें और पहले स्टार्टअप पर शोध करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'smallcap',
         label: "Invest",
         description: "Invest only what you can afford to lose",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -2274,7 +2274,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "किराए पर बातचीत करें या घर शिफ्ट करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Negotiate and invest the rent saved",
         effect: { type: 'wealth_pct', value: 11, target: 'self' },
@@ -2318,7 +2318,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "लिक्विड फंड में बोनस बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Top up your SIP with the bonus",
         effect: { type: 'wealth_pct', value: 9, target: 'self' },
@@ -2362,7 +2362,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "अप्रयुक्त सदस्यताएँ रद्द करें और सहेजें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Cancel them and invest the savings",
         effect: { type: 'wealth_pct', value: 8, target: 'self' },
@@ -2406,7 +2406,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "व्यक्तिगत स्वास्थ्य बीमा टॉप अप करें"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'debt',
         label: "Invest",
         description: "Buy solid personal health cover",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -2450,7 +2450,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "स्थानीय यात्रा करें और पैसे बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'equity',
         label: "Invest",
         description: "Put the savings in an equity fund",
         effect: { type: 'wealth_pct', value: 8, target: 'self' },
@@ -2494,7 +2494,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
           shortDescriptionHi: "मासिक रूप से अधिक पैसे बचाएं"
     },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Invest",
         description: "Step up your SIP with the hike",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -2536,7 +2536,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Renting while your down payment grows isn't wasted money. It keeps you flexible and avoids a loan you can't carry."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'realestate',
         label: "Smaller Home",
         description: "Buy the 2BHK with a solid down payment", shortDescriptionHi: "किफायती 2BHK खरीदें", shortDescription: "Buy affordable 2BHK",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -2574,7 +2574,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Prepaying a ~9% home loan is a guaranteed, risk-free 'return' equal to that interest rate, and it cuts years off your tenure."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'equity',
         label: "Start SIP",
         description: "Keep the EMI and invest the bonus in an equity SIP", shortDescriptionHi: "बोनस SIP में निवेश करें", shortDescription: "Invest bonus via SIP",
         effect: { type: 'wealth_pct', value: 25, target: 'self' },
@@ -2612,7 +2612,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "A term plan of 10-15x your annual income gives your family real protection at a fraction of the cost of traditional plans."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Term + Invest",
         description: "Buy term cover and invest the premium you saved", shortDescriptionHi: "टर्म लें, बाकी निवेश करें", shortDescription: "Buy term, invest the rest",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -2650,7 +2650,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Your own policy stays with you even if you change jobs, unlike office cover. A good first step."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'debt',
         label: "Floater+Top-up",
         description: "Buy a family floater plus a super top-up", shortDescriptionHi: "फैमिली फ्लोटर + टॉप-अप", shortDescription: "Family floater + top-up",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -2688,7 +2688,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "About 6 months of expenses set aside means a job loss or hospital bill won't force you to sell investments or borrow."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'debt',
         label: "Fund + SIP",
         description: "Park the fund in a liquid fund or sweep-in FD, then SIP the extra", shortDescriptionHi: "लिक्विड फंड, फिर SIP", shortDescription: "Liquid fund, then SIP",
         effect: { type: 'wealth_pct', value: 17, target: 'self' },
@@ -2726,7 +2726,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Any dedicated savings for your child beats starting late, and safe options like PPF protect the money you put in."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'equity',
         label: "Start SIP Now",
         description: "Start an equity SIP for the 15-year goal", shortDescriptionHi: "शिक्षा SIP शुरू करें", shortDescription: "Start education SIP",
         effect: { type: 'wealth_pct', value: 8, target: 'self' },
@@ -2764,7 +2764,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "PPF gives government-backed, tax-free returns under Section 80C. Safe and steady, but the 15-year lock-in needs planning."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'debt',
         label: "NPS",
         description: "Contribute to NPS with an equity allocation", shortDescriptionHi: "NPS में योगदान करें", shortDescription: "Contribute to NPS",
         effect: { type: 'wealth_pct', value: 33, target: 'self' },
@@ -2802,7 +2802,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Booking part of your ESOP gains cuts concentration risk. Remember ESOPs are taxed when exercised and again when sold."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Sell & Spread",
         description: "Sell in phases and diversify across funds", shortDescriptionHi: "चरणों में बेचें, विविधता लाएँ", shortDescription: "Sell in phases, diversify",
         effect: { type: 'wealth_pct', value: 20, target: 'self' },
@@ -2840,7 +2840,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Protecting your main income and family time is valid. Just keep upgrading your skills so the salary keeps growing."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Take & Invest",
         description: "Take the gig and invest every rupee it pays", shortDescriptionHi: "गिग लें, कमाई निवेश करें", shortDescription: "Take gig, invest earnings",
         effect: { type: 'wealth_pct', value: 8, target: 'self' },
@@ -2878,7 +2878,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Indian markets have crashed many times and recovered over time. Staying invested avoids locking in the loss."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Buy the Dip",
         description: "Continue SIPs and add extra from spare cash", shortDescriptionHi: "गिरावट में और निवेश करें", shortDescription: "Add more during the dip",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -2916,7 +2916,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Clearing loans is a guaranteed win, and a full emergency fund makes the family shock-proof."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Clear & Invest",
         description: "Clear costly debt, then invest the rest for goals", shortDescriptionHi: "कर्ज़ चुकाएँ, बाकी निवेश करें", shortDescription: "Clear debt, invest rest",
         effect: { type: 'wealth_pct', value: 16, target: 'self' },
@@ -2954,7 +2954,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "A bigger down payment means a smaller loan and less interest over 20 years."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'realestate',
         label: "Joint Loan",
         description: "Apply jointly as co-owners and co-borrowers", shortDescriptionHi: "जॉइंट लोन लें", shortDescription: "Take a joint loan",
         effect: { type: 'wealth_pct', value: 32, target: 'self' },
@@ -2992,7 +2992,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Even a small rise in your savings rate each year pulls your financial freedom date closer."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Know Number",
         description: "Calculate your FIRE corpus and set SIPs to match", shortDescriptionHi: "कॉर्पस निकालें, SIP सेट करें", shortDescription: "Calculate corpus, set SIPs",
         effect: { type: 'wealth_pct', value: 11, target: 'self' },
@@ -3030,7 +3030,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Gold often holds up when markets fall or the rupee weakens. Paper gold avoids locker, purity and making-charge worries."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'gold',
         label: "Planned Mix",
         description: "Keep gold at 5-10% and the rest in diversified investments", shortDescriptionHi: "सोना 5-10% तक रखें", shortDescription: "Keep gold at 5-10%",
         effect: { type: 'wealth_pct', value: 15, target: 'self' },
@@ -3068,7 +3068,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "EPF, PPF, term premium and kids' tuition fees may already fill much of the ₹1.5 lakh 80C limit in the old regime. Check before buying anything new."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'equity',
         label: "ELSS SIP",
         description: "Fill the gap with a monthly ELSS SIP", shortDescriptionHi: "ELSS SIP शुरू करें", shortDescription: "Start an ELSS SIP",
         effect: { type: 'wealth_pct', value: 11, target: 'self' },
@@ -3106,7 +3106,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "A steady salary while you have EMIs and kids is real security. Keep learning so your options stay open."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'equity',
         label: "Test on Side",
         description: "Build it on weekends and save 12 months' runway first", shortDescriptionHi: "आइडिया परखें, रनवे बनाएँ", shortDescription: "Test idea, build runway",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -3144,7 +3144,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Paying old dues in full, rather than 'settling' for less, stops the penalties and starts rebuilding your score."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'debt',
         label: "Fix+Refinance",
         description: "Clear dues, set auto-pay, then refinance at a lower rate", shortDescriptionHi: "स्कोर सुधारें, लोन रीफाइनेंस करें", shortDescription: "Fix score, refinance loan",
         effect: { type: 'wealth_pct', value: 29, target: 'self' },
@@ -3182,7 +3182,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Taking some gains off the table after a big rally protects what you earned. Just keep capital gains tax in mind."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Rebalance",
         description: "Rebalance back to your 70:30 plan and keep SIPs going", shortDescriptionHi: "70:30 योजना पर लौटें", shortDescription: "Rebalance to 70:30 plan",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -3220,7 +3220,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Keeping your lifestyle flat after a raise is the easiest way to grow savings without feeling any pinch."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Step-Up SIP",
         description: "Increase your SIP by the same 20%", shortDescriptionHi: "SIP 20% बढ़ाएँ", shortDescription: "Step up SIP by 20%",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -3258,7 +3258,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "VPF earns the same rate as EPF and is very safe. Interest on yearly employee contributions above ₹2.5 lakh is taxable."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Retirement SIP",
         description: "Calculate your corpus and start a dedicated SIP", shortDescriptionHi: "रिटायरमेंट SIP शुरू करें", shortDescription: "Start retirement SIP",
         effect: { type: 'wealth_pct', value: 19, target: 'self' },
@@ -3296,7 +3296,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "A fixed monthly amount, planned in your budget, helps parents steadily without wrecking your own goals."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "Cover + SIP",
         description: "Buy their health insurance and keep your own SIP running", shortDescriptionHi: "माता-पिता का बीमा, SIP जारी", shortDescription: "Insure parents, keep SIP",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
@@ -3334,7 +3334,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "One home to live in is enough for most families. Liquid money helps with kids' and parents' needs."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'index',
         label: "SIP Instead",
         description: "Invest the down payment amount through diversified SIPs", shortDescriptionHi: "इसके बदले SIP करें", shortDescription: "Use SIPs instead",
         effect: { type: 'wealth_pct', value: 26, target: 'self' },
@@ -3372,7 +3372,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Correct nominees on bank accounts, EPF, demat and insurance make claims much smoother for your family."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'fd',
         label: "Will+Nominees",
         description: "Write a will, update nominees and list all accounts", shortDescriptionHi: "वसीयत लिखें, नॉमिनी अपडेट करें", shortDescription: "Write will, update nominees",
         effect: { type: 'wealth_pct', value: 17, target: 'self' },
@@ -3410,7 +3410,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "Saying no to a single risky bet is fine. Your family's core goals come first."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'smallcap',
         label: "Small Stake",
         description: "Invest a small amount you can afford to lose", shortDescriptionHi: "बस थोड़ी रकम लगाएँ", shortDescription: "Invest only a small amount",
         effect: { type: 'wealth_pct', value: 12, target: 'self' },
@@ -3448,7 +3448,7 @@ export const LEVEL_SITUATION_CARDS: GameCard[] = [
         mentorInsight: "This is what the emergency fund is for: paying without stress or debt. Refill it once things settle."
       },
       {
-        type: 'invest',
+        type: 'invest', asset: 'debt',
         label: "Use Insurance",
         description: "Use cashless insurance; emergency fund covers the rest", shortDescriptionHi: "पहले बीमा क्लेम करें", shortDescription: "Claim insurance first",
         effect: { type: 'wealth_pct', value: 10, target: 'self' },
