@@ -246,8 +246,12 @@ export function PlayerBoard({ player, isCurrent, isMe, isTarget, isOffline, weal
             (avatar.startsWith('/') || avatar.startsWith('http')) ? <img src={avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 28 }}>{avatar}</span>
           )}
         </motion.div>
-        
-        {/* Money Pill */}
+        {/* Investments count (Phase 3) */}
+        {(player.holdings?.length ?? 0) > 0 && (
+          <span className="econ-holdings-badge" title={`${player.holdings!.length} investments`}>📈{player.holdings!.length}</span>
+        )}
+
+        {/* Net worth pill */}
         <div style={{
           marginTop: -6, zIndex: 3,
           background: '#0f172a', borderRadius: 12, padding: '2px 8px',
@@ -472,10 +476,13 @@ export function PlayerBoard({ player, isCurrent, isMe, isTarget, isOffline, weal
           display: 'flex', justifyContent: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap'
         }}>
           <div style={{ fontSize: 10, background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>
-            🤑 Greed: {player.greedIndex || 0}/3
+            💵 Cash: {formatWealth(Math.round(player.cash ?? player.wealth))}
           </div>
           <div style={{ fontSize: 10, background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>
-            💎 Lifestyle: Tier {Math.min(3, 1 + Math.floor((player.spendChoices || 0) / 2))}
+            📈 Investments: {player.holdings?.length ?? 0}
+          </div>
+          <div style={{ fontSize: 10, background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>
+            🛍️ Lifestyle: {player.lifestyleLevel ?? 0}
           </div>
           {(player.savingStreak || 0) > 0 && (
             <div style={{ fontSize: 10, background: 'rgba(16,185,129,0.2)', color: '#34d399', padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>

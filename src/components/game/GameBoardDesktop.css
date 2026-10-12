@@ -1,0 +1,197 @@
+/* GameBoardDesktop.css — the 1280x700 design canvas (scaled uniformly by GameBoard). */
+
+.dk-root { width: 100%; height: 100%; position: relative; display: flex; justify-content: center; align-items: center; }
+
+.dk-stage {
+  width: 100%;
+  height: 100%;
+  background: url("/avatars/most outher.png") center / 100% 100% no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dk-frame {
+  width: 1205px;
+  height: 577px;
+  box-sizing: border-box;
+  background: url("/avatars/seocnd outer.png") center / 100% 100% no-repeat;
+  padding: 30px 34px;
+  display: flex;
+  gap: 18px;
+}
+
+.dk-rail { width: 300px; flex-shrink: 0; min-height: 0; }
+
+.dk-main {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- Year ---------- */
+.dk-year { position: absolute; top: 12px; left: 40px; z-index: 40; }
+
+/* ---------- Waiting ---------- */
+.dk-wait, .dk-target { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.dk-wait-emoji { font-size: 46px; line-height: 1; }
+.dk-wait-title { font-size: 24px; font-weight: 700; color: #fff; }
+.dk-wait-sub { font-size: 16px; color: #94a3b8; margin-bottom: 6px; }
+
+/* ---------- Hand ---------- */
+.dk-play { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.dk-hand-label {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #b4ffbe;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 10px;
+}
+.dk-equipped-note { text-transform: none; letter-spacing: 0; color: #93c5fd; font-weight: 700; }
+
+.dk-hand {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 14px 6px 14px;
+}
+.dk-hand.dense { gap: 9px; }
+.dk-hand.dense .econ-hand-card > button { width: 118px !important; height: 170px !important; }
+.dk-hand.preview { transform: scale(0.82); transform-origin: top center; margin-bottom: -36px; padding-top: 6px; }
+.dk-hand.preview .econ-hand-card { filter: saturate(0.6) brightness(0.85); }
+
+/* ---------- Draw ---------- */
+.dk-draw {
+  width: 100%;
+  height: 100%;
+  max-height: 480px;
+  background: url("/avatars/second inner.png") center / 100% 100% no-repeat;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 14px;
+  box-sizing: border-box;
+}
+.dk-draw-title { font-family: 'Clash Display Variable', sans-serif; font-weight: 600; font-size: 44px; color: #B4FFBE; margin-bottom: 10px; }
+.dk-draw-inner {
+  position: relative;
+  width: 93%;
+  flex: 1;
+  margin-bottom: 30px;
+  background: url("/avatars/most inner.png") center / 100% 100% no-repeat;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.dk-draw-sub { font-family: Inter, sans-serif; font-size: 19px; color: #fff; margin-top: 22px; }
+.dk-draw-fan {
+  width: 440px;
+  position: absolute;
+  top: 54%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  pointer-events: none;
+}
+.dk-draw-btn {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 250px;
+  height: 60px;
+  background: linear-gradient(180deg, #F4D27B 0%, #DDA20C 100%);
+  border-radius: 8px;
+  border: none;
+  color: #4B3602;
+  font-size: 22px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.4), inset 0 -4px 8px rgba(0,0,0,0.2);
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: transform 0.2s;
+}
+.dk-draw-btn:hover { transform: translateX(-50%) scale(1.03); }
+
+/* ---------- Decision ---------- */
+.dk-decision { display: flex; gap: 22px; align-items: center; justify-content: center; width: 100%; height: 100%; }
+.dk-decision-card { flex-shrink: 0; }
+.dk-decision-panel {
+  width: 540px;
+  max-height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background: rgba(10, 34, 29, 0.95);
+  border: 1px solid #10B981;
+  border-radius: 16px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 0 40px rgba(16, 185, 129, 0.2);
+}
+.dk-decision-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.dk-decision-panel h3 { font-size: 24px; font-weight: 700; color: #34D399; margin: 0; }
+.dk-decision-panel p { color: #9CA3AF; font-size: 13.5px; margin: 0 0 4px; line-height: 1.35; }
+.dk-decision-cash { font-size: 13px; color: #fde68a; white-space: nowrap; }
+
+/* Keep the whole decision sheet (incl. Back / Pass) inside the stage */
+.dk-decision-panel { width: 620px; padding: 14px 16px; gap: 6px; }
+.dk-decision-panel .econ-dopts { gap: 7px; }
+.dk-decision-panel .econ-dopt { padding: 8px 12px; gap: 2px; }
+.dk-decision-panel .econ-dopt-desc { -webkit-line-clamp: 1; }
+.dk-decision-panel p { -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ---------- Targeting ---------- */
+.dk-target-list { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-bottom: 22px; max-width: 780px; }
+.dk-target-btn {
+  padding: 10px 24px;
+  min-height: 56px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 2px solid #EF4444;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-family: inherit;
+}
+.dk-target-btn small { font-size: 13px; font-weight: 600; color: #fca5a5; }
+.dk-target-btn:hover { background: rgba(239, 68, 68, 0.35); }
+
+/* ---------- Log ---------- */
+.dk-log-btns { position: absolute; bottom: 14px; right: 40px; display: flex; align-items: center; gap: 12px; z-index: 30; }
+.dk-log-btn {
+  background: url("/avatars/gamelogbutton.webp") center / contain no-repeat transparent;
+  width: 160px;
+  height: 48px;
+  border: none;
+  cursor: pointer;
+}
+.dk-log-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 90;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
