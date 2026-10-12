@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /game
+Disallow: /multiplayer
+
+Sitemap: https://game-final-xi.vercel.app/sitemap.xml

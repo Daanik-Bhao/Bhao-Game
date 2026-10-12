@@ -1,0 +1,72 @@
+import { LevelConfig } from '../types/level'
+
+export const ARTHA_YATRA_LEVELS: LevelConfig[] = [
+  {
+    id: 'level_1',
+    name: 'Brahmacharya',
+    lifeStage: 'Brahmacharya',
+    ageRange: '13-18',
+    planet: 'Chandra',
+    mainLearning: 'Spending Control',
+    startingCorpus: 500000,
+    targetCorpus: 1500000,
+    turnLimit: 40,
+    botCount: 1,
+    botDifficulty: 'easy',
+    description: 'You are starting your financial journey as a student. Control unnecessary spending and learn the value of money.',
+    mechanicName: 'Desire Meter',
+    mechanicDescription: 'The Desire Meter increases when you SPEND. High desire leads to bad decisions. Keep it low by SAVING and INVESTING.',
+    bossSpecialAttackTrigger: (state: any) => state.corpus >= 1000000
+  },
+  {
+    id: 'level_2',
+    name: 'Vidyarthi to Yuva',
+    lifeStage: 'Vidyarthi to Yuva',
+    ageRange: '18-22',
+    planet: 'Budh',
+    mainLearning: 'Saving',
+    startingCorpus: 500000,
+    targetCorpus: 5000000,
+    turnLimit: 45,
+    botCount: 2,
+    botDifficulty: 'medium',
+    description: 'College life begins. Build saving habits while avoiding confusion, subscriptions, and fake offers.',
+    mechanicName: 'Saving Streak',
+    mechanicDescription: 'Build your saving habit by consistently choosing SAVE. Longer streaks yield bigger bonuses!',
+    bossSpecialAttackTrigger: (state: any) => state.savingStreak >= 3 || state.corpus >= 1800000
+  },
+  {
+    id: 'level_3',
+    name: 'Aarambh Grihastha',
+    lifeStage: 'Aarambh Grihastha',
+    ageRange: '22-28',
+    planet: 'Surya',
+    mainLearning: 'Investing',
+    startingCorpus: 500000,
+    targetCorpus: 7500000,
+    turnLimit: 50,
+    botCount: 2,
+    botDifficulty: 'medium',
+    description: 'Your first job! Income arrives, but so does lifestyle creep and ego. Convert income into investments before it disappears.',
+    mechanicName: 'Investment Slots & Lifestyle Creep',
+    mechanicDescription: 'Unlock slots to hold active investments that grow over time. Beware: excessive spending triggers Lifestyle Creep, draining your wealth!',
+    bossSpecialAttackTrigger: (state: any) => state.corpus >= 3000000 || state.activeInvestments?.length >= 2
+  },
+  {
+    id: 'level_4',
+    name: 'Grihastha Dharma',
+    lifeStage: 'Grihastha Dharma',
+    ageRange: '28-38',
+    planet: 'Mangal',
+    mainLearning: 'Risk & Protection',
+    startingCorpus: 1000000,
+    targetCorpus: 10000000,
+    turnLimit: 60,
+    botCount: 2,
+    botDifficulty: 'hard',
+    description: 'Family life brings new responsibilities. Protect your wealth from sudden shocks while maintaining growth.',
+    mechanicName: 'Risk Mitigation',
+    mechanicDescription: 'Random life events will test your emergency fund and insurance coverage.',
+    bossSpecialAttackTrigger: () => false
+  }
+]

@@ -1,0 +1,385 @@
+[
+  {
+    "id": "TC001",
+    "title": "Play a targeted card on an opponent",
+    "description": "A player can select a card, choose a target opponent when required, and confirm the move to resolve the action on the game board.",
+    "category": "Multiplayer Game Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the join control for an available room"
+      },
+      {
+        "type": "action",
+        "description": "Select a card from the hand"
+      },
+      {
+        "type": "action",
+        "description": "Select an opponent target"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the selected choice"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the card action resolves on the game board"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC002",
+    "title": "Access the dashboard after signing in",
+    "description": "A returning user can log in and reach the authenticated dashboard.",
+    "category": "Authentication",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the authenticated dashboard is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC003",
+    "title": "Join an available room from the dashboard",
+    "description": "An authenticated player can join an existing room from the lobby and enter the active game room.",
+    "category": "Dashboard and Matchmaking",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the join control for an available room"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the active multiplayer game board is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC004",
+    "title": "Create a room from the dashboard",
+    "description": "An authenticated player can create a room and see it added to the lobby.",
+    "category": "Dashboard and Matchmaking",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the create room control"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a newly created room appears in the lobby"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC005",
+    "title": "Play a card that does not require a target",
+    "description": "A player can select a self-contained card and confirm the move without choosing an opponent target.",
+    "category": "Multiplayer Game Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the join control for an available room"
+      },
+      {
+        "type": "action",
+        "description": "Select a card from the hand"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the selected choice"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the selected card resolves on the board"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC006",
+    "title": "Watch turn updates and wealth changes during a match",
+    "description": "A player can observe the live game log while turns advance and wealth totals update during the match.",
+    "category": "Multiplayer Game Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the join control for an available room"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify game log updates are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify wealth updates are displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC007",
+    "title": "See available rooms in the lobby",
+    "description": "An authenticated player can view the list of available rooms on the dashboard.",
+    "category": "Dashboard and Matchmaking",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify available rooms are displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC008",
+    "title": "Render the game board on smaller screens",
+    "description": "An authenticated player can view and use the multiplayer game board in a mobile-sized layout without losing the match state.",
+    "category": "Multiplayer Game Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the join control for an available room"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the mobile game board is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the current match state is displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC009",
+    "title": "Render the game board on desktop screens",
+    "description": "An authenticated player can view and use the multiplayer game board in a desktop layout without losing the match state.",
+    "category": "Multiplayer Game Board",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the join control for an available room"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the desktop game board is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the current match state is displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC010",
+    "title": "Show validation errors for invalid credentials",
+    "description": "A visitor entering invalid credentials sees a clear authentication error and remains unable to access the dashboard.",
+    "category": "Authentication",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with invalid@example.com"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with an invalid password"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an authentication error is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the authenticated dashboard is not displayed"
+      }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC011",
+    "title": "Switch between login and sign-up modes",
+    "description": "A visitor can switch between login and sign-up views on the authentication page.",
+    "category": "Authentication",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Switch to sign-up mode"
+      },
+      {
+        "type": "action",
+        "description": "Switch to login mode"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the login form is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the sign-up form is not displayed"
+      }
+    ],
+    "priority": "Low"
+  }
+]

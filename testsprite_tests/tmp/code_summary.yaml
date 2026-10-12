@@ -1,0 +1,68 @@
+version: "2"
+type: frontend
+tech_stack:
+  - React
+  - TypeScript
+  - Vite
+  - Supabase
+  - Framer Motion
+  - Lucide React
+routes:
+  - path: /
+    file: src/pages/Landing.tsx
+    auth_required: false
+    description: Landing page
+  - path: /auth
+    file: src/pages/Auth.tsx
+    auth_required: false
+    description: Authentication page (Login/Signup)
+  - path: /dashboard
+    file: src/pages/Dashboard.tsx
+    auth_required: true
+    description: Main dashboard and game lobby
+  - path: /game/:roomId
+    file: src/pages/MultiplayerGame.tsx
+    auth_required: true
+    description: The active multiplayer game board
+features:
+  - name: Authentication
+    description: Users can log in or sign up using Supabase Auth
+    files:
+      - src/pages/Auth.tsx
+      - src/lib/supabase.ts
+    entry_route: /auth
+    user_interactions:
+      - Enter email
+      - Enter password
+      - Click Login or Sign Up button
+    api_calls: []
+    auth_required: false
+  - name: Dashboard and Matchmaking
+    description: Users view available rooms and can join or create them
+    files:
+      - src/pages/Dashboard.tsx
+      - src/pages/Lobby.tsx
+      - src/lib/gameEngine.ts
+    entry_route: /dashboard
+    user_interactions:
+      - Click "Create Room" button
+      - Click "Join" on an existing room
+    api_calls: []
+    auth_required: true
+  - name: Multiplayer Game Board
+    description: The main game UI where players take turns, draw cards, and play them
+    files:
+      - src/pages/MultiplayerGame.tsx
+      - src/components/game/GameBoardMobile.tsx
+      - src/components/game/GameBoardDesktop.tsx
+      - src/components/GameCard.tsx
+      - src/lib/gameEngine.ts
+    entry_route: /game/:roomId
+    user_interactions:
+      - Click on a card in hand to select it
+      - Click "Confirm Choice" to play a card
+      - Select target opponent
+      - View real-time game logs
+    api_calls: []
+    auth_required: true
+known_limitations: []
