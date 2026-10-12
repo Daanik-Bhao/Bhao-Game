@@ -6,8 +6,7 @@ const imagesToPreload = [
   '/avatars/red cards.webp',
   '/avatars/green.webp',
   '/avatars/blue.webp',
-  '/avatars/red.webp',
-  '/avatars/card sshower.webp'
+  '/avatars/red.webp'
 ];
 
 export function usePreloadImages() {

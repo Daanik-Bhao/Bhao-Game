@@ -770,7 +770,7 @@ function SetupScreen({ botCount, setBotCount, onStart, onBack, levelId }: { botC
         <div style={{ background: 'rgba(255,255,255,0.7)', borderRadius: 16, padding: '20px', marginBottom: 24, border: '1px solid rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.02)', position: 'relative', overflow: 'hidden' }}>
 
           {/* Stacked Coins Image */}
-          <img src="/avatars/WhatsApp_Image_2026-06-05_at_12.31.06-removebg-preview.png" alt="Entry Reward Coins" style={{ width: 80, height: 80, objectFit: 'contain', filter: 'drop-shadow(0 8px 12px rgba(217,119,6,0.3))', flexShrink: 0 }} />
+          <img src="/avatars/coins bag.webp" alt="Entry Reward Coins" style={{ width: 80, height: 80, objectFit: 'contain', filter: 'drop-shadow(0 8px 12px rgba(217,119,6,0.3))', flexShrink: 0 }} />
 
           <div>
             <h4 style={{ fontSize: 15, fontWeight: 700, color: 'var(--green-deep)', marginBottom: 4 }}>Entry Reward</h4>
