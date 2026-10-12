@@ -1,6 +1,7 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { FloatingBackground } from '../components/FloatingBackground'
+import { useAuth } from '../hooks/useAuth'
 
 const FEATURE_CARDS = [
   { icon: '🎴', title: 'Real Indian Money Decisions', desc: 'Every card puts you in a situation you might face in real life. SIPs, EMIs, Tax Raids, IPOs — your choices decide your fate.' },
@@ -19,6 +20,14 @@ const PREVIEW_CARDS = [
 ]
 
 export function Landing() {
+  const navigate = useNavigate()
+  const { user, playAsGuest } = useAuth()
+
+  const handlePlayAsGuest = () => {
+    if (!user) playAsGuest()
+    navigate('/dashboard')
+  }
+
   return (
     <main style={{ minHeight: '100vh', overflowX: 'hidden', position: 'relative', zIndex: 1 }}>
       <FloatingBackground />
@@ -77,6 +86,14 @@ export function Landing() {
             <Link to="/auth">
               <Button size="lg" variant="secondary">Sign In</Button>
             </Link>
+          </div>
+          <div style={{ marginTop: 16 }}>
+            <button
+              onClick={handlePlayAsGuest}
+              style={{ background: 'none', border: 'none', color: 'var(--green-primary)', fontSize: 17, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit', padding: 8 }}
+            >
+              {user ? 'Go to your dashboard →' : 'Play as Guest — no sign-up needed →'}
+            </button>
           </div>
         </div>
 
@@ -189,7 +206,12 @@ export function Landing() {
       {/* Footer */}
       <footer style={{ padding: '32px 24px', borderTop: '1px solid var(--green-primary)', textAlign: 'center', color: 'var(--text-muted)', fontSize: 18 }}>
         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--orange-dark)', marginBottom: 8 }}>BHAO</div>
-        <div>The Money Decision Game — For entertainment & financial literacy purposes.</div>
+        <div>The Money Decision Game — For entertainment & financial literacy purposes. Not financial advice.</div>
+        <nav style={{ marginTop: 12, display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap', fontSize: 16 }}>
+          <Link to="/privacy" style={{ color: 'var(--text-muted)' }}>Privacy Policy</Link>
+          <Link to="/terms" style={{ color: 'var(--text-muted)' }}>Terms of Service</Link>
+          <a href="mailto:support@daanik.com" style={{ color: 'var(--text-muted)' }}>support@daanik.com</a>
+        </nav>
       </footer>
     </main>
   )

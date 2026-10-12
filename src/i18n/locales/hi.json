@@ -1,6 +1,7 @@
 {
   "auth": {
-    "title": "Paisa War में आपका स्वागत है",
+    "title": "BHAO में आपका स्वागत है",
+    "signIn": "साइन इन करें",
     "subtitle": "भारत का फाइनेंस स्ट्रैटेजी गेम",
     "usernameLabel": "अपना नाम",
     "usernamePlaceholder": "एक शानदार नाम डालें",

@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabase'
 import { isSoundEnabled, toggleSound } from '../lib/audio'
 import { useTranslation } from 'react-i18next'
 import { DailyRewardModal } from '../components/DailyRewardModal'
+import { DeleteAccountButton } from '../components/DeleteAccountButton'
 
 
 type Tab = 'home' | 'leaderboard' | 'contracts' | 'profile'
@@ -37,9 +38,14 @@ export function Dashboard() {
   const { t, i18n } = useTranslation()
 
   const toggleLanguage = () => {
-    const nextLng = i18n.language === 'en' ? 'hi' : 'en'
+    // Cycle English -> Hindi -> Hinglish -> English
+    const nextLng = i18n.language === 'en' ? 'hi' : i18n.language === 'hi' ? 'hinglish' : 'en'
     i18n.changeLanguage(nextLng)
-    localStorage.setItem('language', nextLng)
+    try {
+      localStorage.setItem('language', nextLng)
+    } catch {
+      /* storage unavailable: language applies to this session only */
+    }
   }
 
   const [showDailyReward, setShowDailyReward] = useState(false)
@@ -236,7 +242,7 @@ export function Dashboard() {
                 onClick={toggleLanguage}
                 style={{ flex: 1, padding: '8px', borderRadius: 8, background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}
               >
-                {i18n.language === 'en' ? 'हिंदी' : 'EN'}
+                {i18n.language === 'en' ? 'हिंदी' : i18n.language === 'hi' ? 'Hinglish' : 'EN'}
               </button>
             </div>
           )}
@@ -964,7 +970,9 @@ function ContractsTab() {
     async function fetchContracts() {
       if (!profile) return
       try {
-        let { data: activeContracts, error } = await supabase.rpc('get_active_contracts')
+        const rpcResult = await supabase.rpc('get_active_contracts')
+        const { error } = rpcResult
+        let activeContracts = rpcResult.data
         
         // Fallback if RPC is not yet applied to the database
         if (error) {
@@ -1347,6 +1355,9 @@ function ProfileTab() {
             Sign Out of Account
           </button>
         </div>
+        <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 40, marginTop: -24 }}>
+          <DeleteAccountButton />
+        </div>
       </div>
 
       {/* MOBILE LAYOUT */}
@@ -1457,6 +1468,17 @@ function ProfileTab() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Account actions */}
+        <div style={{ padding: '0 16px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+          <button onClick={async () => { await logout(); navigate('/'); }} style={{
+            background: '#EF4444', color: '#fff', border: 'none', borderRadius: 8,
+            padding: '12px 24px', fontSize: 16, fontWeight: 700, cursor: 'pointer', width: '100%', maxWidth: 320
+          }}>
+            Sign Out
+          </button>
+          <DeleteAccountButton />
         </div>
       </div>
     </>

@@ -39,20 +39,20 @@ npm install
 ```
 
 ### 3. Environment Variables
-Create a `.env` file in the root directory and add your Supabase credentials:
+Copy `.env.example` to `.env` and fill in your Supabase credentials:
 ```env
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_SENTRY_DSN=            # optional, leave empty to disable Sentry
 ```
+Without the Supabase values the app still runs in **offline guest mode** (tutorial, campaign and practice vs bots); online features are disabled.
 
 ### 4. Database Setup (Supabase)
-Run the SQL migrations located in `supabase/migrations/` in your Supabase SQL editor to set up the necessary tables:
-1. `20260525101309_create_profiles_table.sql`
-2. `20260526000000_create_leaderboard.sql`
-3. `20260526000001_rename_daanik_coins.sql`
-4. `20260526000002_create_market.sql`
-
-*(Alternatively, you can push them using the Supabase CLI: `npx supabase db push`)*
+Apply the SQL migrations in `supabase/migrations/` (in filename order) with the Supabase CLI:
+```bash
+npx supabase db push
+```
+or paste them into the Supabase SQL editor one by one. `20261012000000_delete_own_account.sql` adds the RPC behind the in-app "Delete my account" button.
 
 ### 5. Start the Development Server
 ```bash
@@ -74,12 +74,24 @@ Open your browser to `http://localhost:5173`.
    - **🔵 Defense Cards:** Keep these in your hand to automatically protect yourself against incoming attacks (e.g., Health Insurance, Cyber Shield).
 4. **Market & Coins:** Complete matches to earn DAANIK Coins. Visit the Dashboard to invest your coins into the DAANIK Market!
 
+### Guest mode
+Tap **Play as Guest** on the landing or sign-in page to play the tutorial, campaign and practice games without an account. Guest name and campaign progress live only in the browser's localStorage. Multiplayer, ranked play, leaderboards and coins need an account.
+
 ---
 
 ## 🌐 Deployment
 
 This project is configured to be easily deployed on **Vercel**. 
-Simply link your GitHub repository to Vercel, and it will automatically detect the Vite build settings. Remember to add your `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to your Vercel Environment Variables before building!
+Simply link your GitHub repository to Vercel, and it will automatically detect the Vite build settings. Remember to add `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and (optionally) `VITE_SENTRY_DSN` to your Vercel Environment Variables before building!
+
+### PWA / installable app
+BHAO ships as a Progressive Web App (via `vite-plugin-pwa`): `npm run build` emits `manifest.webmanifest` and a service worker (`sw.js`) that precaches the app shell, auto-updates on new deploys, and caches `/avatars` images at runtime. Icons and the social preview image are generated from a vector ₹ coin:
+```bash
+node scripts/generate-icons.js
+```
+
+### Legal
+`/privacy` and `/terms` are plain-language templates and **must be reviewed by a lawyer** before a wide public launch or app-store submission. Contact: support@daanik.com.
 
 ---
 

@@ -1,17 +1,41 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ARTHA_YATRA_LEVELS } from '../data/levels'
+import type { LevelConfig } from '../types/level'
+import { useAuth } from '../hooks/useAuth'
+import {
+  CAMPAIGN_PROGRESS_EVENT,
+  getCompletedLevels,
+  getCurrentLevelId,
+  progressOwnerKey,
+} from '../lib/campaignProgress'
 
 
 export function Campaign() {
   const navigate = useNavigate()
-  
-  // Simulated progress based on the reference design
-  const completedLevels = ['level_1', 'level_2']
-  const currentLevelId = 'level_3'
-  
-  const totalLevels = 4 // Target based on ARTHA_YATRA_LEVELS
-  const completedCount = completedLevels.length
-  const progressPercentage = (completedCount / totalLevels) * 100
+  const { user } = useAuth()
+  const ownerKey = progressOwnerKey(user?.id)
+
+  // Real progress, persisted per player (localStorage for now; see lib/campaignProgress.ts)
+  const [completedLevels, setCompletedLevels] = useState<string[]>(() => getCompletedLevels(ownerKey))
+
+  useEffect(() => {
+    const reload = () => setCompletedLevels(getCompletedLevels(ownerKey))
+    reload()
+    window.addEventListener(CAMPAIGN_PROGRESS_EVENT, reload)
+    window.addEventListener('storage', reload)
+    return () => {
+      window.removeEventListener(CAMPAIGN_PROGRESS_EVENT, reload)
+      window.removeEventListener('storage', reload)
+    }
+  }, [ownerKey])
+
+  const levelIds = ARTHA_YATRA_LEVELS.map(l => l.id)
+  const currentLevelId = getCurrentLevelId(levelIds, completedLevels)
+
+  const totalLevels = ARTHA_YATRA_LEVELS.length
+  const completedCount = levelIds.filter(id => completedLevels.includes(id)).length
+  const progressPercentage = totalLevels > 0 ? (completedCount / totalLevels) * 100 : 0
 
   return (
     <div style={{
@@ -53,14 +77,14 @@ export function Campaign() {
           </div>
         </div>
         <div style={{ background: '#ccfbf1', padding: '4px 12px', borderRadius: 9999, border: '1px solid #5eead4' }}>
-          <span style={{ color: '#115e59', fontWeight: 700, fontSize: 12 }}>Level {completedCount + 1}</span>
+          <span style={{ color: '#115e59', fontWeight: 700, fontSize: 12 }}>{currentLevelId ? `Level ${completedCount + 1}` : 'All Complete'}</span>
         </div>
       </div>
 
       {/* Progress Bar */}
       <div style={{ position: 'relative', zIndex: 10, background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(4px)', padding: '8px 16px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span style={{ color: '#065f46', fontSize: 12, fontWeight: 600 }}>Active BHAO Progress</span>
+          <span style={{ color: '#065f46', fontSize: 12, fontWeight: 600 }}>Campaign Progress</span>
           <span style={{ color: '#047857', fontSize: 12 }}>{completedCount}/{totalLevels} Complete</span>
         </div>
         <div style={{ height: 8, background: '#e5e7eb', borderRadius: 9999, overflow: 'hidden' }}>
@@ -96,7 +120,7 @@ export function Campaign() {
   )
 }
 
-function LeaderboardCard({ level, position, status, onClick }: { level: any, position: number, status: 'current' | 'completed' | 'locked', onClick?: () => void }) {
+function LeaderboardCard({ level, position, status, onClick }: { level: LevelConfig, position: number, status: 'current' | 'completed' | 'locked', onClick?: () => void }) {
   const getCardStyle = () => {
     if (status === 'current') {
       return {
@@ -180,10 +204,6 @@ function LeaderboardCard({ level, position, status, onClick }: { level: any, pos
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.06)', padding: '2px 8px', borderRadius: 6 }}>
             <span style={{ fontSize: 11 }}>📈</span>
             <span style={{ fontSize: 11, color: style.textColor, fontWeight: 700 }}>{level.mainLearning || 'Learning'}</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.06)', padding: '2px 8px', borderRadius: 6 }}>
-            <span style={{ fontSize: 11 }}>⭐</span>
-            <span style={{ fontSize: 11, color: style.textColor, fontWeight: 700 }}>+150 XP</span>
           </div>
         </div>
       </div>
