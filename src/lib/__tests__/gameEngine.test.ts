@@ -108,7 +108,8 @@ describe('money model', () => {
 
 describe('AoE attacks', () => {
   it('Severe Market Crash hits each opponent exactly once and spares the caster', () => {
-    const crash = findCard('ac_severe_market_crash_165')
+    // Use the crash's AoE effect as a plain cash attack (the real card is now a 'market' life event that hits holdings)
+    const crash: GameCard = { ...findCard('ac_severe_market_crash_165'), category: undefined, lifeEvent: undefined }
     const state = newGame(2) // 3 players → 15% scaled by 0.8 = 12%
     const after = processAction(state, 0, crash, 0)
 
@@ -119,7 +120,8 @@ describe('AoE attacks', () => {
   })
 
   it('applies once when cast by a non-first player too', () => {
-    const crash = findCard('ac_severe_market_crash_165')
+    // Use the crash's AoE effect as a plain cash attack (the real card is now a 'market' life event that hits holdings)
+    const crash: GameCard = { ...findCard('ac_severe_market_crash_165'), category: undefined, lifeEvent: undefined }
     const after = processAction(newGame(1), 1, crash, 1)
     expect(after.players[1].wealth).toBe(STARTING_WEALTH)
     expect(after.players[0].wealth).toBe(STARTING_WEALTH - 75000)
