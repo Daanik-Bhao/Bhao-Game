@@ -1,21 +1,52 @@
-import type { GameState, PlayerState, GameCard, CardEffect, DecisionChoice } from '../types/game'
+import type { GameState, PlayerState, GameCard, CardEffect, DecisionChoice, DecisionOption, AssetClass } from '../types/game'
 import type { LevelConfig } from '../types/level'
 import { createGameDeck, createLevelDeck } from '../data/cards'
 import { SEASONS } from '../data/mockData'
+import { ASSETS, MAX_LIFESTYLE_LEVEL, inferAsset } from '../data/assets'
+import { BUILTIN_LIFE_EVENTS } from '../data/lifeEvents'
+import {
+  rand, shuffle, newId, getCash, getHoldings, getNetWorth, syncWealth, addCash, applyLoss, addHolding,
+  shiftMarketHoldings, rollMarket, applyMarketToPlayer, applyInflation, formatINR,
+  INVEST_FRACTION, MIN_INVEST_CASH,
+} from './economy'
+import type { LossResult } from './economy'
+
+export {
+  getCash, getHoldings, getNetWorth, syncWealth, applyLoss, setRng, seededRng, rand,
+  INVEST_FRACTION, MIN_INVEST_CASH, inflationPct,
+} from './economy'
 
 export const STARTING_WEALTH = 500000   // ₹5 Lakhs
 export const WEALTH_GOAL = 5000000      // ₹50 Lakhs
-export const TIME_LIMIT_MS = 30 * 60 * 1000  // 30 minutes per game limit
+export const TIME_LIMIT_MS = 20 * 60 * 1000  // 20 minutes per quick / ranked game
+/** Campaign levels run on a round (turn) limit; the clock is only a generous backstop. */
+export const CAMPAIGN_TIME_LIMIT_MS = 45 * 60 * 1000
 export const TURN_TIME_LIMIT_MS = 60000 // 60 seconds per turn
+/** Cards a player holds after the draw step. Unplayed cards stay in hand. */
+export const HAND_SIZE = 5
+/** Quick / ranked / multiplayer games end after this many rounds (years). */
+export const MAX_ROUNDS = 20
+export const MAX_ACTIVE_DEFENSES = 3
+export const SAVE_STREAK_CAP = 3
+/** Chance each round that a Life Event happens. */
+export const LIFE_EVENT_CHANCE = 0.5
 
+const LOG_MAX = 20
 const BOT_NAMES = ['Rahul AI', 'Priya AI', 'Arjun AI', 'Sneha AI', 'Vikram AI']
 
-function createPlayer(id: string, name: string, isBot: boolean, rankPoints?: number, avatarUrl?: string | null, diffMultiplier?: number): PlayerState {
+function pushLogs(log: string[], ...newestFirst: string[]): string[] {
+  return [...newestFirst, ...log].slice(0, LOG_MAX)
+}
+
+function createPlayer(id: string, name: string, isBot: boolean, rankPoints?: number, avatarUrl?: string | null, diffMultiplier?: number, startWealth = STARTING_WEALTH): PlayerState {
   return {
     id,
     name,
     isBot,
-    wealth: STARTING_WEALTH,
+    wealth: startWealth,
+    cash: startWealth,
+    holdings: [],
+    lifestyleLevel: 0,
     hand: [],
     activeDefenses: [],
     skippedTurns: 0,
@@ -32,22 +63,46 @@ function createPlayer(id: string, name: string, isBot: boolean, rankPoints?: num
   }
 }
 
+/** Phase-3 player fields for a brand-new player built elsewhere (e.g. multiplayer). */
+export function withEconomyDefaults(player: PlayerState): PlayerState {
+  return syncWealth(player)
+}
+
+/** Split `lifeEvent` cards out of a draw deck. */
+export function splitLifeEvents(cards: GameCard[]): { deck: GameCard[]; events: GameCard[] } {
+  return { deck: cards.filter(c => !c.lifeEvent), events: cards.filter(c => c.lifeEvent) }
+}
+
+/** Shared Life Event deck: lifeEvent cards from the game deck + built-in events. */
+export function buildEventDeck(events: GameCard[]): GameCard[] {
+  return shuffle([...events, ...BUILTIN_LIFE_EVENTS.map(c => ({ ...c, id: `${c.id}_ev` }))])
+}
+
+/** Fields every Phase-3 game state starts with. */
+export function newEconomyState(cards: GameCard[], isCampaign: boolean): Pick<GameState, 'deck' | 'eventDeck' | 'round' | 'lastEvent' | 'lastMarketTick' | 'equippedThisTurn' | 'maxRounds' | 'roundNews'> {
+  const { deck, events } = splitLifeEvents(cards)
+  return {
+    deck,
+    eventDeck: buildEventDeck(events),
+    round: 1,
+    lastEvent: null,
+    lastMarketTick: null,
+    equippedThisTurn: false,
+    maxRounds: isCampaign ? undefined : MAX_ROUNDS,
+    roundNews: null,
+  }
+}
+
 export function initGame(humanPlayer: { id: string; name: string; avatar_url?: string | null }, botCount: number): GameState {
-  const deck = createGameDeck()
   const players: PlayerState[] = [createPlayer(humanPlayer.id, humanPlayer.name, false, undefined, humanPlayer.avatar_url)]
   for (let i = 0; i < botCount; i++) {
     players.push(createPlayer(`bot_${i}`, BOT_NAMES[i] ?? `Bot ${i + 1}`, true, 1000 + i * 500))
   }
 
-  const hands: GameCard[][] = players.map(() => [])
-  const remaining = [...deck]
-
-  const newPlayers = players.map((p, i) => ({ ...p, hand: hands[i] }))
-
   return {
-    id: crypto.randomUUID(),
-    players: newPlayers,
-    deck: remaining,
+    id: newId(),
+    players,
+    ...newEconomyState(createGameDeck(), false),
     discardPile: [],
     currentPlayerIndex: 0,
     turn: 1,
@@ -57,7 +112,7 @@ export function initGame(humanPlayer: { id: string; name: string; avatar_url?: s
     pendingDecision: null,
     pendingTarget: null,
     winner: null,
-    log: ['Game started! First to ₹50 Lakhs wins.'],
+    log: [`Game started! First to ₹50 Lakhs wins — or richest after ${MAX_ROUNDS} years.`],
     wealthGoal: WEALTH_GOAL,
     timeLimit: TIME_LIMIT_MS,
     startTime: Date.now(),
@@ -67,25 +122,17 @@ export function initGame(humanPlayer: { id: string; name: string; avatar_url?: s
 
 export function initLevelGame(humanPlayer: { id: string; name: string; avatar_url?: string | null }, level: LevelConfig): GameState {
   const levelIndex = parseInt(level.id.replace('level_', '')) - 1
-  const deck = createLevelDeck(levelIndex, level.botDifficulty)
-  const players: PlayerState[] = [createPlayer(humanPlayer.id, humanPlayer.name, false, undefined, humanPlayer.avatar_url)]
+  const diffMap: Record<string, number> = { easy: 1000, medium: 2000, hard: 3000 }
+  const multMap: Record<string, number> = { easy: 0.8, medium: 1.0, hard: 1.2 }
+  const players: PlayerState[] = [createPlayer(humanPlayer.id, humanPlayer.name, false, undefined, humanPlayer.avatar_url, undefined, level.startingCorpus)]
   for (let i = 0; i < level.botCount; i++) {
-    const diffMap: Record<string, number> = { easy: 1000, medium: 2000, hard: 3000 }
-    const multMap: Record<string, number> = { easy: 0.8, medium: 1.0, hard: 1.2 }
-    players.push(createPlayer(`bot_${i}`, BOT_NAMES[i] ?? `Bot ${i + 1}`, true, diffMap[level.botDifficulty], null, multMap[level.botDifficulty]))
+    players.push(createPlayer(`bot_${i}`, BOT_NAMES[i] ?? `Bot ${i + 1}`, true, diffMap[level.botDifficulty], null, multMap[level.botDifficulty], level.startingCorpus))
   }
 
-  players.forEach(p => p.wealth = level.startingCorpus)
-
-  const hands: GameCard[][] = players.map(() => [])
-  const remaining = [...deck]
-
-  const newPlayers = players.map((p, i) => ({ ...p, hand: hands[i] }))
-
   return {
-    id: crypto.randomUUID(),
-    players: newPlayers,
-    deck: remaining,
+    id: newId(),
+    players,
+    ...newEconomyState(createLevelDeck(levelIndex, level.botDifficulty), true),
     discardPile: [],
     currentPlayerIndex: 0,
     turn: 1,
@@ -95,9 +142,9 @@ export function initLevelGame(humanPlayer: { id: string; name: string; avatar_ur
     pendingDecision: null,
     pendingTarget: null,
     winner: null,
-    log: [`BHAO: ${level.name} started! Goal: ${level.targetCorpus}`],
+    log: [`BHAO: ${level.name} started! Reach ${formatINR(level.targetCorpus)} within ${level.turnLimit} years.`],
     wealthGoal: level.targetCorpus,
-    timeLimit: TIME_LIMIT_MS,
+    timeLimit: CAMPAIGN_TIME_LIMIT_MS,
     startTime: Date.now(),
     turnStartTime: Date.now(),
     levelConfig: level,
@@ -119,32 +166,26 @@ function refillDeck(state: GameState): GameState {
   if (state.deck.length > 0 && !onlyDefenseLeftInDeck) return state
 
   if (state.discardPile.length > 0) {
-    const shuffled = [...state.deck, ...state.discardPile]
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-        ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-    }
-
-    // Check if the reshuffled deck still only has defense cards
-    const stillOnlyDefense = shuffled.every(c => c.type === 'defense')
-    if (!stillOnlyDefense) {
-      return { ...state, deck: shuffled, discardPile: [], log: ['Deck reshuffled.', ...state.log].slice(0, 20) }
+    const shuffled = shuffle([...state.deck, ...state.discardPile.filter(c => !c.lifeEvent)])
+    if (!shuffled.every(c => c.type === 'defense')) {
+      return { ...state, deck: shuffled, discardPile: [], log: pushLogs(state.log, 'Deck reshuffled.') }
     }
   }
 
   // Create a completely fresh deck to guarantee action/decision cards
-  return { ...state, deck: createGameDeck(), discardPile: [], log: ['Fresh deck created.', ...state.log].slice(0, 20) }
+  const fresh = splitLifeEvents(createGameDeck()).deck.map(c => ({ ...c, id: `${c.id}_${newId().slice(0, 6)}` }))
+  return { ...state, deck: fresh, discardPile: [], log: pushLogs(state.log, 'Fresh deck created.') }
 }
 
 export function drawCard(state: GameState, playerIndex: number): { state: GameState; card: GameCard | null } {
   const ready = refillDeck(state)
   const deck = [...ready.deck]
-  
+
   // Underdog System: if player is in last place and < 50% of leader's wealth, higher chance for epic/legendary actions
   const player = ready.players[playerIndex]
   const activeOpponents = ready.players.filter((p, i) => i !== playerIndex && !p.hasForfeited)
   const leaderWealth = activeOpponents.length > 0 ? Math.max(...activeOpponents.map(p => p.wealth)) : 0
-  const isUnderdog = activeOpponents.length > 0 && 
+  const isUnderdog = activeOpponents.length > 0 &&
                      activeOpponents.every(p => p.wealth > player.wealth) &&
                      player.wealth < leaderWealth * 0.5
 
@@ -172,38 +213,51 @@ export function drawCard(state: GameState, playerIndex: number): { state: GameSt
   }
 }
 
-/**
- * Set a player's wealth while honouring their wealth floor (Bankruptcy Shield).
- * Gains are applied as-is. A loss that would take the player below an active
- * floor is stopped at the floor (never above their current wealth) and the
- * shield breaks: the floor resets to 0 and the shield card leaves activeDefenses.
- * Returns the updated player plus any shield cards that should be discarded.
- */
-export function setWealthWithFloor(player: PlayerState, proposedWealth: number): { player: PlayerState; brokenShields: GameCard[] } {
-  const proposed = Math.round(proposedWealth)
-  if (proposed >= player.wealth || player.wealthFloor <= 0 || proposed >= player.wealthFloor) {
-    return { player: { ...player, wealth: Math.max(0, proposed) }, brokenShields: [] }
+/** Draw step: refill the hand up to HAND_SIZE. Cards already in hand stay. */
+export function startDrawPhase(state: GameState, playerIndex: number): { state: GameState; card: GameCard | null } {
+  let currentState = state
+  let lastDrawnCard: GameCard | null = null
+  let guard = 0
+  while (currentState.players[playerIndex].hand.length < HAND_SIZE && guard++ < HAND_SIZE) {
+    const res = drawCard(currentState, playerIndex)
+    currentState = res.state
+    if (!res.card) break
+    lastDrawnCard = res.card
   }
-  // Shield triggers: stop the fall at the floor (but never grant money), then break.
-  const saved = Math.max(proposed, Math.min(player.wealth, player.wealthFloor))
-  const brokenShields = player.activeDefenses.filter(c => c.effect?.type === 'wealth_floor')
-  return {
-    player: {
-      ...player,
-      wealth: Math.max(0, saved),
-      wealthFloor: 0,
-      activeDefenses: player.activeDefenses.filter(c => c.effect?.type !== 'wealth_floor'),
-    },
-    brokenShields,
-  }
+  return { state: currentState, card: lastDrawnCard }
 }
 
 /**
- * Equip a defense card from a player's hand. Block-type defenses wait in
- * activeDefenses for auto-defense; a wealth_floor defense (Bankruptcy Shield)
- * also arms the player's wealth floor immediately.
+ * Set a player's net worth while honouring their wealth floor (Bankruptcy Shield).
+ * Gains go to cash; losses go through applyLoss (cash, then forced sales, then floor).
+ */
+export function setWealthWithFloor(player: PlayerState, proposedWealth: number): { player: PlayerState; brokenShields: GameCard[] } {
+  const current = getNetWorth(player)
+  const proposed = Math.round(proposedWealth)
+  if (proposed >= current) return { player: addCash(player, proposed - current), brokenShields: [] }
+  const res = applyLoss(player, current - proposed)
+  return { player: res.player, brokenShields: res.brokenShields }
+}
+
+// ---------------------------------------------------------------------------
+// Defenses
+// ---------------------------------------------------------------------------
+
+/** Can the current player still use their one free equip this turn? */
+export function canEquip(state: GameState, playerIndex: number, card?: GameCard): boolean {
+  const p = state.players[playerIndex]
+  if (!p || state.equippedThisTurn) return false
+  if (card && card.type !== 'defense') return false
+  return p.activeDefenses.length < MAX_ACTIVE_DEFENSES
+}
+
+/**
+ * Equip a defense card from a player's hand — free, does NOT end the turn,
+ * once per turn, max 3 active. A wealth_floor defense (Bankruptcy Shield)
+ * also arms the player's wealth floor. Returns the state unchanged if not allowed.
  */
 export function equipDefense(state: GameState, playerIndex: number, card: GameCard): GameState {
+  if (!canEquip(state, playerIndex, card)) return state
   const players = state.players.map((p, i) => {
     if (i !== playerIndex) return p
     const hand = p.hand.filter(c => c.id !== card.id)
@@ -213,89 +267,147 @@ export function equipDefense(state: GameState, playerIndex: number, card: GameCa
       : p.wealthFloor
     return { ...p, hand, activeDefenses, wealthFloor }
   })
-  return { ...state, players }
+  return {
+    ...state,
+    players,
+    equippedThisTurn: true,
+    log: pushLogs(state.log, `🛡️ ${state.players[playerIndex].name} equipped ${card.name}`),
+  }
 }
 
-function applyEffect(state: GameState, effect: CardEffect, sourcePlayerIndex: number, targetPlayerIndex: number, multiplier = 1): GameState {
-  const players = [...state.players]
-  const discarded: GameCard[] = []
-  const setWealth = (index: number, proposed: number) => {
-    const res = setWealthWithFloor(players[index], proposed)
-    players[index] = res.player
-    discarded.push(...res.brokenShields)
-  }
-  // Positive amounts are scaled by the multiplier; everything is rounded in rupees.
-  const scale = (amount: number) => (amount > 0 ? Math.round(amount * multiplier) : Math.round(amount))
+/** Does this defense block that incoming card (legacy name list or category)? */
+export function defenseBlocks(defense: GameCard, incoming: GameCard): boolean {
+  if (defense.type !== 'defense') return false
+  if (incoming.category && defense.blocksCategories?.includes(incoming.category)) return true
+  const e = defense.effect
+  if (!e || e.type !== 'block_card') return false
+  return !!(e.blocks?.includes('any') || e.blocks?.includes(incoming.name))
+}
 
+/** True if the card would hurt whoever it lands on (defenses only trigger on these). */
+export function isHarmful(card: GameCard): boolean {
+  const e = card.effect
+  if (!e) return false
+  switch (e.type) {
+    case 'wealth_pct':
+    case 'wealth_change':
+      return (e.value ?? 0) < 0
+    case 'steal':
+    case 'steal_pct':
+    case 'attack_all_pct':
+    case 'market_crash_player':
+    case 'skip_turn':
+      return true
+    default:
+      return false
+  }
+}
+
+/** If the player has a matching defense, consume it and return the new player + used card. */
+function tryBlock(player: PlayerState, incoming: GameCard): { player: PlayerState; used: GameCard | null } {
+  if (!isHarmful(incoming)) return { player, used: null }
+  const def = player.activeDefenses.find(c => defenseBlocks(c, incoming))
+  if (!def) return { player, used: null }
+  return { player: { ...player, activeDefenses: player.activeDefenses.filter(c => c.id !== def.id) }, used: def }
+}
+
+// ---------------------------------------------------------------------------
+// Effects
+// ---------------------------------------------------------------------------
+
+interface EffectCtx {
+  players: PlayerState[]
+  discarded: GameCard[]
+  logs: string[]
+}
+
+function takeLoss(ctx: EffectCtx, idx: number, amount: number): LossResult {
+  const res = applyLoss(ctx.players[idx], amount)
+  ctx.players[idx] = res.player
+  ctx.discarded.push(...res.brokenShields)
+  ctx.logs.push(...res.logs)
+  return res
+}
+
+/**
+ * Apply an effect. `card` (optional) supplies the category: a `market` card
+ * moves market holdings instead of cash (docs §6).
+ */
+function applyEffect(state: GameState, effect: CardEffect, sourcePlayerIndex: number, targetPlayerIndex: number, card?: GameCard, exclude: Set<number> = new Set()): { state: GameState; logs: string[] } {
+  const ctx: EffectCtx = { players: [...state.players], discarded: [], logs: [] }
+  const players = ctx.players
+  const isMarket = card?.category === 'market'
   const source = players[sourcePlayerIndex]
-  const target = players[targetPlayerIndex]
 
   switch (effect.type) {
     case 'wealth_change': {
-      const val = scale(effect.value ?? 0)
-      // If it's a gain, doubleInvestActive applies
+      const val = Math.round(effect.value ?? 0)
       const doubled = (source.doubleInvestActive && effect.target === 'self' && val > 0) ? val * 2 : val
       const idx = effect.target === 'self' ? sourcePlayerIndex : targetPlayerIndex
-      setWealth(idx, players[idx].wealth + doubled)
+      if (doubled >= 0) players[idx] = addCash(players[idx], doubled)
+      else takeLoss(ctx, idx, -doubled)
       break
     }
     case 'wealth_pct': {
-      const pct = (effect.value ?? 0) / 100
+      const pct = effect.value ?? 0
       const idx = effect.target === 'self' ? sourcePlayerIndex : targetPlayerIndex
-      const delta = scale(players[idx].wealth * pct)
-      setWealth(idx, players[idx].wealth + delta)
+      if (isMarket) {
+        players[idx] = shiftMarketHoldings(players[idx], pct)
+      } else {
+        const delta = Math.round(getNetWorth(players[idx]) * pct / 100)
+        if (delta >= 0) players[idx] = addCash(players[idx], delta)
+        else takeLoss(ctx, idx, -delta)
+      }
       break
     }
     case 'wealth_next_turn': {
-      const pending = { amount: scale(effect.value ?? 0), triggerAt: 'next_turn' as const, cardId: crypto.randomUUID() }
+      const pending = { amount: Math.round(effect.value ?? 0), triggerAt: 'next_turn' as const, cardId: newId() }
       players[sourcePlayerIndex] = { ...source, pendingGains: [...source.pendingGains, pending] }
       break
     }
     case 'wealth_end_game': {
-      // Apply immediately — "long-term investment" pays out now
-      const val = scale(effect.value ?? 0)
+      // "Long-term investment" pays out now
+      const val = Math.round(effect.value ?? 0)
       const doubled = (source.doubleInvestActive && val > 0) ? val * 2 : val
-      setWealth(sourcePlayerIndex, source.wealth + doubled)
+      if (doubled >= 0) players[sourcePlayerIndex] = addCash(source, doubled)
+      else takeLoss(ctx, sourcePlayerIndex, -doubled)
       break
     }
-    case 'steal': {
-      const amount = Math.min(effect.value ?? 0, target.wealth)
-      setWealth(targetPlayerIndex, target.wealth - amount)
-      const actualLoss = target.wealth - players[targetPlayerIndex].wealth
-      players[sourcePlayerIndex] = { ...players[sourcePlayerIndex], wealth: players[sourcePlayerIndex].wealth + actualLoss }
-      break
-    }
+    case 'steal':
     case 'steal_pct': {
-      const pct = (effect.value ?? 0) / 100
-      const amount = Math.round(target.wealth * pct)
-      setWealth(targetPlayerIndex, target.wealth - amount)
-      const actualLoss = target.wealth - players[targetPlayerIndex].wealth
-      players[sourcePlayerIndex] = { ...players[sourcePlayerIndex], wealth: players[sourcePlayerIndex].wealth + actualLoss }
+      const targetNW = getNetWorth(players[targetPlayerIndex])
+      const amount = effect.type === 'steal'
+        ? Math.min(effect.value ?? 0, targetNW)
+        : Math.round(targetNW * (effect.value ?? 0) / 100)
+      const res = takeLoss(ctx, targetPlayerIndex, amount)
+      // Thief only gains what was actually taken
+      players[sourcePlayerIndex] = addCash(players[sourcePlayerIndex], res.paid)
       break
     }
     case 'attack_all_pct': {
       // Hits every opponent exactly once. The caster is spared unless the card
-      // explicitly opts in via includeSelf. Forfeited players are left alone.
-      // Scale AoE damage down with more players to prevent runaway dominance
-      const rawPct = (effect.value ?? 0) / 100
+      // explicitly opts in via includeSelf. Forfeited / defended players are left alone.
+      // Scaled down with more players to prevent runaway dominance.
+      const rawPct = effect.value ?? 0
       const scaleFactor = players.length <= 2 ? 1.0 : players.length === 3 ? 0.8 : 0.65
       const scaledPct = rawPct * scaleFactor
       for (let i = 0; i < players.length; i++) {
         if (i === sourcePlayerIndex && !effect.includeSelf) continue
-        if (players[i].hasForfeited) continue
-        const loss = Math.round(players[i].wealth * scaledPct)
-        setWealth(i, players[i].wealth - loss)
+        if (players[i].hasForfeited || exclude.has(i)) continue
+        if (isMarket) players[i] = shiftMarketHoldings(players[i], -scaledPct)
+        else takeLoss(ctx, i, Math.round(getNetWorth(players[i]) * scaledPct / 100))
       }
       break
     }
     case 'skip_turn': {
+      const target = players[targetPlayerIndex]
       players[targetPlayerIndex] = { ...target, skippedTurns: target.skippedTurns + (effect.value ?? 1) }
       break
     }
     case 'market_crash_player': {
-      const pct = (effect.value ?? 50) / 100
-      const loss = Math.round(target.wealth * pct)
-      setWealth(targetPlayerIndex, target.wealth - loss)
+      const pct = effect.value ?? 50
+      if (isMarket) players[targetPlayerIndex] = shiftMarketHoldings(players[targetPlayerIndex], -pct)
+      else takeLoss(ctx, targetPlayerIndex, Math.round(getNetWorth(players[targetPlayerIndex]) * pct / 100))
       break
     }
     case 'wealth_floor': {
@@ -309,10 +421,117 @@ function applyEffect(state: GameState, effect: CardEffect, sourcePlayerIndex: nu
   }
 
   return {
-    ...state,
-    players,
-    discardPile: discarded.length ? [...state.discardPile, ...discarded] : state.discardPile,
+    state: {
+      ...state,
+      players,
+      discardPile: ctx.discarded.length ? [...state.discardPile, ...ctx.discarded] : state.discardPile,
+    },
+    logs: ctx.logs,
   }
+}
+
+// ---------------------------------------------------------------------------
+// Decisions
+// ---------------------------------------------------------------------------
+
+export interface DecisionPreview {
+  /** Change in cash */
+  cashDelta: number
+  /** Rupees moved from cash into a holding (invest only) */
+  investAmount: number
+  /** Where invested money goes */
+  asset?: AssetClass
+  /** Change in net worth (cash + holdings), incl. forced-sale penalties */
+  netWorthDelta: number
+  /** Why the choice can't be made right now */
+  disabled?: string
+}
+
+/** Asset an invest option buys (content field, else inferred from the old investRisk). */
+export function getInvestAsset(option: DecisionOption): AssetClass {
+  return option.asset ?? inferAsset(option.investRisk)
+}
+
+interface DecisionOutcome {
+  player: PlayerState
+  logs: string[]
+  brokenShields: GameCard[]
+  investAmount: number
+  asset?: AssetClass
+  disabled?: string
+}
+
+/** Pure money maths for one decision choice on one player (docs §4). */
+function resolveDecision(player: PlayerState, card: GameCard, option: DecisionOption, round: number): DecisionOutcome {
+  const base = syncWealth(player)
+  const nw = base.wealth
+  const e = option.effect
+  const logs: string[] = []
+  let brokenShields: GameCard[] = []
+  const loss = (p: PlayerState, amount: number) => {
+    const res = applyLoss(p, amount)
+    brokenShields = res.brokenShields
+    logs.push(...res.logs)
+    return res.player
+  }
+  /** Signed rupee amount of the option's effect (NaN for effect types we don't price). */
+  const rawAmount = e.type === 'wealth_pct' ? nw * (e.value ?? 0) / 100 : e.type === 'wealth_change' ? (e.value ?? 0) : NaN
+
+  if (option.type === 'save') {
+    const streak = Math.min(SAVE_STREAK_CAP, base.savingStreak + 1)
+    const mult = 1 + streak * 0.05
+    let p: PlayerState = { ...base, savingStreak: streak }
+    const amt = Number.isNaN(rawAmount) ? 0 : Math.round(rawAmount > 0 ? rawAmount * mult : rawAmount)
+    p = amt >= 0 ? addCash(p, amt) : loss(p, -amt)
+    if (streak > 1) logs.push(`🔥 Saving Streak x${streak}!`)
+    return { player: p, logs, brokenShields, investAmount: 0 }
+  }
+
+  if (option.type === 'spend') {
+    let p: PlayerState = {
+      ...base,
+      savingStreak: 0,
+      spendChoices: base.spendChoices + 1,
+      lifestyleLevel: Math.min(MAX_LIFESTYLE_LEVEL, (base.lifestyleLevel ?? 0) + 1),
+    }
+    const amt = Number.isNaN(rawAmount) ? 0
+      : e.type === 'wealth_pct' ? -Math.abs(Math.round(rawAmount))
+      : Math.round(rawAmount)
+    p = amt >= 0 ? addCash(p, amt) : loss(p, -amt)
+    return { player: p, logs, brokenShields, investAmount: 0 }
+  }
+
+  // invest
+  const asset = getInvestAsset(option)
+  const cash = getCash(base)
+  if (cash < MIN_INVEST_CASH) {
+    return { player: base, logs, brokenShields, investAmount: 0, asset, disabled: `Need at least ${formatINR(MIN_INVEST_CASH)} cash to invest` }
+  }
+  const amount = Math.round(cash * INVEST_FRACTION[card.tier])
+  const p = addHolding({ ...base, savingStreak: 0, investChoices: base.investChoices + 1, doubleInvestActive: false }, asset, option.label && option.label !== 'Invest' ? option.label : card.name, amount, round)
+  return { player: p, logs, brokenShields, investAmount: amount, asset }
+}
+
+/**
+ * What a choice would do right now — for the decision sheet. Pure, no state change.
+ */
+export function previewDecision(state: GameState, playerIndex: number, card: GameCard, choice: DecisionChoice): DecisionPreview {
+  const option = card.options?.find(o => o.type === choice)
+  const player = state.players[playerIndex]
+  if (!option || !player) return { cashDelta: 0, investAmount: 0, netWorthDelta: 0, disabled: 'Not available' }
+  const out = resolveDecision(player, card, option, state.round ?? 1)
+  return {
+    cashDelta: getCash(out.player) - getCash(player),
+    investAmount: out.investAmount,
+    asset: out.asset,
+    netWorthDelta: getNetWorth(out.player) - getNetWorth(player),
+    disabled: out.disabled,
+  }
+}
+
+/** "📈 Index Fund SIP" */
+export function assetLabel(asset: AssetClass): string {
+  return `${ASSETS[asset].emoji} ${ASSETS[asset].name}`
 }
 
 export function processDecision(state: GameState, playerIndex: number, choice: DecisionChoice, card: GameCard): GameState {
@@ -320,119 +539,33 @@ export function processDecision(state: GameState, playerIndex: number, choice: D
   if (!option) return state
 
   const player = state.players[playerIndex]
-  let effectToApply = option.effect
-  let riskFired = false
-  const logs: string[] = []
-  
-  // --- Invest Risk mechanic ---
-  if (choice === 'invest' && option.investRisk && option.failEffect) {
-    if (Math.random() * 100 < option.investRisk) {
-      effectToApply = option.failEffect
-      riskFired = true
-    }
+  const oldNW = getNetWorth(player)
+  const out = resolveDecision(player, card, option, state.round ?? 1)
+  if (out.disabled) {
+    return { ...state, log: pushLogs(state.log, `⚠️ ${out.disabled}`) }
   }
 
-  // --- Core Mechanics Processing ---
-  let newGreedIndex = player.greedIndex
-  let newSavingStreak = player.savingStreak
-  let newSpendChoices = player.spendChoices
-
-  // Calculate Lifestyle Tier based on Spend Choices
-  const lifestyleTier = Math.min(3, 1 + Math.floor(player.spendChoices / 2))
-
-  // 1. Season Boost
-  const activeSeason = SEASONS.find(s => s.is_active)
-  let seasonBoost = 1.0
-  if (!riskFired && choice === 'invest' && activeSeason?.special_rule?.includes('INVEST gains')) {
-    const match = activeSeason.special_rule.match(/(\d+)%/)
-    if (match) seasonBoost = 1 + parseInt(match[1]) / 100
+  let newState: GameState = {
+    ...state,
+    players: state.players.map((p, i) => (i === playerIndex ? out.player : p)),
+    discardPile: out.brokenShields.length ? [...state.discardPile, ...out.brokenShields] : state.discardPile,
   }
 
-  // 2. Modifiers based on Choice
-  let multiplier = 1.0
-  if (choice === 'save') {
-    newSavingStreak += 1
-    multiplier = 1 + (newSavingStreak * 0.05) // +5% per streak
-    if (newSavingStreak > 1) logs.push(`🔥 Saving Streak x${newSavingStreak}!`)
-  } else if (choice === 'invest') {
-    newSavingStreak = 0
-    if (!riskFired) {
-      newGreedIndex += 1
-    }
-    // Lifestyle Tier multiplier on success
-    if (!riskFired) {
-      if (lifestyleTier === 1) multiplier = 0.75
-      else if (lifestyleTier === 2) multiplier = 1.0
-      else if (lifestyleTier === 3) multiplier = 1.5
-      logs.push(`💎 Tier ${lifestyleTier} Lifestyle Multiplier!`)
-    }
-  } else if (choice === 'spend') {
-    newSavingStreak = 0
-    newGreedIndex = 0
-    newSpendChoices += 1
-    logs.push(`🛍️ Treated yourself! Greed reset.`)
-  }
-
-  // Apply multipliers. The multiplier is applied to the resulting rupee amount
-  // (not to a percentage value) and the final amount is rounded in rupees.
-  const totalMultiplier = seasonBoost * multiplier
-
-  // --- Apply Effects ---
-  const oldWealth = player.wealth
-  let newState = applyEffect(state, effectToApply, playerIndex, playerIndex, totalMultiplier)
-
-  // --- Check for Market Correction (Greed Max) ---
-  if (newGreedIndex >= 3) {
-    newGreedIndex = 0
-    // Apply 20% penalty (respects the wealth floor; no in-place mutation)
-    const current = newState.players[playerIndex]
-    const penalty = Math.round(current.wealth * 0.20)
-    const { player: penalised, brokenShields } = setWealthWithFloor(current, current.wealth - penalty)
-    const actualLoss = current.wealth - penalised.wealth
-    newState = {
-      ...newState,
-      players: newState.players.map((p, i) => (i === playerIndex ? penalised : p)),
-      discardPile: brokenShields.length ? [...newState.discardPile, ...brokenShields] : newState.discardPile,
-    }
-    logs.push(`📉 MARKET CORRECTION! Greed reached MAX. Lost ₹${actualLoss.toLocaleString()}!`)
-  }
-
-  const newWealth = newState.players[playerIndex].wealth
-  const diff = newWealth - oldWealth
-  const diffStr = diff > 0 ? ` (+₹${Math.abs(diff).toLocaleString()})` : diff < 0 ? ` (-₹${Math.abs(diff).toLocaleString()})` : ''
-
-  // Update Player Stats
-  let updatedPlayers = [...newState.players]
-  updatedPlayers[playerIndex] = {
-    ...updatedPlayers[playerIndex],
-    doubleInvestActive: false,
-    investChoices: updatedPlayers[playerIndex].investChoices + (choice === 'invest' ? 1 : 0),
-    spendChoices: newSpendChoices,
-    savingStreak: newSavingStreak,
-    greedIndex: newGreedIndex
-  }
-  newState = { ...newState, players: updatedPlayers }
-
-  // Draw Card if Spend
+  const logs = [...out.logs]
+  // Spend draws a free card
   if (choice === 'spend') {
     const drawResult = drawCard(newState, playerIndex)
     newState = drawResult.state
     if (drawResult.card) logs.push(`🃏 Drew a free card!`)
   }
 
-  // Handle hand and discard pile
-  const discard = [...newState.discardPile, card]
-  const hand = newState.players[playerIndex].hand.filter(c => c.id !== card.id)
-  updatedPlayers = newState.players.map((p, i) =>
-    i === playerIndex ? { ...p, hand } : p
-  )
-
-  // Log Entry
+  const diff = getNetWorth(newState.players[playerIndex]) - oldNW
+  const diffStr = diff > 0 ? ` (+₹${Math.abs(diff).toLocaleString()})` : diff < 0 ? ` (-₹${Math.abs(diff).toLocaleString()})` : ''
   let logEntry = `${player.name} played ${card.name} → ${choice.toUpperCase()}${diffStr}`
-  if (riskFired) logEntry += ' 📉 (Failed!)'
-  if (seasonBoost !== 1.0 && !riskFired) logEntry += ' ⚡ (Season Boost!)'
-  
-  const finalLogs = [logEntry, ...logs, ...newState.log].slice(0, 20)
+  if (choice === 'invest' && out.asset) logEntry += ` — ${formatINR(out.investAmount)} moved into ${assetLabel(out.asset)}`
+
+  const hand = newState.players[playerIndex].hand.filter(c => c.id !== card.id)
+  const updatedPlayers = newState.players.map((p, i) => (i === playerIndex ? { ...p, hand } : p))
 
   // Update legacy level state
   if (newState.levelState) {
@@ -441,113 +574,107 @@ export function processDecision(state: GameState, playerIndex: number, choice: D
       if (choice === 'save') ls.savingStreak += 1
       else ls.savingStreak = 0
     }
-    newState.levelState = ls
+    newState = { ...newState, levelState: ls }
   }
 
   return checkWinCondition({
     ...newState,
     players: updatedPlayers,
-    discardPile: discard,
+    discardPile: [...newState.discardPile, card],
     playedCard: card,
     pendingDecision: null,
-    log: finalLogs,
+    log: pushLogs(newState.log, logEntry, ...logs),
   })
 }
 
+// ---------------------------------------------------------------------------
+// Actions
+// ---------------------------------------------------------------------------
+
 export function processAction(state: GameState, playerIndex: number, card: GameCard, targetIndex: number): GameState {
   if (!card.effect) return state
+  const effect = card.effect
+  const isAoE = effect.target === 'all' || effect.target === 'others'
 
-  // --- Auto-Defense Mechanic (Single Player) ---
-  // In single player, there is no async reaction phase. We auto-defend if the target has a defense card.
-  let isDefended = false
-  const updatedPlayersForDefense = [...state.players]
+  const players = [...state.players]
   const discardPile = [...state.discardPile]
+  const defended = new Set<number>()
+  const defendLogs: string[] = []
 
-  if (card.effect.target === 'target') {
-    const target = state.players[targetIndex]
-    const defCard = target.activeDefenses.find(c => {
-      if (c.type !== 'defense') return false
-      const effect = c.effect
-      if (!effect || effect.type !== 'block_card') return false
-      return !!(effect.blocks?.includes('any') || effect.blocks?.includes(card.name))
-    })
-    if (defCard) {
-      isDefended = true
-      // Consume the defense card
-      discardPile.push(defCard)
-      const newDefenses = target.activeDefenses.filter(c => c.id !== defCard.id)
-      updatedPlayersForDefense[targetIndex] = { ...target, activeDefenses: newDefenses }
+  // Auto-defense: equipped defenses block matching cards (by name or category)
+  const candidates = isAoE
+    ? players.map((_, i) => i).filter(i => (i !== playerIndex || effect.includeSelf) && !players[i].hasForfeited)
+    : effect.target === 'target' ? [targetIndex] : []
+  for (const i of candidates) {
+    const res = tryBlock(players[i], card)
+    if (res.used) {
+      players[i] = res.player
+      discardPile.push(res.used)
+      defended.add(i)
+      defendLogs.push(`🛡️ ${players[i].name}'s ${res.used.name} blocked ${card.name}!`)
     }
   }
 
-  // Only apply the attack effect if it was NOT defended
-  const oldSourceWealth = state.players[playerIndex].wealth
-  const oldTargetWealth = state.players[targetIndex].wealth
-
-  let newState = { ...state, players: updatedPlayersForDefense, discardPile }
+  const oldSource = getNetWorth(state.players[playerIndex])
+  const oldTarget = getNetWorth(state.players[targetIndex])
+  let newState: GameState = { ...state, players, discardPile }
+  const effectLogs: string[] = []
 
   const markEmiDamage = (s: GameState, idx: number): GameState => ({
     ...s,
     players: s.players.map((p, i) => (i === idx ? { ...p, emiDamageTaken: true } : p)),
   })
 
-  if (card.effect.target === 'all' || card.effect.target === 'others') {
-    // Note: Auto-defense is skipped for AoE in this version
-    if (card.effect.type === 'attack_all_pct') {
-      // attack_all_pct already iterates over every opponent itself — apply it exactly once.
-      newState = applyEffect(newState, card.effect, playerIndex, playerIndex)
-      if (card.id === 'ac_emi_bomb') {
+  if (isAoE) {
+    if (effect.type === 'attack_all_pct') {
+      // attack_all_pct iterates over every opponent itself — apply it exactly once.
+      const r = applyEffect(newState, effect, playerIndex, playerIndex, card, defended)
+      newState = r.state
+      effectLogs.push(...r.logs)
+      if (card.id.startsWith('ac_emi_bomb')) {
         for (let i = 0; i < newState.players.length; i++) {
-          if (i !== playerIndex || card.effect.includeSelf) newState = markEmiDamage(newState, i)
+          if ((i !== playerIndex || effect.includeSelf) && !defended.has(i)) newState = markEmiDamage(newState, i)
         }
       }
     } else {
       // Per-target AoE effects (e.g. skip_turn on 'others') are applied once per affected player
       for (let i = 0; i < newState.players.length; i++) {
-        if (card.effect.target === 'others' && i === playerIndex) continue
-        newState = applyEffect(newState, card.effect, playerIndex, i)
-        if (card.id === 'ac_emi_bomb') newState = markEmiDamage(newState, i)
+        if (effect.target === 'others' && i === playerIndex) continue
+        if (defended.has(i)) continue
+        const r = applyEffect(newState, effect, playerIndex, i, card)
+        newState = r.state
+        effectLogs.push(...r.logs)
+        if (card.id.startsWith('ac_emi_bomb')) newState = markEmiDamage(newState, i)
       }
     }
-  } else if (!isDefended) {
-    // Single target attack
-    newState = applyEffect(newState, card.effect, playerIndex, targetIndex)
-    // If it was an EMI bomb, mark target as having taken EMI damage
-    if (card.id === 'ac_emi_bomb') newState = markEmiDamage(newState, targetIndex)
+  } else if (!defended.has(targetIndex)) {
+    const r = applyEffect(newState, effect, playerIndex, targetIndex, card)
+    newState = r.state
+    effectLogs.push(...r.logs)
+    if (card.id.startsWith('ac_emi_bomb')) newState = markEmiDamage(newState, targetIndex)
   }
 
-  const newSourceWealth = newState.players[playerIndex].wealth
-  const newTargetWealth = newState.players[targetIndex].wealth
-  const targetDiff = newTargetWealth - oldTargetWealth
-  const sourceDiff = newSourceWealth - oldSourceWealth
-
+  const targetDiff = getNetWorth(newState.players[targetIndex]) - oldTarget
+  const sourceDiff = getNetWorth(newState.players[playerIndex]) - oldSource
   const targetDiffStr = targetDiff < 0 ? ` (-₹${Math.abs(targetDiff).toLocaleString()})` : targetDiff > 0 ? ` (+₹${Math.abs(targetDiff).toLocaleString()})` : ''
   const sourceDiffStr = sourceDiff > 0 ? ` (+₹${Math.abs(sourceDiff).toLocaleString()})` : ''
 
-
-  // Now process the played action card
-  const finalDiscard = [...newState.discardPile, card]
   const sourceHand = newState.players[playerIndex].hand.filter(c => c.id !== card.id)
-  const finalPlayers = newState.players.map((p, i) =>
-    i === playerIndex ? { ...p, hand: sourceHand } : p
-  )
+  const finalPlayers = newState.players.map((p, i) => (i === playerIndex ? { ...p, hand: sourceHand } : p))
 
   const targetName = state.players[targetIndex].name
-  let logEntry = card.effect.target === 'all' || card.effect.target === 'others'
+  let logEntry = isAoE
     ? `${state.players[playerIndex].name} played ${card.name} — affects all!`
     : `${state.players[playerIndex].name} played ${card.name} → ${targetName}${targetDiffStr}${sourceDiffStr}`
-
-  if (isDefended) {
-    logEntry += ` 🛡️ (${targetName} Auto-Defended!)`
-  }
+  if (!isAoE && defended.has(targetIndex)) logEntry += ` 🛡️ (${targetName} Auto-Defended!)`
 
   return checkWinCondition({
     ...newState,
     players: finalPlayers,
-    discardPile: finalDiscard,
+    discardPile: [...newState.discardPile, card],
     playedCard: card,
     pendingTarget: null,
-    log: [logEntry, ...newState.log].slice(0, 20),
+    log: pushLogs(newState.log, logEntry, ...effectLogs, ...(isAoE ? defendLogs : [])),
   })
 }
 
@@ -564,22 +691,40 @@ export function processDefense(state: GameState, defenderIndex: number, defenseC
     players: updatedPlayers,
     discardPile: discard,
     pendingTarget: null,
-    log: [logEntry, ...state.log].slice(0, 20),
+    log: pushLogs(state.log, logEntry),
   }
+}
+
+/** Pass: discard one chosen card from hand and end the turn. */
+export function passTurn(state: GameState, playerIndex: number, discardCardId: string): GameState {
+  const player = state.players[playerIndex]
+  const card = player?.hand.find(c => c.id === discardCardId)
+  if (!player) return state
+  const next: GameState = card
+    ? {
+        ...state,
+        players: state.players.map((p, i) => (i === playerIndex ? { ...p, hand: p.hand.filter(c => c.id !== card.id) } : p)),
+        discardPile: [...state.discardPile, card],
+        pendingDecision: null,
+        pendingTarget: null,
+        log: pushLogs(state.log, `${player.name} passed (discarded ${card.name}).`),
+      }
+    : { ...state, log: pushLogs(state.log, `${player.name} passed.`) }
+  return advanceTurn(next)
 }
 
 function processPendingGains(state: GameState, playerIndex: number): GameState {
   const player = state.players[playerIndex]
-  let wealth = player.wealth
+  let total = 0
   const remaining = player.pendingGains.filter(g => {
     if (g.triggerAt === 'next_turn') {
-      wealth += g.amount
+      total += g.amount
       return false
     }
     return true
   })
   if (remaining.length === player.pendingGains.length) return state
-  const { player: settled, brokenShields } = setWealthWithFloor({ ...player, pendingGains: remaining }, wealth)
+  const { player: settled, brokenShields } = setWealthWithFloor({ ...player, pendingGains: remaining }, getNetWorth(player) + total)
   const updatedPlayers = state.players.map((p, i) => (i === playerIndex ? settled : p))
   return {
     ...state,
@@ -588,36 +733,180 @@ function processPendingGains(state: GameState, playerIndex: number): GameState {
   }
 }
 
-export function advanceTurn(state: GameState): GameState {
-  // Discard all cards from the current player's hand since they have finished their play phase
-  const currentPlayer = state.players[state.currentPlayerIndex]
-  if (!currentPlayer.hasForfeited) {
-    const unplayedCards = [...currentPlayer.hand]
+// ---------------------------------------------------------------------------
+// Rounds: market tick → inflation → life event (docs §2)
+// ---------------------------------------------------------------------------
 
-    const updatedCurrentPlayer = { ...currentPlayer, hand: [] }
-    state = {
-      ...state,
-      players: state.players.map((p, i) => i === state.currentPlayerIndex ? updatedCurrentPlayer : p),
-      discardPile: [...state.discardPile, ...unplayedCards]
+function seasonMeanBoost(): number {
+  const activeSeason = SEASONS.find(s => s.is_active)
+  if (activeSeason?.special_rule?.includes('INVEST gains')) {
+    const match = activeSeason.special_rule.match(/(\d+)%/)
+    if (match) return 1 + parseInt(match[1]) / 100
+  }
+  return 1
+}
+
+/** Last round of this game (campaign: the level's turn limit). */
+export function getRoundLimit(state: GameState): number {
+  return state.levelConfig ? state.levelConfig.turnLimit : (state.maxRounds ?? MAX_ROUNDS)
+}
+
+function activeIndices(state: GameState): number[] {
+  return state.players.map((p, i) => (p.hasForfeited ? -1 : i)).filter(i => i >= 0)
+}
+
+/** Life-event version of an effect: always lands on the affected player themself. */
+function lifeEventEffect(effect: CardEffect): CardEffect {
+  const v = Math.abs(effect.value ?? 0)
+  switch (effect.type) {
+    case 'attack_all_pct':
+    case 'steal_pct':
+    case 'market_crash_player':
+      return { type: 'wealth_pct', value: -v, target: 'self' }
+    case 'steal':
+      return { type: 'wealth_change', value: -v, target: 'self' }
+    default:
+      return { ...effect, target: 'self' }
+  }
+}
+
+/** Apply a life event card to one random active player, or everyone if it targets all/others. */
+export function applyLifeEvent(state: GameState, card: GameCard): { state: GameState; lines: string[]; affected: string[] } {
+  if (!card.effect) return { state, lines: [], affected: [] }
+  const active = activeIndices(state)
+  if (!active.length) return { state, lines: [], affected: [] }
+  const everyone = card.effect.target === 'all' || card.effect.target === 'others'
+  const targets = everyone ? active : [active[Math.floor(rand() * active.length)]]
+  const effect = lifeEventEffect(card.effect)
+  let s = state
+  const lines: string[] = [`🎲 Life event: ${card.name}${everyone ? ' (everyone)' : ` — ${state.players[targets[0]].name}`}`]
+  for (const idx of targets) {
+    const block = tryBlock(s.players[idx], { ...card, effect })
+    if (block.used) {
+      s = {
+        ...s,
+        players: s.players.map((p, i) => (i === idx ? block.player : p)),
+        discardPile: [...s.discardPile, block.used],
+      }
+      lines.push(`🛡️ ${s.players[idx].name}'s ${block.used.name} blocked ${card.name}!`)
+      continue
     }
+    const before = getNetWorth(s.players[idx])
+    const r = applyEffect(s, effect, idx, idx, card)
+    s = r.state
+    const diff = getNetWorth(s.players[idx]) - before
+    if (diff !== 0) lines.push(`${diff > 0 ? '🎉' : '💥'} ${s.players[idx].name}: ${diff > 0 ? '+' : '-'}${formatINR(Math.abs(diff))}`)
+    lines.push(...r.logs)
+  }
+  return { state: s, lines, affected: targets.map(i => state.players[i].id) }
+}
+
+/** Runs when the turn wraps to the first player: one year passes. */
+export function startNewRound(state: GameState): GameState {
+  const newRound = (state.round ?? 1) + 1
+  const lines: string[] = [`📅 Year ${newRound}`]
+
+  // 1. Market tick — one shared roll per asset class
+  const heldBefore = new Set<AssetClass>()
+  state.players.forEach(p => getHoldings(p).forEach(h => heldBefore.add(h.asset)))
+  const changes = rollMarket(seasonMeanBoost())
+  let players = state.players.map(p => {
+    if (p.hasForfeited) return p
+    const { player, wiped } = applyMarketToPlayer(p, changes)
+    wiped.forEach(h => lines.push(`☠️ ${p.name}'s ${assetLabel(h.asset)} was wiped out.`))
+    return player
+  })
+  if (heldBefore.size) {
+    const moves = [...heldBefore].map(a => `${ASSETS[a].emoji} ${changes[a] >= 0 ? '+' : ''}${changes[a]}%`).join('  ')
+    lines.push(`📊 Market: ${moves}`)
   }
 
-  // FIND NEXT ACTIVE PLAYER FIRST
-  let nextIndex = (state.currentPlayerIndex + 1) % state.players.length
+  // 2. Inflation on idle cash
+  players = players.map(p => {
+    if (p.hasForfeited) return p
+    const { player, lost } = applyInflation(p)
+    if (lost > 0) lines.push(`💸 Inflation ate ${formatINR(lost)} of ${p.name}'s cash`)
+    return player
+  })
+
+  let s: GameState = {
+    ...state,
+    players,
+    round: newRound,
+    lastMarketTick: { round: newRound, changes },
+  }
+
+  // Round limit reached: the game ends after the final year's market + inflation
+  if (newRound > getRoundLimit(s)) {
+    return endByLimit({ ...s, roundNews: { round: newRound, lines } }, lines)
+  }
+
+  // 3. Life event (50%)
+  let lastEvent = state.lastEvent ?? null
+  if (rand() < LIFE_EVENT_CHANCE) {
+    let deck = s.eventDeck && s.eventDeck.length ? [...s.eventDeck] : buildEventDeck([])
+    const card = deck.shift()!
+    deck = [...deck, card] // cycle to the bottom
+    const r = applyLifeEvent({ ...s, eventDeck: deck }, card)
+    s = r.state
+    lines.push(...r.lines)
+    lastEvent = { card, round: newRound, affectedPlayerIds: r.affected }
+  }
+
+  return {
+    ...s,
+    lastEvent,
+    roundNews: { round: newRound, lines },
+    log: pushLogs(s.log, ...[...lines].reverse()),
+  }
+}
+
+/** Game over because the round / time limit was hit. */
+function endByLimit(state: GameState, extraLogs: string[] = [], reason = 'Round limit reached'): GameState {
+  const log = pushLogs(state.log, ...[...extraLogs].reverse())
+  const active = state.players.filter(p => !p.hasForfeited)
+  if (state.levelConfig) {
+    const human = state.players.find(p => !p.isBot)
+    if (human && getNetWorth(human) >= state.wealthGoal) {
+      return { ...state, winner: human, phase: 'game_over', log: pushLogs(log, `🏆 Level Complete! Reached the target corpus in time.`) }
+    }
+    const bestBot = [...active].filter(p => p.isBot).sort((a, b) => b.wealth - a.wealth)[0] ?? null
+    return {
+      ...state,
+      winner: bestBot,
+      phase: 'game_over',
+      log: pushLogs(log, `❌ ${reason}! You needed ${formatINR(state.wealthGoal)} — try investing earlier and keeping an emergency fund.`),
+    }
+  }
+  const winner = [...active].sort((a, b) => b.wealth - a.wealth)[0] ?? state.players[0]
+  return { ...state, winner, phase: 'game_over', log: pushLogs(log, `⌛ ${reason}! ${winner.name} wins with the highest net worth.`) }
+}
+
+export function advanceTurn(state: GameState): GameState {
+  const n = state.players.length
+  let newState: GameState = { ...state, equippedThisTurn: false }
+
+  // Find the next active player; crossing seat 0 starts a new round.
+  let wrapped = state.currentPlayerIndex + 1 >= n
+  let nextIndex = (state.currentPlayerIndex + 1) % n
   let loopCount = 0
-  let newState = state
-  while ((newState.players[nextIndex].hasForfeited || newState.players[nextIndex].skippedTurns > 0) && loopCount < newState.players.length) {
+  while ((newState.players[nextIndex].hasForfeited || newState.players[nextIndex].skippedTurns > 0) && loopCount < n) {
     const p = newState.players[nextIndex]
     if (!p.hasForfeited) {
-      const updatedPlayers = newState.players.map((pl, i) =>
-        i === nextIndex ? { ...pl, skippedTurns: pl.skippedTurns - 1 } : pl
-      )
-      newState = { ...newState, players: updatedPlayers }
-      const logEntry = `${p.name} is skipping their turn.`
-      newState = { ...newState, log: [logEntry, ...newState.log].slice(0, 20) }
+      newState = {
+        ...newState,
+        players: newState.players.map((pl, i) => (i === nextIndex ? { ...pl, skippedTurns: pl.skippedTurns - 1 } : pl)),
+        log: pushLogs(newState.log, `${p.name} is skipping their turn.`),
+      }
     }
-    nextIndex = (nextIndex + 1) % newState.players.length
+    if (nextIndex + 1 >= n) wrapped = true
+    nextIndex = (nextIndex + 1) % n
     loopCount++
+  }
+
+  if (wrapped && n > 1) {
+    newState = startNewRound(newState)
+    if (newState.phase === 'game_over') return newState
   }
 
   // PROCESS PENDING GAINS FOR THE NEXT PLAYER
@@ -628,14 +917,13 @@ export function advanceTurn(state: GameState): GameState {
 
   const elapsed = Date.now() - state.startTime
   if (elapsed >= state.timeLimit) {
-    const winner = [...newState.players].sort((a, b) => b.wealth - a.wealth)[0]
-    return { ...checked, winner, phase: 'game_over', log: ['Time up! Highest wealth wins.', ...checked.log].slice(0, 20) }
+    return endByLimit(checked, [], 'Time up')
   }
 
   return {
-    ...newState,
+    ...checked,
     currentPlayerIndex: nextIndex,
-    turn: newState.turn + 1,
+    turn: checked.turn + 1,
     phase: 'draw',
     drawnCard: null,
     playedCard: null,
@@ -648,18 +936,21 @@ export function advanceTurn(state: GameState): GameState {
 export function forceSkipTurn(state: GameState): GameState {
   const p = state.players[state.currentPlayerIndex]
   const logEntry = `⏱️ ${p.name} took too long! Turn skipped.`
-  const skippedState = { ...state, log: [logEntry, ...state.log].slice(0, 20) }
-  return advanceTurn(skippedState)
+  return advanceTurn({ ...state, pendingDecision: null, pendingTarget: null, log: pushLogs(state.log, logEntry) })
 }
 
 export function checkWinCondition(state: GameState): GameState {
-  const winner = state.players.find(p => p.wealth >= state.wealthGoal)
-  if (winner) {
+  if (state.phase === 'game_over' && state.winner) return state
+  const reached = state.players
+    .filter(p => !p.hasForfeited && getNetWorth(p) >= state.wealthGoal)
+    .sort((a, b) => getNetWorth(b) - getNetWorth(a))
+  if (reached.length) {
+    const winner = reached[0]
     return {
       ...state,
       winner,
       phase: 'game_over',
-      log: [`🏆 ${winner.name} reached the wealth goal and WINS!`, ...state.log].slice(0, 20),
+      log: pushLogs(state.log, `🏆 ${winner.name} reached the wealth goal and WINS!`),
     }
   }
   const activePlayers = state.players.filter(p => !p.hasForfeited)
@@ -669,40 +960,12 @@ export function checkWinCondition(state: GameState): GameState {
       ...state,
       winner: remainingWinner,
       phase: 'game_over',
-      log: [`🏆 Everyone else forfeited! ${remainingWinner.name} WINS!`, ...state.log].slice(0, 20),
+      log: pushLogs(state.log, `🏆 Everyone else forfeited! ${remainingWinner.name} WINS!`),
     }
   }
-  if (state.levelConfig && state.turn > state.levelConfig.turnLimit * state.players.length) {
-    // Campaign time/turn out - Did human reach the goal?
-    const human = state.players[0]
-    if (human.wealth >= state.wealthGoal) {
-      return {
-        ...state,
-        winner: human,
-        phase: 'game_over',
-        log: [`🏆 Level Complete! Reached the target corpus in time.`, ...state.log].slice(0, 20),
-      }
-    } else {
-      // Check if human has the highest wealth even without hitting the target
-      const highestWealth = Math.max(...state.players.map(p => p.wealth))
-      if (human.wealth === highestWealth) {
-        return {
-          ...state,
-          winner: human,
-          phase: 'game_over',
-          log: [`🏆 Time's up! You survived with the most wealth!`, ...state.log].slice(0, 20),
-        }
-      } else {
-        return {
-          ...state,
-          winner: state.players.find(p => p.isBot && p.wealth === highestWealth) || state.players.find(p => p.isBot) || null,
-          phase: 'game_over',
-          log: [`❌ Turn limit reached! You were out-earned by the bots.`, ...state.log].slice(0, 20),
-        }
-      }
-    }
+  if ((state.round ?? 1) > getRoundLimit(state)) {
+    return endByLimit(state)
   }
-
   return state
 }
 
@@ -711,90 +974,111 @@ export function getStartingWealth(state: GameState): number {
   return state.levelConfig?.startingCorpus ?? STARTING_WEALTH
 }
 
-/** Bot picks save/invest based on how it is doing relative to the game's starting wealth. */
-export function chooseBotDecision(state: GameState, bot: PlayerState, rand: number): DecisionChoice {
-  const diffMult = bot.diffMultiplier ?? 1.0
-  const wealthRatio = bot.wealth / getStartingWealth(state)
-  if (wealthRatio < 0.5) {
-    // Low on funds: always save (bot is risk-averse when losing)
-    return 'save'
-  } else if (wealthRatio > 2.0 && rand > (0.3 / diffMult)) {
-    // Doing well: invest with 70% probability, otherwise save
-    return rand > (0.3 / diffMult) ? 'invest' : 'save'
-  }
-  // Middle ground: 50/50 invest vs save
-  return rand > (0.5 / diffMult) ? 'invest' : 'save'
+// ---------------------------------------------------------------------------
+// Bots (docs §8)
+// ---------------------------------------------------------------------------
+
+/** Bots keep this share of net worth as cash — they "know" about emergency funds. */
+export const BOT_CASH_BUFFER = 0.15
+/** Chance (× difficulty) a bot spends its turn attacking a richer leader instead of making a money decision. */
+export const BOT_ATTACK_LEADER_CHANCE = { value: 0.2 }
+
+/** Chance a bot falls for a scam "hot tip": hard never, medium sometimes, easy often. */
+export function botScamChance(bot: PlayerState): number {
+  const diff = bot.diffMultiplier ?? 1.0
+  if (diff >= 1.1) return 0
+  if (diff < 1.0) return 0.5
+  return 0.2
 }
 
-export function doBotTurn(state: GameState): { state: GameState; delay: number } {
+/** Bot choice for a decision card: save below the cash buffer, otherwise invest (avoiding scams). */
+export function chooseBotDecision(_state: GameState, bot: PlayerState, card: GameCard, r: number = rand()): DecisionChoice {
+  const options = card.options ?? []
+  const invest = options.find(o => o.type === 'invest')
+  const hasSave = options.some(o => o.type === 'save')
+  const fallback: DecisionChoice = hasSave ? 'save' : (options.find(o => o.type !== 'spend')?.type ?? options[0]?.type ?? 'save')
+  if (!invest) return fallback
+  const cash = getCash(bot)
+  const buffer = getNetWorth(bot) * BOT_CASH_BUFFER
+  const frac = INVEST_FRACTION[card.tier]
+  if (cash < MIN_INVEST_CASH || cash * (1 - frac) < buffer) return fallback
+  const asset = getInvestAsset(invest)
+  if (asset === 'scam') return r < botScamChance(bot) ? 'invest' : fallback
+  if (asset === 'crypto' || asset === 'smallcap') return r < 0.5 ? 'invest' : fallback
+  return 'invest'
+}
+
+export interface BotPolicy {
+  /** Override the decision choice (used by the balance simulation). */
+  chooseDecision?: (state: GameState, bot: PlayerState, card: GameCard) => DecisionChoice
+}
+
+/** Pick which decision card to play: the one with the best outcome for the chosen choice. */
+function pickDecisionCard(state: GameState, botIndex: number, cards: GameCard[], policy?: BotPolicy): { card: GameCard; choice: DecisionChoice } | null {
+  const bot = state.players[botIndex]
+  let best: { card: GameCard; choice: DecisionChoice; score: number } | null = null
+  for (const card of cards) {
+    const choice = policy?.chooseDecision ? policy.chooseDecision(state, bot, card) : chooseBotDecision(state, bot, card)
+    const pv = previewDecision(state, botIndex, card, choice)
+    if (pv.disabled) continue
+    const score = choice === 'invest' && pv.asset
+      ? pv.investAmount * (ASSETS[pv.asset].meanPct / 100) + 1e9 // investing beats saving when the bot wants to invest
+      : pv.netWorthDelta
+    if (!best || score > best.score) best = { card, choice, score }
+  }
+  return best ? { card: best.card, choice: best.choice } : null
+}
+
+const TIER_RANK: Record<string, number> = { common: 0, rare: 1, epic: 2, legendary: 3 }
+
+export function doBotTurn(state: GameState, policy?: BotPolicy): { state: GameState; delay: number } {
   const botIndex = state.currentPlayerIndex
   const bot = state.players[botIndex]
-
-  const { state: drawnState } = startDrawPhase(state, botIndex)
-  const hand = drawnState.players[botIndex].hand
-
-  if (!hand.length) {
-    return { state: advanceTurn(drawnState), delay: 800 }
-  }
-
-  // --- Improved Bot AI ---
-  // Priority: targeted action > decision > AoE action > defense discard > discard
-  // Randomize to be less predictable
-  const rand = Math.random()
   const diffMult = bot.diffMultiplier ?? 1.0
 
-  const targetedAction = hand.find(c => c.type === 'action' && c.effect?.target === 'target')
-  const aoeAction = hand.find(c => c.type === 'action' && c.effect?.target === 'others')
-  const decision = hand.find(c => c.type === 'decision')
-  const defenseCard = hand.find(c => c.type === 'defense')
+  let s = startDrawPhase(state, botIndex).state
+  if (!s.players[botIndex].hand.length) {
+    return { state: advanceTurn(s), delay: 800 }
+  }
 
-  // Attack the player closest to winning (most dangerous), not just richest
-  const mostDangerousOtherIndex = drawnState.players
-    .map((p, i) => ({ wealth: p.wealth, i }))
-    .filter(x => x.i !== botIndex)
-    .sort((a, b) => b.wealth - a.wealth)[0]?.i ?? ((botIndex + 1) % drawnState.players.length)
+  // Free equip: one defense per turn
+  const defenseToEquip = s.players[botIndex].hand.find(c => c.type === 'defense')
+  if (defenseToEquip && canEquip(s, botIndex, defenseToEquip)) {
+    s = equipDefense(s, botIndex, defenseToEquip)
+  }
+
+  const hand = s.players[botIndex].hand
+  const me = s.players[botIndex]
+  const targetedAction = hand.find(c => c.type === 'action' && c.effect?.target === 'target')
+  const aoeAction = hand.find(c => c.type === 'action' && (c.effect?.target === 'others' || c.effect?.target === 'all'))
+  const decisions = hand.filter(c => c.type === 'decision' && c.options?.length)
+
+  const opponents = s.players.map((p, i) => ({ p, i })).filter(x => x.i !== botIndex && !x.p.hasForfeited)
+  const leader = [...opponents].sort((a, b) => getNetWorth(b.p) - getNetWorth(a.p))[0]
+  const leaderAhead = !!leader && getNetWorth(leader.p) > getNetWorth(me)
+  const r = rand()
 
   let finalState: GameState
+  const decisionPick = decisions.length ? pickDecisionCard(s, botIndex, decisions, policy) : null
 
-  if (targetedAction && rand > (0.25 / diffMult)) {
-    // 75% chance to use a targeted attack when available
-    finalState = processAction(drawnState, botIndex, targetedAction, mostDangerousOtherIndex)
-  } else if (decision) {
-    const choice = chooseBotDecision(drawnState, bot, rand)
-    finalState = processDecision(drawnState, botIndex, choice, decision)
-  } else if (aoeAction && rand > 0.4) {
-    finalState = processAction(drawnState, botIndex, aoeAction, botIndex)
-  } else if (defenseCard && rand > 0.6) {
-    // Equip a defense card
-    finalState = equipDefense(drawnState, botIndex, defenseCard)
+  if (targetedAction && leader && (!decisionPick || (leaderAhead && r < BOT_ATTACK_LEADER_CHANCE.value * diffMult))) {
+    finalState = processAction(s, botIndex, targetedAction, leader.i)
+  } else if (decisionPick) {
+    finalState = processDecision(s, botIndex, decisionPick.choice, decisionPick.card)
+  } else if (aoeAction) {
+    finalState = processAction(s, botIndex, aoeAction, botIndex)
   } else {
-    // If they have no good moves, just discard a card (which advanceTurn does anyway)
-    // But since the old logic explicitly discarded something, we can just play nothing and let advanceTurn clean up.
-    // Or we can equip a defense card if they have one.
-    if (defenseCard) {
-      finalState = equipDefense(drawnState, botIndex, defenseCard)
-    } else {
-      finalState = drawnState
-    }
+    // Nothing worth playing: pass, discarding the least useful card
+    const discard = [...hand].sort((a, b) => {
+      const aw = a.type === 'defense' ? 0 : 1
+      const bw = b.type === 'defense' ? 0 : 1
+      return aw - bw || TIER_RANK[a.tier] - TIER_RANK[b.tier]
+    })[0]
+    return { state: passTurn(s, botIndex, discard.id), delay: 1000 }
   }
 
   if (finalState.phase === 'game_over') return { state: finalState, delay: 800 }
   return { state: advanceTurn(finalState), delay: 1200 }
-}
-
-export function startDrawPhase(state: GameState, playerIndex: number): { state: GameState; card: GameCard | null } {
-  let currentState = state;
-  let lastDrawnCard = null;
-
-  // Draw exactly 4 new cards every turn, ignoring what is currently stored in hand
-  for (let i = 0; i < 4; i++) {
-    const res = drawCard(currentState, playerIndex);
-    currentState = res.state;
-    if (!res.card) break;
-    lastDrawnCard = res.card;
-  }
-
-  return { state: currentState, card: lastDrawnCard };
 }
 
 export function calculateRPChange(placement: number, totalPlayers: number, winStreak: number): number {

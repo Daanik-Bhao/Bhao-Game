@@ -6,7 +6,8 @@ import type { GameState, GameCard as GameCardType } from '../types/game'
 import { formatWealth } from '../types/game'
 import { Wealth } from '../components/Wealth'
 import {
-  processDecision, processAction, advanceTurn, startDrawPhase, forceSkipTurn, drawCard, equipDefense, TURN_TIME_LIMIT_MS
+  processDecision, processAction, advanceTurn, startDrawPhase, forceSkipTurn, drawCard, equipDefense, TURN_TIME_LIMIT_MS,
+  canEquip, passTurn, previewDecision, assetLabel
 } from '../lib/gameEngine'
 import { pushGameState, leaveRoom } from '../lib/multiplayerEngine'
 import { saveGameResult } from '../lib/auth'
@@ -54,6 +55,17 @@ export function MultiplayerGame() {
   const [onlinePlayers, setOnlinePlayers] = useState<Set<string>>(new Set())
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected'>('connected')
   const [activeEmotes, setActiveEmotes] = useState<Record<string, string>>({})
+
+  // "Year N" news (market, inflation, life event) whenever a new round starts
+  const lastNewsRoundRef = useRef(0)
+  useEffect(() => {
+    const news = gameState?.roundNews
+    if (!news || news.round <= lastNewsRoundRef.current || gameState?.phase === 'game_over') return
+    lastNewsRoundRef.current = news.round
+    setNotification(news.lines.slice(0, 4).join(' · '))
+    const timer = setTimeout(() => setNotification(null), 6000)
+    return () => clearTimeout(timer)
+  }, [gameState?.roundNews, gameState?.phase])
 
   // Use a string representation for stable useEffect dependencies
   const onlinePlayersStr = Array.from(onlinePlayers).sort().join(',')
@@ -271,7 +283,7 @@ export function MultiplayerGame() {
         if (!onlinePlayers.has(offlineId)) {
           // They are STILL offline after 15s, force forfeit
           const updatedPlayers = forfeitState.players.map(p =>
-            p.id === offlineId ? { ...p, wealth: 0, hasForfeited: true } : p
+            p.id === offlineId ? { ...p, wealth: 0, cash: 0, holdings: [], hasForfeited: true } : p
           )
           const offlinePlayer = forfeitState.players.find(p => p.id === offlineId)
           forfeitState = {
@@ -419,23 +431,54 @@ export function MultiplayerGame() {
         notify(t('game.playedCard', { card: card.name }))
       }
     } else if (card.type === 'defense') {
-      // Playing defense as regular turn action — equip it for future protection
+      await handleEquip(card)
+    }
+  }
+
+  /** Free equip (once per turn, max 3) — does not end the turn. */
+  async function handleEquip(card: GameCardType) {
+    const gs = gameStateRef.current
+    if (!gs || gs.players[gs.currentPlayerIndex]?.id !== myPlayerId || gs.phase !== 'play') return
+    if (canEquip(gs, myPlayerIndex, card)) {
       // equipDefense also arms the wealth floor for a Bankruptcy Shield
-      const next = advanceTurn(equipDefense(gs, myPlayerIndex, card))
+      const next = equipDefense(gs, myPlayerIndex, card)
       setGameState(next)
       gameStateRef.current = next
-      setPhase(next.phase === 'game_over' ? 'result' : 'playing')
       await pushState(next)
       playSound('defend')
-      if (next.phase === 'game_over') saveResult(next)
       notify(t('game.equippedDefense'))
+      return
     }
+    if (gs.players[myPlayerIndex].hand.some(c => c.type !== 'defense')) {
+      notify(gs.equippedThisTurn ? 'You can equip one defense per turn. Play a decision or action card.' : 'Defense slots full (3). Play a decision or action card.')
+      return
+    }
+    // Only un-equippable defenses left: discard this one as a Pass so the turn can't get stuck
+    await handlePass(card.id)
+  }
+
+  /** Pass: discard one card and end the turn. */
+  async function handlePass(cardId: string) {
+    const gs = gameStateRef.current
+    if (!gs || gs.players[gs.currentPlayerIndex]?.id !== myPlayerId || gs.phase !== 'play') return
+    const next = passTurn({ ...gs, pendingDecision: null, pendingTarget: null }, myPlayerIndex, cardId)
+    setGameState(next)
+    gameStateRef.current = next
+    setPhase(next.phase === 'game_over' ? 'result' : 'playing')
+    await pushState(next)
+    playSound('play')
+    if (next.phase === 'game_over') saveResult(next)
   }
 
   async function handleDecision(choice: 'spend' | 'save' | 'invest') {
     const gs = gameStateRef.current
     if (!gs?.pendingDecision) return
     const { card } = gs.pendingDecision
+    const preview = previewDecision(gs, myPlayerIndex, card, choice)
+    if (preview.disabled) {
+      notify(preview.disabled)
+      return
+    }
     const next = processDecision(gs, myPlayerIndex, choice, card)
     const final = next.phase !== 'game_over' ? advanceTurn(next) : next
     const cleared = { ...final, pendingDecision: null }
@@ -445,7 +488,9 @@ export function MultiplayerGame() {
     await pushState(cleared)
     playSound('play')
     if (final.phase === 'game_over') saveResult(final)
-    notify(`${choice.charAt(0).toUpperCase() + choice.slice(1)}!`)
+    const insight = card.options?.find(o => o.type === choice)?.mentorInsight
+    const moved = choice === 'invest' && preview.asset ? ` ₹${preview.investAmount.toLocaleString()} moved into ${assetLabel(preview.asset)}.` : ''
+    notify(`${choice.charAt(0).toUpperCase() + choice.slice(1)}!${moved}${insight ? ` 💡 ${insight}` : ''}`)
   }
 
   async function handleTargetSelect(targetIndex: number) {
@@ -479,7 +524,7 @@ export function MultiplayerGame() {
 
     const updatedPlayers = gs.players.map(p => {
       if (p.id === myPlayerId) {
-        return { ...p, wealth: 0, hasForfeited: true }
+        return { ...p, wealth: 0, cash: 0, holdings: [], hasForfeited: true }
       }
       return p
     })
@@ -706,6 +751,8 @@ export function MultiplayerGame() {
           daanikCoins={profile?.daank_coins ?? 0}
           onBuyExtraCard={handleBuyExtraCard}
           onSendEmote={sendEmote}
+          onPass={handlePass}
+          onEquip={handleEquip}
         />
       )}
     </div>

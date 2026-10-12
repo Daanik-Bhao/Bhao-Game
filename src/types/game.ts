@@ -137,6 +137,12 @@ export interface GameState {
   lastEvent?: { card: GameCard; round: number; affectedPlayerIds: string[] } | null
   /** Most recent market tick, for the UI: % change per asset class this round */
   lastMarketTick?: { round: number; changes: Partial<Record<AssetClass, number>> } | null
+  /** True once the current player has used their free defense equip this turn */
+  equippedThisTurn?: boolean
+  /** Quick/ranked/multiplayer: game ends after this many rounds (campaign uses levelConfig.turnLimit) */
+  maxRounds?: number
+  /** Human-readable summary of the latest round start ("Year N"): market, inflation, life event */
+  roundNews?: { round: number; lines: string[] } | null
 }
 
 export interface MogulRank {

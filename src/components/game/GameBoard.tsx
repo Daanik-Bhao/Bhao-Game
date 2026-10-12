@@ -25,6 +25,7 @@ export interface GameBoardProps {
   onBuyExtraCard: () => void
   activeEmotes?: Record<string, string>
   onSendEmote?: (emoji: string) => void
+  onPass?: (cardId: string) => void; onEquip?: (card: GameCard) => void // Phase 3: Pass discards + ends turn; Equip is free (once per turn)
   /**
    * Show the opponents strip on the large (desktop) layout. Defaults to
    * `isMultiplayer` (or a viewport <= 950px wide), because the single-player

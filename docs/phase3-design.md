@@ -67,3 +67,45 @@ Asset table + inflation constants: `src/data/assets.ts`.
 - After every decision, the outcome popup shows the option's `mentorInsight`.
 - Each round shows "Year N": market moves per asset, inflation hit, life event.
 - Decision sheet shows for invest: asset emoji/name, risk badge, avg yearly return, amount moved.
+
+## Balance results (engine simulation)
+
+Method: throwaway script (not committed) that plays full bot-vs-bot games through the real engine
+(`doBotTurn` with a per-player decision override; same attack/equip/pass policy for everyone),
+seeded rng per game, 2,000 games per row. Active season boost (+40% `meanPct`) on, as in the app.
+Strategies: **save** = always save; **index** = always invest (asset from the card, mostly index/equity),
+save only when cash < ₹1,000; **balanced** = the shipped bot (§8: keep 15% of net worth as cash, then invest,
+avoid scams/crypto); **scam** = always invest, everything goes into the scam asset; **spender** = always spend.
+
+Mixed tables (seats drawn at random from the five strategies), win rate when present:
+
+| players | save | index | balanced | scam | spender | someone hit goal | median rounds |
+|---|---|---|---|---|---|---|---|
+| 2 | 40% | 86% | 93% | 3% | 43% | 42% | 20 |
+| 3 | 13% | 61% | 86% | 0% | 0% | 58% | 20 |
+| 5 | 0% | 30% | 70% | 0% | 0% | 67% | 20 |
+
+(2-player "save"/"spender" wins come almost entirely from games against scam/spender/save.)
+
+One strategy vs two shipped bots (the real single-player experience), 3 players:
+
+| seat 1 plays | seat-1 win | seat-1 median final NW | game hit ₹50L | median rounds |
+|---|---|---|---|---|
+| balanced | 30% (≈ fair 33%) | ₹46.8L | 91% | 17 |
+| always invest | 13% | ₹40.1L | 88% | 18 |
+| always save | 0% | ₹4.8L | 86% | 18 |
+| scam-chaser | 0% | ₹0.0L | 86% | 18 |
+| big spender | 0% | ₹0.1L | 86% | 18 |
+
+Takeaways: keeping an emergency buffer and investing the rest wins; investing everything with no buffer
+is second (attacks/life events force sales and there is no saving income); pure saving keeps net worth
+flat because inflation eats idle cash; scams and lifestyle spending go to zero.
+
+Tuning applied to get here:
+- `INVEST_FRACTION` raised from 25/35/50/50% to **35/50/65/75%** of cash (common/rare/epic/legendary):
+  with the spec values the median game always ran to the 20-round limit; bigger invest moves also make
+  the invest choice feel weightier.
+- Bots attack a richer leader with probability **0.2 × difficulty** (`BOT_ATTACK_LEADER_CHANCE`) instead of
+  attacking whenever possible — with persistent hands bots always hold an attack card, and constant
+  attacks made growth near-zero for everyone.
+- Asset table (`src/data/assets.ts`) left unchanged: realistic returns were enough once the above was set.
