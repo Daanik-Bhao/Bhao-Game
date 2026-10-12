@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { markLevelCompleted, progressOwnerKey } from '../lib/campaignProgress'
+import { recordLevelResult, progressOwnerKey } from '../lib/campaignProgress'
+import { computeLevelStars, type LevelStarsResult } from '../lib/levelRules'
+import { LevelStars, LevelRuleHUD } from '../components/campaign'
 import { ForfeitModal } from '../components/ForfeitModal'
 import { Button } from '../components/ui/Button'
 import { GameState, PlayerState, GameCard as GameCardType, formatWealth } from '../types/game'
@@ -93,6 +95,8 @@ export function Game() {
   const [serverResult, setServerResult] = useState<MatchResultSummary | null>(null)
 
   const [gameState, setGameState] = useState<GameState | null>(null)
+  const [levelStars, setLevelStars] = useState<LevelStarsResult | null>(null)
+  const [showLevelRule, setShowLevelRule] = useState(false)
   const gameStateRef = useRef<GameState | null>(null)
   const [uiPhase, setUiPhase] = useState<GamePhaseUI>('setup')
 
@@ -195,8 +199,13 @@ export function Game() {
   const handleGameOver = useCallback((finalState: GameState) => {
     setGameState(finalState)
     setUiPhase('result')
-    if (levelId && finalState.winner?.id === finalState.players[humanPlayerIndex]?.id) {
-      markLevelCompleted(progressOwnerKey(user?.id), levelId)
+    if (levelId) {
+      const human = finalState.players[humanPlayerIndex]
+      if (human) {
+        const result = computeLevelStars(finalState, human.id)
+        setLevelStars(result)
+        recordLevelResult(progressOwnerKey(user?.id), levelId, result.stars, getNetWorth(human))
+      }
     }
     if (profile?.id && profile?.username) {
       const humanPlayer = finalState.players[humanPlayerIndex]
@@ -525,14 +534,21 @@ export function Game() {
         mode={mode}
         gameLog={gameState.log}
         report={
+          <>
+          {levelId && levelStars && (
+            <div style={{ background: 'rgba(255,255,255,0.92)', borderRadius: 16, padding: 16, marginBottom: 16 }}>
+              <LevelStars stars={levelStars.stars} criteria={levelStars.criteria} animate />
+            </div>
+          )}
           <GameReportPanel
             state={gameState}
             playerId={humanPlayer.id}
             ownerKey={progressOwnerKey(user?.id)}
             onOpenLibrary={() => navigate('/library')}
           />
+          </>
         }
-        onPlayAgain={() => { setGameState(null); setUiPhase('setup') }}
+        onPlayAgain={() => { setGameState(null); setLevelStars(null); setUiPhase('setup') }}
         onDashboard={() => navigate('/dashboard')}
       />
 
@@ -669,6 +685,22 @@ export function Game() {
       )}
 
       <div className="game-content-wrapper" style={{ flex: 1, position: 'relative', zIndex: 10, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        {levelId && gameState.levelState?.rule && (
+          <div style={{ position: 'absolute', left: 8, bottom: 8, zIndex: 60, maxWidth: 'min(320px, calc(100vw - 16px))' }}>
+            {showLevelRule && (
+              <div style={{ background: 'rgba(255,255,255,0.96)', borderRadius: 12, padding: 10, marginBottom: 6, boxShadow: '0 6px 20px rgba(0,0,0,0.25)', color: '#1f2937' }}>
+                <LevelRuleHUD state={gameState} />
+              </div>
+            )}
+            <button
+              onClick={() => setShowLevelRule(v => !v)}
+              aria-expanded={showLevelRule}
+              style={{ minHeight: 44, padding: '8px 14px', borderRadius: 999, border: 'none', background: '#0f5132', color: '#fff', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.25)' }}
+            >
+              🎯 {t('campaign.hud.toggle')}
+            </button>
+          </div>
+        )}
         <GameBoard
           gameState={gameState}
           myPlayerId={profile?.id ?? 'human'}

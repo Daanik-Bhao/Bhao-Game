@@ -7192,6 +7192,393 @@ function cashShare(player) {
   return nw > 0 ? Math.round(getCash(player) / nw * 1e3) / 1e3 : 0;
 }
 
+// src/lib/levelRules.ts
+var RULE_TUNING = {
+  desire: {
+    max: 100,
+    plannedThreshold: 50,
+    yearlyRise: 20,
+    resistRise: 10,
+    /** A whim (Spend below the planned threshold) only lowers the meter this much */
+    whimDrop: 30,
+    /** Impulse splurge: % of net worth lost, meter falls back to this */
+    impulsePct: 15,
+    afterImpulse: 40
+  },
+  streak: {
+    cap: 5,
+    /** Auto-SIP per streak level, as a share of the starting corpus */
+    sipStepShare: 0.02
+  },
+  creep: {
+    /** Yearly take-home salary as a share of the starting corpus */
+    salaryShare: 0.12,
+    raisePct: 10,
+    startLifestylePct: 45,
+    creepPerYear: 5,
+    spendCreep: 12,
+    saveCut: 10,
+    minLifestylePct: 30,
+    slots: 3
+  },
+  grihastha: {
+    /** [goal, due year, amount as share of starting corpus] */
+    goals: [
+      ["home", 4, 0.25],
+      ["education", 7, 0.2],
+      ["parents_health", 9, 0]
+    ],
+    /** Parents' hospital bill, % of net worth */
+    bossPct: 20,
+    insuredShare: 0.2,
+    /** Goal due without enough cash: extra cost on the shortfall, % (rushed sale / stop-gap loan) */
+    rushPct: 20,
+    /** Health-insurance cards added to the level deck so cover is always findable */
+    extraInsuranceCards: 3
+  },
+  stars: {
+    /** L2 habit: best streak at least this long */
+    streakBest: 6,
+    /** L3 habit: lifestyle share of salary at or below this at the end */
+    lifestyleMaxPct: 60,
+    /** Report-card average (A=4 … D=1) needed for the 3rd star */
+    reportAverage: 3
+  }
+};
+var MAX_RULE_EVENTS = 10;
+var GOAL_WARNING_YEARS = 2;
+function activeRule(state) {
+  if (!state.levelConfig || !state.levelState) return null;
+  return state.levelState.rule ?? null;
+}
+function ruleHumanIndex(state) {
+  return state.players.findIndex((p) => !p.isBot && !p.hasForfeited);
+}
+function pushEvent(ls, ev) {
+  return { ...ls, ruleEvents: [ev, ...ls.ruleEvents ?? []].slice(0, MAX_RULE_EVENTS) };
+}
+function setPlayer(state, idx, p) {
+  return { ...state, players: state.players.map((x, i) => i === idx ? p : x) };
+}
+function optionAsset(option) {
+  return option.asset ?? inferAsset(option.investRisk);
+}
+function slotsUsed(player) {
+  return [...new Set(getHoldings(player).map((h) => h.asset))];
+}
+var GOAL_SAFE_ASSETS = ["fd", "debt"];
+function readyMoney(player) {
+  return getCash(player) + getHoldings(player).filter((h) => GOAL_SAFE_ASSETS.includes(h.asset)).reduce((s, h) => s + h.value, 0);
+}
+function withdrawSafe(player, amount) {
+  let left = amount;
+  const cash = getCash(player);
+  const fromCash = Math.min(cash, left);
+  left -= fromCash;
+  const take = {};
+  for (const asset of GOAL_SAFE_ASSETS) {
+    for (const h of getHoldings(player)) {
+      if (h.asset !== asset || left <= 0) continue;
+      take[h.id] = Math.min(h.value, left);
+      left -= take[h.id];
+    }
+  }
+  const holdings = getHoldings(player).map((h) => take[h.id] ? { ...h, value: h.value - take[h.id], principal: Math.max(0, h.principal - take[h.id]) } : h).filter((h) => h.value > 0);
+  return addCash({ ...player, cash: cash - fromCash, holdings }, 0);
+}
+function hasHealthCover(player) {
+  return player.activeDefenses.some((d) => d.type === "defense" && !!d.blocksCategories?.includes("medical"));
+}
+var GOAL_NAMES = {
+  home: { en: "Home down payment", hi: "घर का डाउन पेमेंट" },
+  education: { en: "Kids' education fund", hi: "बच्चों की पढ़ाई का फंड" },
+  parents_health: { en: "Parents' health", hi: "माता-पिता का स्वास्थ्य" }
+};
+function familyGoalName(id, hindi = false) {
+  return hindi ? GOAL_NAMES[id].hi : GOAL_NAMES[id].en;
+}
+function levelDecisionBlock(state, playerIndex, option) {
+  if (activeRule(state) !== "lifestyle_creep" || option.type !== "invest") return void 0;
+  const player = state.players[playerIndex];
+  if (!player || player.isBot || playerIndex !== ruleHumanIndex(state)) return void 0;
+  const slots = state.levelState?.creep?.slots ?? RULE_TUNING.creep.slots;
+  const used = slotsUsed(player);
+  const asset = optionAsset(option);
+  if (used.includes(asset) || used.length < slots) return void 0;
+  return `All ${slots} investment slots are full — add to an investment you already hold`;
+}
+function noteBlockedDecision(state) {
+  const ls = state.levelState;
+  if (!ls?.creep) return state;
+  const round = state.round ?? 1;
+  const next = pushEvent({ ...ls, creep: { ...ls.creep, blockedInvests: ls.creep.blockedInvests + 1 } }, {
+    round,
+    kind: "slots_full",
+    key: "campaign.events.slots_full",
+    params: { n: ls.creep.slots },
+    text: `All ${ls.creep.slots} investment slots are full.`,
+    textHi: `सभी ${ls.creep.slots} निवेश स्लॉट भरे हैं।`
+  });
+  return { ...state, levelState: next };
+}
+function applyLevelDecision(state, playerIndex, choice, before) {
+  const none = { state, lines: [], forcedSales: [], playerIndex: -1 };
+  const rule = activeRule(state);
+  if (!rule || playerIndex !== ruleHumanIndex(state)) return none;
+  let ls = state.levelState;
+  let s = state;
+  const lines = [];
+  const round = state.round ?? 1;
+  const resist = choice === "save" || choice === "invest";
+  if (rule === "desire_meter" && ls.desire) {
+    const d = ls.desire;
+    if (resist) {
+      const value = Math.min(d.max, d.value + d.resistRise);
+      ls = { ...ls, desire: { ...d, value } };
+      if (value >= d.max) {
+        lines.push(`🌙 Desire Meter full (${value}) — plan a treat now or you'll splurge on impulse next year.`);
+        ls = pushEvent(ls, {
+          round,
+          kind: "desire_warning",
+          key: "campaign.events.desire_warning",
+          text: "Desire Meter is full — plan a treat now, or next year you splurge on impulse.",
+          textHi: "इच्छा मीटर भर गया — अभी सोच-समझकर खर्च करें, वरना अगले साल अचानक फिज़ूलखर्ची होगी।"
+        });
+      }
+    } else if (choice === "spend") {
+      if (d.value >= d.plannedThreshold) {
+        const p = s.players[playerIndex];
+        s = setPlayer(s, playerIndex, { ...p, lifestyleLevel: before.lifestyleLevel ?? 0 });
+        ls = pushEvent({ ...ls, desire: { ...d, value: 0, plannedTreats: d.plannedTreats + 1 } }, {
+          round,
+          kind: "planned_treat",
+          key: "campaign.events.planned_treat",
+          text: "Planned treat! You enjoyed it without guilt — the Desire Meter is back to 0.",
+          textHi: "योजना वाला खर्च! बिना पछतावे के मज़ा लिया — इच्छा मीटर फिर 0 पर।"
+        });
+        lines.push("🎁 Planned treat — Desire Meter back to 0, no lifestyle creep.");
+      } else {
+        ls = { ...ls, desire: { ...d, value: Math.max(0, d.value - RULE_TUNING.desire.whimDrop) } };
+        lines.push("🛍️ A whim, not a plan — the Desire Meter only dropped a little.");
+      }
+    }
+  } else if (rule === "saving_streak" && ls.streak) {
+    const st = ls.streak;
+    if (resist) {
+      const current = st.current + 1;
+      ls = { ...ls, savingStreak: current, streak: { ...st, current, best: Math.max(st.best, current) } };
+      lines.push(`🔥 Pay-yourself-first streak: ${current} year${current > 1 ? "s" : ""}`);
+    } else if (choice === "spend" && st.current > 0) {
+      ls = pushEvent({ ...ls, savingStreak: 0, streak: { ...st, current: 0, breaks: st.breaks + 1 } }, {
+        round,
+        kind: "streak_broken",
+        key: "campaign.events.streak_broken",
+        params: { n: st.current },
+        text: `Streak of ${st.current} broken — your Auto-SIP bonus is gone.`,
+        textHi: `${st.current} की लय टूट गई — ऑटो-SIP बोनस गया।`
+      });
+      lines.push(`💔 Streak of ${st.current} broken — the Auto-SIP bonus resets.`);
+    }
+  } else if (rule === "lifestyle_creep" && ls.creep) {
+    const c = ls.creep;
+    if (choice === "spend") {
+      const pct = c.lifestylePct + c.spendCreep;
+      ls = { ...ls, lifestyleCreep: pct, creep: { ...c, lifestylePct: pct, peakLifestylePct: Math.max(c.peakLifestylePct, pct) } };
+      lines.push(`📈 Lifestyle now eats ${pct}% of your salary.`);
+    } else if (choice === "save") {
+      const pct = Math.max(c.minLifestylePct, c.lifestylePct - c.saveCut);
+      ls = { ...ls, lifestyleCreep: pct, creep: { ...c, lifestylePct: pct } };
+      lines.push(`✂️ Budget review: lifestyle down to ${pct}% of salary.`);
+    }
+  }
+  return { state: { ...s, levelState: ls }, lines, forcedSales: [], playerIndex };
+}
+function applyLevelRoundStart(state) {
+  const rule = activeRule(state);
+  const idx = ruleHumanIndex(state);
+  if (!rule || idx < 0) return { state, lines: [], forcedSales: [], playerIndex: -1 };
+  const round = state.round ?? 1;
+  let ls = state.levelState;
+  let p = state.players[idx];
+  const lines = [];
+  const forcedSales = [];
+  const brokenShields = [];
+  const loss = (amount) => {
+    const res = applyLoss(p, amount);
+    p = res.player;
+    forcedSales.push(...res.forcedSales);
+    brokenShields.push(...res.brokenShields);
+    lines.push(...res.logs);
+    return res;
+  };
+  if (rule === "desire_meter" && ls.desire) {
+    const d = ls.desire;
+    const value = d.value + d.yearlyRise;
+    if (value >= d.max) {
+      const want = Math.round(getNetWorth(p) * RULE_TUNING.desire.impulsePct / 100);
+      const res = loss(want);
+      p = { ...p, lifestyleLevel: Math.min(MAX_LIFESTYLE_LEVEL, (p.lifestyleLevel ?? 0) + 1) };
+      ls = pushEvent({
+        ...ls,
+        desire: { ...d, value: RULE_TUNING.desire.afterImpulse, impulseSplurges: d.impulseSplurges + 1, impulseLost: d.impulseLost + res.netWorthLost }
+      }, {
+        round,
+        kind: "impulse_splurge",
+        key: "campaign.events.impulse_splurge",
+        params: { amount: formatINR(res.netWorthLost) },
+        text: `Impulse splurge! Bottled-up wants burst out: ${formatINR(res.netWorthLost)} gone, and your lifestyle crept up.`,
+        textHi: `अचानक फिज़ूलखर्ची! दबी इच्छाएँ फूट पड़ीं: ${formatINR(res.netWorthLost)} गए, और खर्च की आदत बढ़ गई।`,
+        amount: res.netWorthLost
+      });
+      lines.push(`🌕 Impulse splurge! The Desire Meter maxed out — ${p.name} lost ${formatINR(res.netWorthLost)}.`);
+    } else {
+      ls = { ...ls, desire: { ...d, value } };
+      if (value >= d.max - d.yearlyRise) {
+        lines.push(`🌙 Desire Meter at ${value} — a planned treat now beats a splurge later.`);
+        ls = pushEvent(ls, {
+          round,
+          kind: "desire_warning",
+          key: "campaign.events.desire_warning",
+          text: "Desire Meter is high — plan a treat now, or next year you splurge on impulse.",
+          textHi: "इच्छा मीटर ऊँचा है — अभी सोच-समझकर खर्च करें, वरना अगले साल अचानक फिज़ूलखर्ची होगी।"
+        });
+      }
+    }
+  } else if (rule === "saving_streak" && ls.streak) {
+    const st = ls.streak;
+    if (st.current > 0) {
+      const sip = Math.min(st.current, st.cap) * st.sipStep;
+      p = addHolding(addCash(p, sip), "index", "Auto-SIP", sip, round);
+      ls = pushEvent({ ...ls, streak: { ...st, autoSipTotal: st.autoSipTotal + sip } }, {
+        round,
+        kind: "auto_sip",
+        key: "campaign.events.auto_sip",
+        params: { amount: formatINR(sip), n: st.current },
+        text: `Auto-SIP: ${formatINR(sip)} went into your index fund (streak ${st.current}).`,
+        textHi: `ऑटो-SIP: ${formatINR(sip)} आपके इंडेक्स फंड में गए (लय ${st.current})।`,
+        amount: sip
+      });
+      lines.push(`🔁 Auto-SIP: ${formatINR(sip)} into ${p.name}'s index fund (streak ${st.current}).`);
+    }
+  } else if (rule === "lifestyle_creep" && ls.creep) {
+    const c = ls.creep;
+    const salary = Math.round(c.salary * (1 + c.raisePct / 100));
+    const pct = c.lifestylePct + c.creepPerYear;
+    const left = Math.round(salary * (1 - pct / 100));
+    if (left >= 0) p = addCash(p, left);
+    else loss(-left);
+    ls = pushEvent({
+      ...ls,
+      lifestyleCreep: pct,
+      creep: { ...c, salary, lifestylePct: pct, peakLifestylePct: Math.max(c.peakLifestylePct, pct), savedFromSalary: c.savedFromSalary + left }
+    }, {
+      round,
+      kind: "salary",
+      key: "campaign.events.salary",
+      params: { salary: formatINR(salary), pct, left: formatINR(left) },
+      text: `Raise! Salary ${formatINR(salary)}, lifestyle takes ${pct}% — ${formatINR(left)} left for you.`,
+      textHi: `इन्क्रीमेंट! वेतन ${formatINR(salary)}, खर्च ${pct}% — आपके लिए ${formatINR(left)} बचे।`,
+      amount: left
+    });
+    lines.push(`💼 Salary ${formatINR(salary)} (+${c.raisePct}%), lifestyle ${pct}% → ${left >= 0 ? "+" : "-"}${formatINR(Math.abs(left))} for ${p.name}`);
+  } else if (rule === "grihastha" && ls.family) {
+    const fam = ls.family;
+    let insuredAtBoss = fam.insuredAtBoss;
+    const goals = fam.goals.map((g) => {
+      if (g.status !== "pending" || g.dueRound !== round) return g;
+      const name = familyGoalName(g.id);
+      if (g.id === "parents_health") {
+        const insured = hasHealthCover(p);
+        insuredAtBoss = insured;
+        const bill = Math.round(getNetWorth(p) * fam.bossPct / 100);
+        const pay = insured ? Math.round(bill * fam.insuredShare) : bill;
+        const sold = forcedSales.length;
+        const res = loss(pay);
+        const status2 = insured && forcedSales.length === sold ? "met" : "strained";
+        lines.push(insured ? `🏥 Boss event: parents in hospital — insurance paid most of the ${formatINR(bill)} bill; you paid ${formatINR(res.netWorthLost)}.` : `🏥 Boss event: parents in hospital — no health cover, you paid ${formatINR(res.netWorthLost)}.`);
+        ls = pushEvent(ls, {
+          round,
+          kind: "boss",
+          key: insured ? "campaign.events.boss_insured" : "campaign.events.boss_uninsured",
+          params: { bill: formatINR(bill), paid: formatINR(res.netWorthLost) },
+          text: insured ? `Parents in hospital: the bill was ${formatINR(bill)}, insurance paid most — you paid ${formatINR(res.netWorthLost)}.` : `Parents in hospital with no health cover: you paid the full ${formatINR(res.netWorthLost)}.`,
+          textHi: insured ? `माता-पिता अस्पताल में: बिल ${formatINR(bill)}, ज़्यादातर बीमे ने भरा — आपने ${formatINR(res.netWorthLost)} दिए।` : `माता-पिता अस्पताल में, कोई स्वास्थ्य बीमा नहीं: पूरे ${formatINR(res.netWorthLost)} आपने भरे।`,
+          amount: res.netWorthLost
+        });
+        return { ...g, amount: bill, paid: res.netWorthLost, status: status2 };
+      }
+      const readyBefore = readyMoney(p);
+      p = withdrawSafe(p, g.amount);
+      const fromReady = Math.min(g.amount, readyBefore);
+      const shortfall = g.amount - fromReady;
+      let paid = fromReady;
+      if (shortfall > 0) {
+        const res = loss(shortfall);
+        paid += res.paid;
+        const rush = loss(Math.round(shortfall * fam.rushPct / 100));
+        if (rush.netWorthLost > 0) lines.push(`💸 Rushing to raise ${formatINR(shortfall)} cost an extra ${formatINR(rush.netWorthLost)}.`);
+      }
+      if (g.id === "home" && paid > 0) {
+        p = addHolding(addCash(p, paid), "realestate", "Family Home", paid, round);
+      }
+      const status = paid < g.amount ? "missed" : shortfall === 0 ? "met" : "strained";
+      const key = status === "met" ? "goal_met" : "goal_strained";
+      ls = pushEvent(ls, {
+        round,
+        kind: key,
+        key: `campaign.events.${key}_${g.id}`,
+        params: { amount: formatINR(g.amount) },
+        text: status === "met" ? `${name} paid from ready money: ${formatINR(g.amount)}. Well planned!` : `${name} due and not enough ready money — investments were sold in a hurry.`,
+        textHi: status === "met" ? `${familyGoalName(g.id, true)} तैयार पैसे से भरा: ${formatINR(g.amount)}। बढ़िया योजना!` : `${familyGoalName(g.id, true)} का समय आया पर तैयार पैसा कम था — निवेश जल्दबाज़ी में बेचने पड़े।`,
+        amount: g.amount
+      });
+      lines.push(status === "met" ? `🏡 ${name}: ${formatINR(g.amount)} paid from cash / FD / debt fund.` : `⚠️ ${name}: ${formatINR(g.amount)} due — not enough ready money, investments sold.`);
+      return { ...g, paid, status };
+    });
+    for (const g of goals) {
+      const n = g.dueRound - round;
+      if (g.status !== "pending" || n < 1 || n > GOAL_WARNING_YEARS) continue;
+      const amountText = g.id === "parents_health" ? `${fam.bossPct}%` : formatINR(g.amount);
+      const when = n === 1 ? "Next year" : `In ${n} years`;
+      const whenHi = n === 1 ? "अगले साल" : `${n} साल में`;
+      lines.push(`📌 ${when}: ${familyGoalName(g.id)} (${amountText}) — ${g.id === "parents_health" ? "keep health insurance equipped" : "keep cash / FD / debt fund ready"}.`);
+      ls = pushEvent(ls, {
+        round,
+        kind: "goal_due_soon",
+        key: `campaign.events.due_soon_${g.id}`,
+        params: { amount: amountText, n },
+        text: `${when}: ${familyGoalName(g.id)} (${amountText}).`,
+        textHi: `${whenHi}: ${familyGoalName(g.id, true)} (${amountText})।`
+      });
+    }
+    ls = { ...ls, bossTriggered: ls.bossTriggered || insuredAtBoss !== null, family: { ...fam, goals, insuredAtBoss } };
+  }
+  let s = setPlayer({ ...state, levelState: ls }, idx, p);
+  if (brokenShields.length) s = { ...s, discardPile: [...s.discardPile, ...brokenShields] };
+  return { state: s, lines, forcedSales, playerIndex: idx };
+}
+function canWinByTarget(state, player) {
+  return !state.levelConfig || !player.isBot;
+}
+var HABIT_LABELS = {
+  desire_meter: {
+    label: "Enjoy at least one planned treat and never splurge on impulse",
+    labelHi: "कम से कम एक योजना वाला खर्च करें और कभी अचानक फिज़ूलखर्ची न हो"
+  },
+  saving_streak: {
+    label: `Reach a pay-yourself-first streak of ${RULE_TUNING.stars.streakBest} years`,
+    labelHi: `${RULE_TUNING.stars.streakBest} साल की "पहले खुद को भुगतान" लय बनाएँ`
+  },
+  lifestyle_creep: {
+    label: `Finish with lifestyle at or below ${RULE_TUNING.stars.lifestyleMaxPct}% of salary`,
+    labelHi: `अंत में खर्च वेतन के ${RULE_TUNING.stars.lifestyleMaxPct}% या कम रखें`
+  },
+  grihastha: {
+    label: "Meet every family goal: home and education from cash, parents insured",
+    labelHi: "हर पारिवारिक लक्ष्य पूरा करें: घर और पढ़ाई नकद से, माता-पिता बीमित"
+  }
+};
+
 // src/lib/gameEngine.ts
 var STARTING_WEALTH = 5e5;
 var TIME_LIMIT_MS = 20 * 60 * 1e3;
@@ -7592,6 +7979,8 @@ function previewDecision(state, playerIndex, card, choice) {
   const option = card.options?.find((o) => o.type === choice);
   const player = state.players[playerIndex];
   if (!option || !player) return { cashDelta: 0, investAmount: 0, netWorthDelta: 0, disabled: "Not available" };
+  const blocked = levelDecisionBlock(state, playerIndex, option);
+  if (blocked) return { cashDelta: 0, investAmount: 0, asset: getInvestAsset(option), netWorthDelta: 0, disabled: blocked };
   const out = resolveDecision(player, card, option, state.round ?? 1);
   return {
     cashDelta: getCash(out.player) - getCash(player),
@@ -7634,6 +8023,8 @@ function processDecision(state, playerIndex, choice, card) {
   const option = card.options?.find((o) => o.type === choice);
   if (!option) return state;
   const player = state.players[playerIndex];
+  const blocked = levelDecisionBlock(state, playerIndex, option);
+  if (blocked) return noteBlockedDecision({ ...state, log: pushLogs(state.log, `⚠️ ${blocked}`) });
   const oldNW = getNetWorth(player);
   const out = resolveDecision(player, card, option, state.round ?? 1);
   if (out.disabled) {
@@ -7655,16 +8046,11 @@ function processDecision(state, playerIndex, choice, card) {
   const diffStr = diff > 0 ? ` (+₹${Math.abs(diff).toLocaleString()})` : diff < 0 ? ` (-₹${Math.abs(diff).toLocaleString()})` : "";
   let logEntry = `${player.name} played ${card.name} → ${choice.toUpperCase()}${diffStr}`;
   if (choice === "invest" && out.asset) logEntry += ` — ${formatINR(out.investAmount)} moved into ${assetLabel(out.asset)}`;
+  const ruled = applyLevelDecision(newState, playerIndex, choice, player);
+  newState = ruled.state;
+  logs.push(...ruled.lines);
   const hand = newState.players[playerIndex].hand.filter((c) => c.id !== card.id);
   const updatedPlayers = newState.players.map((p, i) => i === playerIndex ? { ...p, hand } : p);
-  if (newState.levelState) {
-    const ls = { ...newState.levelState };
-    if (newState.levelConfig?.id === "level_2") {
-      if (choice === "save") ls.savingStreak += 1;
-      else ls.savingStreak = 0;
-    }
-    newState = { ...newState, levelState: ls };
-  }
   return checkWinCondition({
     ...newState,
     players: updatedPlayers,
@@ -7954,6 +8340,14 @@ function startNewRound(state) {
   if (newRound > getRoundLimit(s)) {
     return endByLimit({ ...s, roundNews: { round: newRound, lines } }, lines);
   }
+  const ruled = applyLevelRoundStart(s);
+  if (ruled.playerIndex >= 0) {
+    s = ruled.state;
+    lines.push(...ruled.lines);
+    if (ruled.forcedSales.length) {
+      s = { ...s, players: s.players.map((p, i) => i === ruled.playerIndex ? patchStats(p, s, (st) => recordForcedSales(st, ruled.forcedSales, newRound)) : p) };
+    }
+  }
   let lastEvent = state.lastEvent ?? null;
   if (rand() < LIFE_EVENT_CHANCE) {
     let deck = s.eventDeck && s.eventDeck.length ? [...s.eventDeck] : buildEventDeck([]);
@@ -8040,7 +8434,7 @@ function forceSkipTurn(state) {
 function checkWinCondition(input) {
   if (input.phase === "game_over" && input.winner) return input;
   let state = trackPeaks(input);
-  const reached = state.players.filter((p) => !p.hasForfeited && getNetWorth(p) >= state.wealthGoal).sort((a, b) => getNetWorth(b) - getNetWorth(a));
+  const reached = state.players.filter((p) => !p.hasForfeited && getNetWorth(p) >= state.wealthGoal && canWinByTarget(state, p)).sort((a, b) => getNetWorth(b) - getNetWorth(a));
   if (reached.length) {
     state = recordFinal(state);
     const winner = state.players.find((p) => p.id === reached[0].id) ?? reached[0];

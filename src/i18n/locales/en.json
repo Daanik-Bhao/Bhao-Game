@@ -466,7 +466,8 @@
       "lifestyle": "Lifestyle {{pct}}% of salary",
       "slots": "Slots {{used}}/{{total}}",
       "insured": "Health insured",
-      "notInsured": "No health cover"
+      "notInsured": "No health cover",
+      "toggle": "Level rule"
     },
     "events": {
       "impulse_splurge": "Impulse splurge! Bottled-up wants burst out: {{amount}} gone.",

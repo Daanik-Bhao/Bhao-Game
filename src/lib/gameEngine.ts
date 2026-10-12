@@ -1,4 +1,5 @@
 import type { GameState, PlayerState, GameCard, CardEffect, DecisionChoice, DecisionOption, AssetClass } from '../types/game'
+import { calculateRankRP } from '../data/rankRules'
 import type { LevelConfig } from '../types/level'
 import { createGameDeck, createLevelDeck, DEFENSE_CARDS } from '../data/cards'
 import { SEASONS } from '../data/mockData'
@@ -1357,10 +1358,7 @@ export function doBotTurn(state: GameState, policy?: BotPolicy): { state: GameSt
   return { state: advanceTurn(finalState), delay: 1200 }
 }
 
+/** Rank points for a finished match. Single source of truth: src/data/rankRules.ts (same table as the server). */
 export function calculateRPChange(placement: number, totalPlayers: number, winStreak: number): number {
-  const baseGain = [15, 30, 50, 80, 100, 120]
-  const baseLoss = [0, 0, -15, -25, -30, -35]
-  const base = placement === 1 ? (baseGain[Math.min(totalPlayers - 1, 5)] ?? 30) : (baseLoss[Math.min(placement - 1, 5)] ?? -15)
-  const streakMultiplier = placement === 1 ? Math.min(1 + winStreak * 0.2, 2.0) : 1.0
-  return Math.round(base * streakMultiplier)
+  return calculateRankRP(placement, totalPlayers, winStreak)
 }

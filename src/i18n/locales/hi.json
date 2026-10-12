@@ -466,7 +466,8 @@
       "lifestyle": "खर्च वेतन का {{pct}}%",
       "slots": "स्लॉट {{used}}/{{total}}",
       "insured": "स्वास्थ्य बीमित",
-      "notInsured": "स्वास्थ्य बीमा नहीं"
+      "notInsured": "स्वास्थ्य बीमा नहीं",
+      "toggle": "लेवल नियम"
     },
     "events": {
       "impulse_splurge": "अचानक फिज़ूलखर्ची! दबी इच्छाएँ फूट पड़ीं: {{amount}} गए।",
