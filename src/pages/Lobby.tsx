@@ -125,7 +125,9 @@ export function Lobby() {
     setLoading(true)
     setError('')
     try {
-      await startGame(room.id, roomPlayers)
+      // The server deals the cards and flips the room to in_progress (realtime moves the guests).
+      await startGame(room.id)
+      navigate(`/multiplayer/${room.id}`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to start game')
       setLoading(false)

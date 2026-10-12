@@ -1,10 +1,6 @@
 import { supabase } from './supabase'
-import type { GameState, PlayerState, MultiplayerMode } from '../types/game'
-import { createGameDeck } from '../data/cards'
-import { newEconomyState, MAX_ROUNDS } from './gameEngine'
-
-// Default constants (overridden by mode)
-const STARTING_WEALTH = 500000
+import type { GameCard, MultiplayerMode } from '../types/game'
+import type { MpActionResponse, MpHandRow, MpPublicState, MpRequestAction } from '../types/multiplayer'
 
 function generateRoomCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -25,6 +21,7 @@ export interface RoomPlayer {
   seat_order: number
   is_ready: boolean
   joined_at: string
+  last_seen?: string
 }
 
 export interface Room {
@@ -34,7 +31,9 @@ export interface Room {
   host_username: string
   status: 'waiting' | 'in_progress' | 'completed'
   max_players: number
-  game_state: GameState | null
+  /** Lobby: `{ multiplayerMode }`. In game: the server's redacted public state. */
+  game_state: MpPublicState | { multiplayerMode?: MultiplayerMode } | null
+  state_version?: number
   current_player_id: string | null
   winner_id: string | null
   created_at: string
@@ -87,8 +86,9 @@ export async function joinRoom(code: string, playerId: string, username: string)
 
   const alreadyIn = players.find((p: RoomPlayer) => p.player_id === playerId)
   if (!alreadyIn) {
+    const seat = players.reduce((m: number, p: RoomPlayer) => Math.max(m, p.seat_order + 1), 0)
     const { error: insertError } = await supabase.from('room_players').insert({
-      room_id: room.id, player_id: playerId, username, seat_order: players.length, is_ready: false,
+      room_id: room.id, player_id: playerId, username, seat_order: seat, is_ready: false,
     })
     if (insertError) throw insertError
   }
@@ -122,12 +122,10 @@ export async function getRoomPlayers(roomId: string): Promise<RoomPlayer[]> {
     `)
     .eq('room_id', roomId)
     .order('seat_order', { ascending: true })
-    
+
   if (!data) return []
-  return data.map(p => ({
-    ...p,
-    avatar_url: (p as any).profiles?.avatar_url
-  })) as any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return data.map(p => ({ ...p, avatar_url: (p as any).profiles?.avatar_url })) as RoomPlayer[]
 }
 
 export async function getRoom(roomId: string): Promise<Room | null> {
@@ -139,131 +137,116 @@ export async function getRoom(roomId: string): Promise<Room | null> {
   return data
 }
 
-export function buildInitialGameState(players: (RoomPlayer & { avatar_url?: string; rank_points?: number })[], mode: MultiplayerMode = 'standard'): GameState {
-  const deck = createGameDeck()
-  const sorted = [...players].sort((a, b) => a.seat_order - b.seat_order)
-  
-  let WEALTH_GOAL = 3500000
-  let TIME_LIMIT_MS = 20 * 60 * 1000
-  if (mode === 'blitz') {
-    WEALTH_GOAL = 1500000
-    TIME_LIMIT_MS = 15 * 60 * 1000
-  } else if (mode === 'epic') {
-    WEALTH_GOAL = 5000000
-    TIME_LIMIT_MS = 30 * 60 * 1000
-  }
+// ---------------------------------------------------------------------------
+// Server-authoritative game (Phase 5): every move goes through the game-action function
+// ---------------------------------------------------------------------------
 
-  const playerStates: PlayerState[] = sorted.map(p => ({
-    id: p.player_id,
-    name: p.username,
-    isBot: false,
-    profile: p.avatar_url || p.rank_points !== undefined ? { avatar_url: p.avatar_url || null, rank_points: p.rank_points || 0 } : undefined,
-    wealth: STARTING_WEALTH,
-    cash: STARTING_WEALTH,
-    holdings: [],
-    lifestyleLevel: 0,
-    hand: [],
-    activeDefenses: [],
-    skippedTurns: 0,
-    pendingGains: [],
-    wealthFloor: 0,
-    doubleInvestActive: false,
-    investChoices: 0,
-    spendChoices: 0,
-    savingStreak: 0,
-    greedIndex: 0,
-    emiDamageTaken: false,
-  }))
-
-  return {
-    id: crypto.randomUUID(),
-    players: playerStates,
-    ...newEconomyState(deck, false),
-    discardPile: [],
-    currentPlayerIndex: 0,
-    turn: 1,
-    phase: 'draw',
-    drawnCard: null,
-    playedCard: null,
-    pendingDecision: null,
-    pendingTarget: null,
-    winner: null,
-    log: [`Game started! First to ${mode === 'blitz' ? '₹15 Lakhs' : mode === 'epic' ? '₹50 Lakhs' : '₹35 Lakhs'} wins — or richest after ${MAX_ROUNDS} years.`],
-    wealthGoal: WEALTH_GOAL,
-    timeLimit: TIME_LIMIT_MS,
-    startTime: Date.now(),
-    turnStartTime: Date.now(),
-    multiplayerMode: mode,
-  }
+/** True when the room's game_state is the server's public game state (not the lobby stub). */
+export function isPublicGameState(gs: Room['game_state']): gs is MpPublicState {
+  return !!gs && typeof gs === 'object' && Array.isArray((gs as MpPublicState).players) && typeof (gs as MpPublicState).version === 'number'
 }
 
-export async function startGame(roomId: string, players: RoomPlayer[]): Promise<void> {
-  const playerIds = players.map(p => p.player_id)
-  const { data: profiles } = await supabase.from('profiles').select('id, avatar_url, rank_points').in('id', playerIds)
-
-  const playersWithAvatars = players.map(p => {
-    const prof = profiles?.find(pr => pr.id === p.player_id)
-    return {
-      ...p,
-      avatar_url: prof?.avatar_url,
-      rank_points: prof?.rank_points,
+/** Send an intent. Never throws: network / server problems come back as `{ ok: false }`. */
+export async function invokeGameAction(roomId: string, action: MpRequestAction): Promise<MpActionResponse> {
+  try {
+    const { data, error } = await supabase.functions.invoke<MpActionResponse>('game-action', { body: { roomId, action } })
+    if (error) {
+      // FunctionsHttpError carries the Response; our function always answers JSON.
+      const ctx = (error as { context?: Response }).context
+      if (ctx && typeof ctx.json === 'function') {
+        try {
+          const body = (await ctx.json()) as MpActionResponse
+          if (body && typeof body === 'object') return { ...body, ok: false }
+        } catch { /* fall through */ }
+      }
+      return { ok: false, error: 'server_error', message: error.message || 'Could not reach the game server' }
     }
-  })
+    return data ?? { ok: false, error: 'server_error', message: 'Empty response from the game server' }
+  } catch (e) {
+    return { ok: false, error: 'server_error', message: e instanceof Error ? e.message : 'Could not reach the game server' }
+  }
+}
 
-  // Fetch the room to get the selected mode
-  const { data: roomData } = await supabase.from('multiplayer_rooms').select('game_state').eq('id', roomId).single()
-  const mode = (roomData?.game_state as any)?.multiplayerMode || 'standard'
+/** Host only: the server deals the cards and moves the room to in_progress. */
+export async function startGame(roomId: string): Promise<void> {
+  const res = await invokeGameAction(roomId, { type: 'start' })
+  if (!res.ok) throw new Error(res.message ?? 'Failed to start game')
+}
 
-  const gameState = buildInitialGameState(playersWithAvatars, mode)
-  const currentPlayerId = players.find(p => p.seat_order === 0)?.player_id ?? null
-
-  const { error } = await supabase
-    .from('multiplayer_rooms')
-    .update({
-      status: 'in_progress',
-      game_state: gameState,
-      current_player_id: currentPlayerId,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', roomId)
-
+export async function sendHeartbeat(roomId: string): Promise<void> {
+  const { error } = await supabase.rpc('heartbeat', { p_room_id: roomId })
   if (error) throw error
 }
 
-export async function pushGameState(roomId: string, gameState: GameState): Promise<void> {
-  const currentPlayer = gameState.players[gameState.currentPlayerIndex]
-  const { error } = await supabase
-    .from('multiplayer_rooms')
-    .update({
-      game_state: gameState,
-      current_player_id: currentPlayer.id,
-      winner_id: gameState.winner?.id ?? null,
-      status: gameState.phase === 'game_over' ? 'completed' : 'in_progress',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', roomId)
+export async function fetchMyHand(roomId: string, playerId: string): Promise<{ hand: GameCard[]; version: number } | null> {
+  const { data } = await supabase
+    .from('room_player_hands')
+    .select('hand, version')
+    .eq('room_id', roomId)
+    .eq('player_id', playerId)
+    .maybeSingle()
+  return data ? { hand: (data.hand ?? []) as GameCard[], version: data.version ?? 0 } : null
+}
 
-  if (error) throw error
-
-  // Manually broadcast state change to avoid relying on postgres_changes
-  const channels = supabase.getChannels()
-  const existing = channels.find(c => c.topic === `realtime:game-${roomId}`)
-  
-  if (existing) {
-    await existing.send({
-      type: 'broadcast',
-      event: 'game_state_changed',
-      payload: { game_state: gameState }
+/**
+ * Realtime for the game screen: the public room row and the viewer's own hand row
+ * (RLS limits `room_player_hands` changes to the owner). Also carries presence and emotes.
+ */
+export function subscribeToGame(
+  roomId: string,
+  playerId: string,
+  handlers: {
+    onPublic: (state: MpPublicState) => void
+    onHand: (hand: GameCard[], version: number) => void
+    onPresence: (onlineIds: Set<string>) => void
+    onEmote: (playerId: string, emoji: string) => void
+    onStatus: (status: 'connected' | 'disconnected') => void
+  },
+) {
+  const channel = supabase
+    .channel(`game-${roomId}`, { config: { presence: { key: playerId } } })
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'multiplayer_rooms', filter: `id=eq.${roomId}` },
+      (payload) => {
+        const gs = (payload.new as Room).game_state
+        if (isPublicGameState(gs)) handlers.onPublic(gs)
+      },
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'room_player_hands', filter: `room_id=eq.${roomId}` },
+      (payload) => {
+        const row = payload.new as Partial<MpHandRow>
+        if (row && row.player_id === playerId && Array.isArray(row.hand)) handlers.onHand(row.hand, row.version ?? 0)
+      },
+    )
+    .on('presence', { event: 'sync' }, () => {
+      const ids = new Set<string>()
+      Object.values(channel.presenceState()).forEach(list => {
+        (list as { player_id?: string }[]).forEach(p => { if (p.player_id) ids.add(p.player_id) })
+      })
+      handlers.onPresence(ids)
     })
-  } else {
-    const channel = supabase.channel(`game-broadcast-${roomId}`)
-    channel.subscribe(async (status) => {
+    .on('broadcast', { event: 'emote' }, (payload) => {
+      const data = payload.payload as { playerId?: string; emoji?: string }
+      if (data?.playerId && data.emoji) handlers.onEmote(data.playerId, data.emoji)
+    })
+    .subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
-        await channel.send({ type: 'broadcast', event: 'game_state_changed', payload: { game_state: gameState } })
-        supabase.removeChannel(channel)
+        handlers.onStatus('connected')
+        await channel.track({ player_id: playerId })
+        // Initial fetch after the subscription is live, so no update is missed.
+        const room = await getRoom(roomId)
+        if (room && isPublicGameState(room.game_state)) handlers.onPublic(room.game_state)
+        const mine = await fetchMyHand(roomId, playerId)
+        if (mine) handlers.onHand(mine.hand, mine.version)
+      } else if (status === 'TIMED_OUT' || status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+        handlers.onStatus('disconnected')
       }
     })
-  }
+
+  return channel
 }
 
 // Single unified subscription. Uses a named broadcast channel on the room so that
@@ -306,7 +289,7 @@ export function subscribeToRoom(
 export async function broadcastPlayersChanged(roomId: string): Promise<void> {
   const channels = supabase.getChannels()
   const existing = channels.find(c => c.topic === `realtime:room-${roomId}`)
-  
+
   if (existing) {
     await existing.send({ type: 'broadcast', event: 'players_changed', payload: {} })
   } else {
