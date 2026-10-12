@@ -45,7 +45,9 @@ export function newId(): string {
   try {
     return crypto.randomUUID()
   } catch {
-    return `id_${Math.floor(rand() * 1e12).toString(36)}_${Date.now().toString(36)}`
+    // crypto.randomUUID is missing on plain-http LAN addresses. Use Math.random, never the
+    // game rng, so ids don't consume seeded random numbers (the tutorial story depends on it).
+    return `id_${Math.floor(Math.random() * 1e12).toString(36)}_${Date.now().toString(36)}`
   }
 }
 
