@@ -29,6 +29,7 @@ import {
 import { applyInflation, rollMarket, syncWealth } from '../economy'
 import { ASSETS, BASE_INFLATION_PCT, LIFESTYLE_INFLATION_STEP_PCT } from '../../data/assets'
 import { ALL_CARDS } from '../../data/cards'
+import { BUILTIN_LIFE_EVENTS } from '../../data/lifeEvents'
 import type { GameCard, GameState, Holding, PlayerState } from '../../types/game'
 import type { LevelConfig } from '../../types/level'
 
@@ -397,6 +398,29 @@ describe('defenses by category', () => {
     const s = withPlayer(newGame(1), 0, { activeDefenses: [healthCover] })
     const r = applyLifeEvent(s, { ...medicalAttack, lifeEvent: true })
     expect(r.state.players[0].wealth).toBe(STARTING_WEALTH)
+    expect(r.lines.join(' ')).toContain('blocked')
+  })
+
+  it('lure events move cash into the lure asset of a bot, net worth unchanged', () => {
+    setRng(() => 0)
+    const tip = BUILTIN_LIFE_EVENTS.find(c => c.lureAsset === 'scam')!
+    const s = newGame(2)
+    const r = applyLifeEvent(s, tip)
+    const bot = r.state.players[1] // lures prefer bots so humans watch the lesson
+    expect(r.state.players[0].wealth).toBe(STARTING_WEALTH)
+    expect(getHoldings(bot)[0].asset).toBe('scam')
+    expect(getHoldings(bot)[0].value).toBe(STARTING_WEALTH * 0.2)
+    expect(getNetWorth(bot)).toBe(STARTING_WEALTH)
+    expect(r.lines.join(' ')).toContain('fell for it')
+  })
+
+  it('a fraud defense blocks a lure', () => {
+    setRng(() => 0)
+    const tip = BUILTIN_LIFE_EVENTS.find(c => c.lureAsset === 'scam')!
+    const guard: GameCard = { id: 'fg', name: 'Fraud Guard', type: 'defense', tier: 'rare', flavor: '', blocksCategories: ['fraud'], effect: { type: 'block_card', target: 'self', blocks: [] } }
+    const s = withPlayer(newGame(1), 1, { activeDefenses: [guard] })
+    const r = applyLifeEvent(s, tip)
+    expect(getHoldings(r.state.players[1])).toHaveLength(0)
     expect(r.lines.join(' ')).toContain('blocked')
   })
 

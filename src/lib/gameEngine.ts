@@ -775,8 +775,10 @@ export function applyLifeEvent(state: GameState, card: GameCard): { state: GameS
   if (!card.effect) return { state, lines: [], affected: [] }
   const active = activeIndices(state)
   if (!active.length) return { state, lines: [], affected: [] }
-  const everyone = card.effect.target === 'all' || card.effect.target === 'others'
-  const targets = everyone ? active : [active[Math.floor(rand() * active.length)]]
+  const everyone = !card.lureAsset && (card.effect.target === 'all' || card.effect.target === 'others')
+  // Lures pick a bot when there is one, so human players watch the scam lesson happen to others
+  const pool = card.lureAsset && active.some(i => state.players[i].isBot) ? active.filter(i => state.players[i].isBot) : active
+  const targets = everyone ? active : [pool[Math.floor(rand() * pool.length)]]
   const effect = lifeEventEffect(card.effect)
   let s = state
   const lines: string[] = [`🎲 Life event: ${card.name}${everyone ? ' (everyone)' : ` — ${state.players[targets[0]].name}`}`]
@@ -789,6 +791,15 @@ export function applyLifeEvent(state: GameState, card: GameCard): { state: GameS
         discardPile: [...s.discardPile, block.used],
       }
       lines.push(`🛡️ ${s.players[idx].name}'s ${block.used.name} blocked ${card.name}!`)
+      continue
+    }
+    if (card.lureAsset) {
+      const p = s.players[idx]
+      const amount = Math.round(getCash(p) * Math.abs(card.effect.value ?? 0) / 100)
+      if (amount > 0) {
+        s = { ...s, players: s.players.map((pl, i) => (i === idx ? addHolding(pl, card.lureAsset!, card.name, amount, s.round ?? 1) : pl)) }
+        lines.push(`🎣 ${p.name} fell for it: ${formatINR(amount)} moved into ${assetLabel(card.lureAsset)}`)
+      }
       continue
     }
     const before = getNetWorth(s.players[idx])
@@ -981,7 +992,7 @@ export function getStartingWealth(state: GameState): number {
 /** Bots keep this share of net worth as cash — they "know" about emergency funds. */
 export const BOT_CASH_BUFFER = 0.15
 /** Chance (× difficulty) a bot spends its turn attacking a richer leader instead of making a money decision. */
-export const BOT_ATTACK_LEADER_CHANCE = { value: 0.2 }
+export const BOT_ATTACK_LEADER_CHANCE = { value: 0.15 }
 
 /** Chance a bot falls for a scam "hot tip": hard never, medium sometimes, easy often. */
 export function botScamChance(bot: PlayerState): number {
