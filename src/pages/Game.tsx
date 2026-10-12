@@ -7,7 +7,8 @@ import { GameState, PlayerState, GameCard as GameCardType, formatWealth } from '
 import { Wealth } from '../components/Wealth'
 import {
   initGame, initLevelGame, startDrawPhase, processDecision, processAction,
-  advanceTurn, doBotTurn, forceSkipTurn, drawCard, TURN_TIME_LIMIT_MS, calculateRPChange
+  advanceTurn, doBotTurn, forceSkipTurn, drawCard, equipDefense, TURN_TIME_LIMIT_MS, calculateRPChange,
+  STARTING_WEALTH
 } from '../lib/gameEngine'
 import { ARTHA_YATRA_LEVELS } from '../data/levels'
 import { saveGameResult } from '../lib/auth'
@@ -65,9 +66,22 @@ export function Game() {
   const [notification, setNotification] = useState<string | null>(null)
   const [showForfeitModal, setShowForfeitModal] = useState(false)
   const [popupInfo, setPopupInfo] = useState<{ reason: string, reasonHi?: string, sourceName?: string, isSelf?: boolean, description?: string, descriptionHi?: string, amountStr: string, isGain: boolean } | null>(null)
-  const handlePopupContinue = useCallback(() => setPopupInfo(null), [])
+  // When the outcome popup opens we remember when, so the human's turn timer can be
+  // paused (turnStartTime shifted forward) for as long as the popup blocks the board.
+  const popupOpenedAtRef = useRef<number | null>(null)
+  const handlePopupContinue = useCallback(() => {
+    const openedAt = popupOpenedAtRef.current
+    popupOpenedAtRef.current = null
+    setPopupInfo(null)
+    if (openedAt === null) return
+    const pausedFor = Date.now() - openedAt
+    setGameState(gs => {
+      if (!gs || gs.phase === 'game_over' || gs.currentPlayerIndex !== 0) return gs
+      return { ...gs, turnStartTime: gs.turnStartTime + pausedFor }
+    })
+  }, [])
   const botTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const prevWealthRef = useRef(500000)
+  const prevWealthRef = useRef(STARTING_WEALTH)
 
   const humanPlayerIndex = 0
 
@@ -82,13 +96,18 @@ export function Game() {
     if (levelId) {
       const level = ARTHA_YATRA_LEVELS.find(l => l.id === levelId)
       if (level) {
-        state = initLevelGame({ id: profile?.id ?? 'human', name: humanName, avatar_url: profile?.avatar_url }, { ...level, botCount })
+        // Campaign levels define their own opponent count
+        state = initLevelGame({ id: profile?.id ?? 'human', name: humanName, avatar_url: profile?.avatar_url }, level)
       } else {
         state = initGame({ id: profile?.id ?? 'human', name: humanName, avatar_url: profile?.avatar_url }, botCount)
       }
     } else {
       state = initGame({ id: profile?.id ?? 'human', name: humanName, avatar_url: profile?.avatar_url }, botCount)
     }
+    // Baseline for the wealth-change popup is the actual starting wealth of this game
+    prevWealthRef.current = state.players[humanPlayerIndex].wealth
+    popupOpenedAtRef.current = null
+    setPopupInfo(null)
     setGameState(state)
     setUiPhase('playing')
   }, [profile, botCount, levelId])
@@ -171,6 +190,7 @@ export function Game() {
         }
       }
 
+      if (popupOpenedAtRef.current === null) popupOpenedAtRef.current = Date.now()
       setPopupInfo({
         reason,
         reasonHi,
@@ -307,13 +327,11 @@ export function Game() {
         notify(`Played ${card.name}!`)
       }
     } else if (card.type === 'defense') {
-      const activeDefenses = [...currentState.players[humanPlayerIndex].activeDefenses, card]
-      const hand = currentState.players[humanPlayerIndex].hand.filter(c => c.id !== card.id)
-      const updatedPlayers = currentState.players.map((p, i) => i === humanPlayerIndex ? { ...p, hand, activeDefenses } : p)
-      const newState = advanceTurn({ ...currentState, players: updatedPlayers })
+      const equipped = equipDefense(currentState, humanPlayerIndex, card)
+      const newState = advanceTurn(equipped)
       if (newState.phase === 'game_over') { handleGameOver(newState) } else { setGameState(newState) }
       playSound('play')
-      if (newState.players[humanPlayerIndex].activeDefenses.length > currentState.players[humanPlayerIndex].activeDefenses.length) {
+      if (equipped.players[humanPlayerIndex].activeDefenses.length > currentState.players[humanPlayerIndex].activeDefenses.length) {
         notify(i18n.language === 'hi' ? 'रक्षा कार्ड सुसज्जित!' : 'Equipped defense card!')
       }
     }
@@ -367,7 +385,7 @@ export function Game() {
         rpChange={rpChange}
         nearMiss={nearMiss}
         wealthGap={wealthGap}
-        players={gameState.players.filter(p => !p.isBot)}
+        players={gameState.players}
         mode={mode}
         gameLog={gameState.log}
         onPlayAgain={() => { setGameState(null); setUiPhase('setup') }}
@@ -681,6 +699,8 @@ function EventPopup({ info, onContinue }: { info: { reason: string, reasonHi?: s
 function SetupScreen({ botCount, setBotCount, onStart, onBack, levelId }: { botCount: number; setBotCount: (n: number) => void; onStart: () => void; onBack: () => void; levelId?: string }) {
   const levelConfig = levelId ? ARTHA_YATRA_LEVELS.find(l => l.id === levelId) : null;
   const wealthGoalText = levelConfig ? formatWealth(levelConfig.targetCorpus) : '₹50 Lakhs';
+  // Campaign levels have a fixed opponent count; only quick games let the player choose
+  const opponents = levelConfig ? levelConfig.botCount : botCount;
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: '#d1fae5', position: 'relative', overflow: 'hidden' }}>
 
@@ -738,7 +758,7 @@ function SetupScreen({ botCount, setBotCount, onStart, onBack, levelId }: { botC
 
         <div style={{ background: 'rgba(255,255,255,0.7)', borderRadius: 16, padding: 24, marginBottom: 16, border: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
           <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--green-deep)', marginBottom: 16 }}>AI Opponents</h3>
-          <div style={{ display: 'flex', gap: 10 }}>
+          {!levelConfig && <div style={{ display: 'flex', gap: 10 }}>
             {[1, 2, 3].map(n => (
               <button
                 key={n}
@@ -756,8 +776,8 @@ function SetupScreen({ botCount, setBotCount, onStart, onBack, levelId }: { botC
                 {n}
               </button>
             ))}
-          </div>
-          <p style={{ fontSize: 14, color: '#6b7280', marginTop: 16 }}>Playing against {botCount} AI opponent{botCount > 1 ? 's' : ''} ({botCount + 1} players total)</p>
+          </div>}
+          <p style={{ fontSize: 14, color: '#6b7280', marginTop: levelConfig ? 0 : 16 }}>Playing against {opponents} AI opponent{opponents > 1 ? 's' : ''} ({opponents + 1} players total)</p>
         </div>
 
         <div style={{ background: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: '16px 20px', marginBottom: 16, border: '1px solid rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
