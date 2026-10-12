@@ -11,11 +11,18 @@ interface GameCardProps {
   faceDown?: boolean
 }
 
+const TIER_STYLE: Record<GameCardType['tier'], { bg: string; fg: string }> = {
+  common: { bg: 'linear-gradient(180deg, #e5e7eb, #9ca3af)', fg: '#1f2937' },
+  rare: { bg: 'linear-gradient(180deg, #93c5fd, #2563eb)', fg: '#fff' },
+  epic: { bg: 'linear-gradient(180deg, #d8b4fe, #7c3aed)', fg: '#fff' },
+  legendary: { bg: 'linear-gradient(180deg, #fde68a, #d97706)', fg: '#3b2300' },
+}
+
 // All card types now use the clean green.png background (no placeholder text).
 // The card name and description are placed in the empty areas of the image.
 
 export function GameCard({ card, onClick, selected, disabled, compact, faceDown }: GameCardProps) {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   if (faceDown) {
     // Face-down: show the back of the card
@@ -80,6 +87,30 @@ export function GameCard({ card, onClick, selected, disabled, compact, faceDown 
         overflow: 'hidden',
       }}
     >
+      {/* The card art has a tier ribbon baked in ("LEGENDARY" / "COMMON"); cover it with the real tier. */}
+      <div style={{
+        position: 'absolute',
+        top: compact ? '2.2%' : '2.4%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '50%',
+        height: compact ? '6.5%' : '6.5%',
+        borderRadius: 4,
+        background: TIER_STYLE[card.tier].bg,
+        color: TIER_STYLE[card.tier].fg,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: compact ? 8 : 11,
+        fontWeight: 900,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        zIndex: 3,
+        boxShadow: '0 1px 2px rgba(0,0,0,0.35)',
+      }}>
+        {t(`card.tier.${card.tier}`)}
+      </div>
+
       {/* 
         Card name — placed in the empty area between the wallet icon and the OPPORTUNITY tag.
         The green.png background has this area clean/empty for us to put text.
@@ -115,7 +146,34 @@ export function GameCard({ card, onClick, selected, disabled, compact, faceDown 
         Card description — placed inside the empty description box at the bottom.
         The green.png has an empty bordered box here for description text.
       */}
-      {!compact && (
+      {compact ? (
+        <div style={{
+          position: 'absolute',
+          bottom: '9%',
+          left: '12%',
+          right: '12%',
+          height: '20%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2,
+        }}>
+          <p style={{
+            fontSize: 9.5,
+            fontWeight: 500,
+            color: 'rgba(255, 255, 255, 0.92)',
+            textAlign: 'center',
+            lineHeight: 1.2,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            margin: 0,
+          }}>
+            {flavor}
+          </p>
+        </div>
+      ) : (
         <div style={{
           position: 'absolute',
           bottom: '5%',

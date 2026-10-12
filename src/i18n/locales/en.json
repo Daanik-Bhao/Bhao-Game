@@ -897,5 +897,13 @@
         "p3": "Defense cards like Health Insurance block whole kinds of trouble."
       }
     }
+  },
+  "card": {
+    "tier": {
+      "common": "Common",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary"
+    }
   }
 }

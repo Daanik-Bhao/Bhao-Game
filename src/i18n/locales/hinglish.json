@@ -897,5 +897,13 @@
         "p3": "Health Insurance jaise defense cards poori category ki problems block kar dete hain."
       }
     }
+  },
+  "card": {
+    "tier": {
+      "common": "Common",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary"
+    }
   }
 }

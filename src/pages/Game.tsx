@@ -592,30 +592,6 @@ export function Game() {
         }}>
         </button>
 
-        {/* Center Opponents HUD */}
-        <div style={{
-          position: 'absolute', top: 160, left: '50%', transform: 'translateX(-50%)',
-          background: 'url("/avatars/player bar.webp") center / 100% 100% no-repeat',
-          padding: '24px 64px 16px 64px', display: 'flex', gap: 48, pointerEvents: 'auto',
-          minWidth: 400, justifyContent: 'center',
-          zIndex: 30
-        }}>
-          {gameState.players.map((p) => {
-            if (p.id === (profile?.id ?? 'human')) return null; // Skip local player
-            return (
-              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  <img src={p.profile?.avatar_url?.startsWith('/') || p.profile?.avatar_url?.startsWith('http') ? p.profile.avatar_url : 'https://api.dicebear.com/9.x/avataaars/svg?seed=' + p.name} style={{ width: '100%', height: '100%' }} alt="Avatar" />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ color: '#4b5563', fontSize: 16, fontWeight: 600 }}>{p.name}</span>
-                  <span style={{ color: '#ef4444', fontSize: 14, fontWeight: 700 }}>{formatWealth(p.wealth)}</span>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
         {/* TIMER */}
         <div style={{
           position: 'absolute', right: 40, top: 24,
@@ -702,6 +678,7 @@ export function Game() {
           </div>
         )}
         <GameBoard
+          showOpponents
           gameState={gameState}
           myPlayerId={profile?.id ?? 'human'}
           isMultiplayer={false}
