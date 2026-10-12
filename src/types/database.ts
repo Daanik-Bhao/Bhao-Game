@@ -3,8 +3,10 @@ export interface Database {
     Tables: {
       profiles: {
         Row: Profile
-        Insert: Partial<Profile> & { id: string; username: string }
-        Update: Partial<Profile>
+        /** Only id/username/avatar_url are honoured; a trigger forces every other column. */
+        Insert: Pick<Profile, 'id' | 'username'> & Partial<Pick<Profile, 'avatar_url'>>
+        /** No direct updates: use the update_my_profile RPC. */
+        Update: never
       }
       games: {
         Row: Game
@@ -20,6 +22,16 @@ export interface Database {
         Row: PlayerCard
         Insert: Partial<PlayerCard> & { player_id: string; card_id: string }
         Update: Partial<PlayerCard>
+      }
+      matches: {
+        Row: Match
+        Insert: never
+        Update: never
+      }
+      match_results: {
+        Row: MatchResult
+        Insert: never
+        Update: never
       }
       daily_contracts: {
         Row: DailyContract
@@ -60,7 +72,13 @@ export interface Profile {
   username: string
   avatar_url: string | null
   rank_points: number
-  daank_coins: number
+  daanik_coins: number
+  /**
+   * @deprecated Misspelled legacy name; the column is `daanik_coins` and this is
+   * never populated. Kept optional only so MultiplayerGame.tsx compiles until the
+   * multiplayer track removes its client-side coin writes. Do not use.
+   */
+  daank_coins?: number
   total_xp: number
   games_played: number
   games_won: number
@@ -73,6 +91,65 @@ export interface Profile {
   login_streak: number
   created_at: string
   updated_at: string
+}
+
+export type MatchMode = 'ranked' | 'practice' | 'campaign' | 'multiplayer'
+
+/** `matches` row (owner can read; written only by start_match / apply_match_result). */
+export interface Match {
+  id: string
+  user_id: string
+  mode: MatchMode
+  room_id: string | null
+  level_id: string | null
+  total_players: number | null
+  started_at: string
+  finished_at: string | null
+  result: MatchResultSummary | { expired: true } | null
+}
+
+/** `match_results` row (owner can read). */
+export interface MatchResult {
+  id: string
+  match_id: string
+  user_id: string
+  mode: MatchMode
+  won: boolean
+  placement: number
+  total_players: number
+  final_wealth: number
+  forfeit: boolean
+  rp_change: number
+  rp_capped: boolean
+  xp_gained: number
+  coins_gained: number
+  contract_coins: number
+  stats: Record<string, unknown>
+  created_at: string
+}
+
+/** Return value of `apply_match_result` (and the save-game-result function's `result`). */
+export interface MatchResultSummary {
+  match_id: string
+  mode: MatchMode
+  won: boolean
+  placement: number
+  total_players: number
+  forfeit: boolean
+  rp_change: number
+  rp_capped: boolean
+  xp_gained: number
+  coins_gained: number
+  contract_coins: number
+  rank_points?: number
+  already_applied: boolean
+}
+
+/** Return value of the `claim_daily_reward` RPC. */
+export interface DailyRewardResult {
+  reward: number
+  streak: number
+  already_claimed: boolean
 }
 
 export interface Game {

@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured, SUPABASE_NOT_CONFIGURED_MESSAGE } from './supabase'
-import type { Profile } from '../types/database'
+import type { Profile, DailyRewardResult, MatchResultSummary } from '../types/database'
 
 function requireSupabase(): void {
   if (!isSupabaseConfigured) throw new Error(SUPABASE_NOT_CONFIGURED_MESSAGE)
@@ -11,16 +11,13 @@ export async function signUp(email: string, password: string, username: string):
   if (error) throw error
   if (!data.user) throw new Error('No user returned')
 
+  // Only id/username are taken from the client: a database trigger forces every
+  // economy column to its default and creates the leaderboard row.
   const { error: profileError } = await supabase
     .from('profiles')
     .insert({ id: data.user.id, username })
 
   if (profileError) throw profileError
-
-  // Also create a leaderboard entry
-  await supabase
-    .from('leaderboard')
-    .insert({ user_id: data.user.id, username })
 }
 
 export async function signIn(email: string, password: string): Promise<void> {
@@ -56,12 +53,17 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   return data
 }
 
-export async function updateProfile(userId: string, updates: Partial<Profile>): Promise<void> {
+/**
+ * Edits the signed-in user's profile via the `update_my_profile` RPC (direct
+ * UPDATEs on `profiles` are not allowed). Omitted fields are kept. Changing the
+ * username also renames the leaderboard entry.
+ */
+export async function updateMyProfile(updates: { username?: string; avatarUrl?: string }): Promise<void> {
   requireSupabase()
-  const { error } = await supabase
-    .from('profiles')
-    .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq('id', userId)
+  const { error } = await supabase.rpc('update_my_profile', {
+    p_username: updates.username ?? null,
+    p_avatar_url: updates.avatarUrl ?? null,
+  })
   if (error) throw error
 }
 
@@ -83,32 +85,82 @@ export interface GameStats {
   emiDamageTaken: boolean;
 }
 
-export async function saveGameResult(
-  _userId: string,
-  username: string,
-  won: boolean,
-  finalWealth: number,
-  placement: number = 1,
-  totalPlayers: number = 2,
-  winStreak: number = 0,
-  stats: GameStats = { investChoices: 0, emiDamageTaken: false }
-): Promise<void> {
-  requireSupabase()
-  // We now call the secure Edge Function instead of trusting the client to update stats directly!
-  const { error } = await supabase.functions.invoke('save-game-result', {
-    body: {
-      username,
-      won,
-      finalWealth,
-      placement,
-      totalPlayers,
-      winStreak,
-      stats
-    }
-  })
+/** Single-player modes that can be started with `start_match`. */
+export type SinglePlayerMode = 'ranked' | 'practice' | 'campaign'
 
+/**
+ * Opens a server-side match for a signed-in single-player game and returns its id.
+ * Starting a new match closes the previous open one of the same mode (an open
+ * ranked match counts as a forfeit). Guests never call this.
+ */
+export async function startMatch(mode: SinglePlayerMode, levelId: string | null, totalPlayers: number): Promise<string> {
+  requireSupabase()
+  const { data, error } = await supabase.rpc('start_match', {
+    p_mode: mode,
+    p_level_id: levelId,
+    p_total_players: totalPlayers,
+  })
+  if (error) throw error
+  return data as string
+}
+
+export interface MatchResultInput {
+  matchId: string
+  won: boolean
+  placement: number
+  totalPlayers: number
+  finalWealth: number
+  /** A forfeit is always recorded as a loss in last place. */
+  forfeit?: boolean
+  stats?: GameStats
+}
+
+/**
+ * Reports the end of a match started with `startMatch` to the `save-game-result`
+ * edge function, which validates it and applies RP/XP/coins server-side.
+ */
+export async function saveMatchResult(input: MatchResultInput): Promise<MatchResultSummary | null> {
+  requireSupabase()
+  const { data, error } = await supabase.functions.invoke('save-game-result', {
+    body: {
+      matchId: input.matchId,
+      won: input.won,
+      placement: input.placement,
+      totalPlayers: input.totalPlayers,
+      finalWealth: input.finalWealth,
+      forfeit: input.forfeit === true,
+      stats: input.stats ?? { investChoices: 0, emiDamageTaken: false },
+    },
+  })
   if (error) {
-    console.error('Failed to save game result securely:', error)
+    console.error('Failed to save game result:', error)
     throw error
   }
+  return (data as { result?: MatchResultSummary } | null)?.result ?? null
+}
+
+/**
+ * @deprecated Results now need a server match id (see `saveMatchResult`), and
+ * multiplayer results are recorded server-side by the game-action function.
+ * Kept as a no-op only so MultiplayerGame.tsx compiles until it is migrated.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function saveGameResult(..._args: unknown[]): Promise<void> {
+  console.warn('saveGameResult is deprecated; results are recorded server-side.')
+}
+
+/** Atomically spends coins on a practice/campaign extra (never in ranked). Returns the new balance. */
+export async function spendCoins(amount: number, reason: 'extra_card'): Promise<number> {
+  requireSupabase()
+  const { data, error } = await supabase.rpc('spend_coins', { p_amount: amount, p_reason: reason })
+  if (error) throw error
+  return data as number
+}
+
+/** Claims today's login reward (server date, Asia/Kolkata). */
+export async function claimDailyReward(): Promise<DailyRewardResult> {
+  requireSupabase()
+  const { data, error } = await supabase.rpc('claim_daily_reward')
+  if (error) throw error
+  return data as DailyRewardResult
 }

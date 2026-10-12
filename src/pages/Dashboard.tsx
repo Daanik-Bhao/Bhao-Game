@@ -10,9 +10,17 @@ import { supabase } from '../lib/supabase'
 import { isSoundEnabled, toggleSound } from '../lib/audio'
 import { useTranslation } from 'react-i18next'
 import { DailyRewardModal } from '../components/DailyRewardModal'
+import { claimDailyReward, updateMyProfile } from '../lib/auth'
+import type { DailyRewardResult } from '../types/database'
 import { DeleteAccountButton } from '../components/DeleteAccountButton'
 import { LibraryEntryCard } from '../components/learning/LibraryEntryCard'
 
+
+/** YYYY-MM-DD in Asia/Kolkata, offset by `days` (the server's reward calendar). */
+function istDate(days: number): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' })
+    .format(new Date(Date.now() + days * 86_400_000))
+}
 
 type Tab = 'home' | 'leaderboard' | 'contracts' | 'profile'
 
@@ -54,34 +62,28 @@ export function Dashboard() {
 
   useEffect(() => {
     if (profile) {
-      const today = new Date().toISOString().split('T')[0]
+      // The reward day is decided by the server (Asia/Kolkata); this only decides
+      // whether to offer the modal and which day to highlight.
+      const today = istDate(0)
       if (profile.last_login_date !== today) {
-        const yesterday = new Date()
-        yesterday.setDate(yesterday.getDate() - 1)
-        const yStr = yesterday.toISOString().split('T')[0]
-
-        let currentStreak = 0;
-        if (profile.last_login_date === yStr) {
-          currentStreak = profile.login_streak || 0;
-        }
-
+        const currentStreak = profile.last_login_date === istDate(-1) ? (profile.login_streak || 0) : 0
         setDailyStreak(currentStreak)
         setShowDailyReward(true)
       }
     }
   }, [profile])
 
-  const handleClaimDaily = async (_day: number, _amount: number) => {
-    if (!profile) return
-
-    // Call the secure backend function
-    const { error } = await supabase.rpc('claim_daily_reward')
-
-    if (error) {
-      console.error("Error claiming reward:", error)
-      return
+  const handleClaimDaily = async (): Promise<DailyRewardResult | null> => {
+    if (!profile) return null
+    try {
+      return await claimDailyReward()
+    } catch (error) {
+      console.error('Error claiming reward:', error)
+      return null
     }
+  }
 
+  const handleDailyDone = async () => {
     setShowDailyReward(false)
     if (refreshProfile) await refreshProfile()
   }
@@ -121,12 +123,12 @@ export function Dashboard() {
     setLeaderboardLoading(false)
   }
 
-  const coins = profile?.daank_coins ?? 100
+  const coins = profile?.daanik_coins ?? 100
 
 
   return (
     <div style={{ height: '100vh', background: 'transparent', display: 'flex', color: 'var(--text-dark)', overflow: 'hidden' }}>
-      {showDailyReward && <DailyRewardModal onClose={() => setShowDailyReward(false)} onClaim={handleClaimDaily} currentStreak={dailyStreak} />}
+      {showDailyReward && <DailyRewardModal onClose={() => setShowDailyReward(false)} onClaim={handleClaimDaily} onDone={handleDailyDone} currentStreak={dailyStreak} />}
 
       {/* Sidebar (Desktop) */}
       <aside className="desktop-flex" style={{
@@ -1186,7 +1188,7 @@ function ProfileTab() {
     if (!profile) return
     setUpdating(true)
     try {
-      await supabase.from('profiles').update({ avatar_url: newAvatar }).eq('id', profile.id)
+      await updateMyProfile({ avatarUrl: newAvatar })
     } catch (e) {
       console.error(e)
     }
@@ -1203,8 +1205,8 @@ function ProfileTab() {
     setUpdating(true)
     try {
       const updatedName = newName.trim()
-      await supabase.from('profiles').update({ username: updatedName }).eq('id', profile.id)
-      await supabase.from('leaderboard').update({ username: updatedName }).eq('user_id', profile.id)
+      // Also renames the leaderboard entry (server-side).
+      await updateMyProfile({ username: updatedName })
     } catch (e) {
       console.error(e)
     }
@@ -1322,7 +1324,7 @@ function ProfileTab() {
         <h3 style={{ fontSize: 32, fontWeight: 800, color: '#64748B', marginBottom: 24, fontFamily: 'Space Grotesk, sans-serif' }}>Career Stats</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 20, marginBottom: 40 }}>
           {[
-            { label: 'Daanik Coins', value: `${(profile?.daank_coins ?? 0).toLocaleString()}` },
+            { label: 'Daanik Coins', value: `${(profile?.daanik_coins ?? 0).toLocaleString()}` },
             { label: 'Win Rate', value: `${winRate}%` },
             { label: 'Game won', value: (profile?.games_won ?? 0).toString() },
             { label: 'Best Win Streak', value: `${profile?.max_win_streak ?? 0}` },
@@ -1450,7 +1452,7 @@ function ProfileTab() {
           <h3 style={{ fontSize: 18, fontWeight: 700, color: '#64748B', marginBottom: 16 }}>Career Stats</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {[
-              { label: 'Daanik Coins', value: `${(profile?.daank_coins ?? 0).toLocaleString()}` },
+              { label: 'Daanik Coins', value: `${(profile?.daanik_coins ?? 0).toLocaleString()}` },
               { label: 'Win Rate', value: `${winRate}` },
               { label: 'Game won', value: (profile?.games_won ?? 0).toString() },
               { label: 'Game Played', value: (profile?.games_played ?? 0).toString() },

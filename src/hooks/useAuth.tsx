@@ -99,11 +99,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Auto-create missing profile (e.g. if signup failed halfway or email confirmations were required)
       if (!profile) {
-        const baseName = user.email?.split('@')[0] || 'player'
-        const username = `${baseName}${Math.floor(Math.random() * 10000)}`
+        // Usernames must be 3-32 characters (enforced by the database).
+        const baseName = (user.email?.split('@')[0] || 'player').slice(0, 24)
+        const username = `${baseName}${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`
 
+        // A database trigger forces economy defaults and creates the leaderboard row.
         await supabase.from('profiles').insert({ id: user.id, username })
-        await supabase.from('leaderboard').insert({ user_id: user.id, username })
 
         profile = await getProfile(user.id)
       }
