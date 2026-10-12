@@ -102,7 +102,8 @@
     "confirmForfeit": "Are you sure you want to leave?",
     "forfeitWarning": "Leaving an active game will result in a loss and a 25 🪙 penalty.",
     "stayInGame": "Stay in Game",
-    "forfeitMatch": "Forfeit Match"
+    "forfeitMatch": "Forfeit Match",
+    "close": "Close"
   },
   "leaderboard": {
     "title": "Leaderboard",
@@ -156,5 +157,643 @@
     "players": "Players",
     "waitingForHost": "Waiting for host to start...",
     "startGame": "Start Game"
+  },
+  "lang": {
+    "label": "Language",
+    "switchTo": "Switch language to {{lang}}"
+  },
+  "board": {
+    "yourHand": "Your hand",
+    "yourTurn": "Your turn",
+    "isPlaying": "{{name}} is playing",
+    "cardsInHand": "{{n}}/{{max}} cards",
+    "planNext": "Your hand — plan your next move",
+    "planAhead": "Your hand — plan ahead",
+    "drawRefill": "Draw to refill your hand to {{max}} cards.",
+    "drawStart": "Draw to start your turn.",
+    "drawCard": "Draw Card",
+    "refill": "Refill your hand to {{max}} cards",
+    "deckLeft": "{{n}} cards left in deck",
+    "pickThenAct": "Pick a card — then Play, Equip or Pass",
+    "pickToPlay": "Pick a card to play",
+    "pickCard": "Pick a card",
+    "equippedThisTurn": "Defense equipped this turn",
+    "equippedShort": "Equipped this turn",
+    "newCard": "New: {{card}}",
+    "tapCard": "Tap a card to see what it does.",
+    "playableNow": "cards are playable now.",
+    "selectCard": "Select a card",
+    "backToHand": "Back to hand",
+    "back": "Back",
+    "passThisCard": "discard this card · ends turn",
+    "pickRival": "Pick the rival to hit:",
+    "target": "Target {{name}}",
+    "targetSub": "{{amount}} net worth · {{n}} investments",
+    "noTargets": "No opponents left to target.",
+    "you": "You",
+    "left": "(left)",
+    "sendEmote": "Send emote",
+    "yourPortfolio": "Your portfolio",
+    "yourMoney": "Your money",
+    "investmentsCount": "{{n}} investments"
+  },
+  "econ": {
+    "risk": {
+      "none": "No risk",
+      "low": "Low risk",
+      "medium": "Medium risk",
+      "high": "High risk",
+      "extreme": "Extreme risk"
+    },
+    "crashChance": "{{pct}}% yearly crash chance",
+    "noCrash": "No crash risk",
+    "choice": {
+      "spend": "Spend",
+      "save": "Save",
+      "invest": "Invest"
+    },
+    "save": {
+      "toCash": "{{amount}} to cash",
+      "streak": "🔥 Save streak ×{{streak}}: +{{bonus}}% bonus",
+      "startStreak": "Save again next turn to start a streak bonus",
+      "inflation": "Idle cash loses ~{{pct}}%/yr to inflation"
+    },
+    "spend": {
+      "lifestyleMax": "lifestyle maxed",
+      "lifestyleUp": "lifestyle ↑ (inflation +1%)",
+      "details": "{{amount}}, +1 card, {{lifestyle}}",
+      "forcedSale": "⚠️ Not enough cash: investments get sold at a penalty",
+      "creep": "Lifestyle creep makes every future year cost more"
+    },
+    "invest": {
+      "avg": "avg ~{{pct}}%/yr",
+      "moves": "Moves {{amount}} of your cash"
+    },
+    "needCash": "Need at least {{amount}} cash to invest",
+    "notAvailable": "Not available",
+    "assetLesson": {
+      "fd": "Safe and steady, but barely beats inflation.",
+      "debt": "Low risk, tax-friendly, locked for long-term goals.",
+      "gold": "A hedge, not a growth engine. Keep it to a small slice.",
+      "index": "Owns the whole market. Bumpy years, strong decades.",
+      "equity": "Higher return, bigger swings. Needs patience.",
+      "smallcap": "Can double fast, can halve faster.",
+      "realestate": "Steady but illiquid: selling in a hurry costs a lot.",
+      "crypto": "Pure speculation. Only money you can afford to lose.",
+      "scam": "Guaranteed-return tips are how scams work. Most of it vanishes."
+    },
+    "play": {
+      "waitTurn": "Wait for your turn",
+      "oneEquip": "One equip per turn — already used",
+      "slotsFull": "Defense slots full ({{max}}/{{max}})",
+      "cannotEquip": "Cannot equip now",
+      "cannotPlay": "This card cannot be played"
+    },
+    "netWorth": "Net worth",
+    "goalAria": "{{pct}}% of goal",
+    "goalText": "{{pct}}% of {{goal}}",
+    "cash": "Cash",
+    "invested": "Invested",
+    "inflationRate": "Inflation −{{pct}}%/yr",
+    "investments": "Investments",
+    "noInvestments": "No investments yet — Invest to make money work for you.",
+    "lastYear": "{{pct}} last yr",
+    "lifestyleTip": "Each Spend raises lifestyle: +1% inflation on cash",
+    "lifestyle": "Lifestyle {{level}}",
+    "saveStreak": "Save streak {{n}}",
+    "investedTag": "{{amount}} invested",
+    "defenses": "Defenses {{n}}/{{max}}",
+    "noDefenses": "None — equip defense cards for free",
+    "openPortfolio": "Open your portfolio",
+    "dismiss": "Dismiss",
+    "def": {
+      "blocks": "Blocks {{what}}",
+      "floor": "Net worth can't drop below {{amount}}",
+      "cut": "Cuts attacks by {{pct}}%",
+      "any": "Blocks any attack"
+    },
+    "category": {
+      "medical": "medical bills",
+      "job": "job loss",
+      "market": "market crashes",
+      "fraud": "fraud",
+      "tax": "tax trouble",
+      "property": "property damage",
+      "legal": "legal trouble",
+      "personal": "personal setbacks",
+      "travel": "travel mishaps",
+      "debt": "debt trouble"
+    },
+    "year": {
+      "aria": "Year {{n}} of {{max}}",
+      "short": "Y{{n}}/{{max}}",
+      "long": "Year {{n}} / {{max}}",
+      "passed": "A year passed",
+      "market": "market this year",
+      "inflation": "Inflation ate {{amount}} of your cash",
+      "wiped": "Your {{what}} was wiped out",
+      "everyone": "everyone",
+      "you": "you",
+      "blockedBy": "blocked by {{list}}",
+      "yourCard": "your {{card}}",
+      "theirCard": "{{name}}'s {{card}}",
+      "youDelta": "you {{delta}}",
+      "lureYou": "You fell for it: {{amount}} moved into {{asset}}",
+      "lureOther": "{{name}} fell for it: {{amount}} moved into {{asset}}",
+      "quiet": "Quiet year — no life event."
+    },
+    "hand": {
+      "new": "NEW",
+      "free": "Free",
+      "play": "Play",
+      "pick": "Pick a card.",
+      "glowing": "Glowing",
+      "canPlay": "cards can be played now",
+      "equipFree": "equipping a defense is free",
+      "orPass": "or Pass to discard one",
+      "passTitle": "Discard this card and end your turn",
+      "pass": "Pass",
+      "passSub": "discard · ends turn",
+      "equipCard": "Equip {{card}}",
+      "equipSub": "free · doesn’t end turn",
+      "playCard": "Play {{card}}",
+      "chooseSub": "choose Save / Spend / Invest",
+      "endsTurn": "ends your turn"
+    }
+  },
+  "result": {
+    "defenseEquipped": "Defense equipped! Now play a card.",
+    "oneDefense": "You can equip one defense per turn. Play a decision or action card.",
+    "slotsFull": "Defense slots full ({{max}}). Play a decision or action card.",
+    "passed": "Passed — discarded {{card}}.",
+    "choiceMade": "{{choice}} chosen!",
+    "levelBanner": "LEVEL - {{n}}",
+    "mode": {
+      "ranked": "RANKED",
+      "practice": "PRACTICE",
+      "campaign": "CAMPAIGN"
+    },
+    "youWin": "YOU WIN",
+    "betterLuck": "BETTER LUCK NEXT TIME",
+    "soClose": "So Close!",
+    "place": "{{n}}{{ordinal}} Place",
+    "ordinal": {
+      "1": "st",
+      "2": "nd",
+      "3": "rd",
+      "4": "th"
+    },
+    "justAway": "You were just {{amount}} away from winning!",
+    "showLog": "Show game log",
+    "hideLog": "Hide game log",
+    "highlights": "Match Highlights",
+    "playAgain": "PLAY AGAIN",
+    "dashboard": "DASHBOARD"
+  },
+  "popup": {
+    "invested": "INVESTED",
+    "movedInto": "{{amount}} moved into {{asset}}",
+    "gained": "WEALTH GAINED",
+    "attacked": "{{name}} ATTACKED!",
+    "lost": "WEALTH LOST"
+  },
+  "setup": {
+    "newGame": "New Game",
+    "aiOpponents": "AI Opponents",
+    "playingAgainst": "Playing against {{n}} AI · {{total}} players total",
+    "raceTo": "Race to",
+    "entryReward": "Entry Reward",
+    "winToEarn": "Win the game to earn",
+    "startGame": "Start Game",
+    "defaultGoal": "₹50 Lakhs"
+  },
+  "campaign": {
+    "yourTurn": "It's your turn",
+    "level": "Level {{n}}",
+    "allComplete": "All Complete",
+    "progress": "Campaign Progress",
+    "complete": "{{n}}/{{total}} Complete",
+    "current": "Level {{n}} ~ Good Start!",
+    "completed": "Level {{n}} ~ Completed!",
+    "notUnlocked": "Not Yet Unlocked",
+    "learningFallback": "Learning",
+    "learning": {
+      "level_1": "Spending Control",
+      "level_2": "Saving",
+      "level_3": "Investing",
+      "level_4": "Risk & Protection"
+    },
+    "play": "Play",
+    "locked": "Locked"
+  },
+  "landing": {
+    "signIn": "Sign In",
+    "playNow": "Play Now",
+    "badge": "THE MONEY DECISION GAME",
+    "hero1": "Earn.",
+    "hero2": "Attack.",
+    "hero3": "Dominate.",
+    "heroSub": "A fast-paced financial card game with real Indian money decisions. Race to ₹50 Lakhs through SIPs, Market Crashes, Tax Raids, and more.",
+    "startFree": "Start Playing Free",
+    "toDashboard": "Go to your dashboard",
+    "playGuest": "Play as Guest — no sign-up needed",
+    "cardType": {
+      "decision": "DECISION",
+      "action": "ACTION",
+      "defense": "DEFENSE"
+    },
+    "tier": {
+      "common": "C",
+      "rare": "R",
+      "legendary": "L"
+    },
+    "effect": {
+      "block": "BLOCK",
+      "crisis": "CRISIS"
+    },
+    "preview": {
+      "diwali": {
+        "name": "Diwali Bonus",
+        "desc": "Gain wealth"
+      },
+      "crash": {
+        "name": "Market Crash",
+        "desc": "All lose wealth"
+      },
+      "emergency": {
+        "name": "Emergency Fund",
+        "desc": "Stop an attack"
+      },
+      "blackSwan": {
+        "name": "The Black Swan",
+        "desc": "Extreme event"
+      }
+    },
+    "stats": {
+      "cards": "Cards",
+      "goal": "Player Goal",
+      "tiers": "Rank Tiers",
+      "time": "Game Time",
+      "timeValue": "20-30 min"
+    },
+    "why": "Why BHAO?",
+    "whySub": "Everything you love about competitive card games, built around Indian financial life.",
+    "feature": {
+      "decisions": {
+        "title": "Real Indian Money Decisions",
+        "desc": "Every card puts you in a situation you might face in real life. SIPs, EMIs, Tax Raids, IPOs — your choices decide your fate."
+      },
+      "attack": {
+        "title": "Attack & Defend",
+        "desc": "Play Action cards to attack rivals with Tax Raids, Market Crashes, and UPI Frauds. Counter with Defense cards."
+      },
+      "rank": {
+        "title": "Mogul Rank Ladder",
+        "desc": "Climb from Rookie to DAANIK Legend through 8 rank tiers. RP gained, RP lost — the ladder never lies."
+      },
+      "economy": {
+        "title": "DAANIK Economy",
+        "desc": "Earn DAANIK Coins, trade cards, join Guilds, and invest in the in-game stock market that mirrors player behavior."
+      },
+      "seasons": {
+        "title": "Prestige Seasons",
+        "desc": "30-day seasons with unique themes — IPO Boom, Crypto Cycle, Election Economy. New rules every month."
+      },
+      "contracts": {
+        "title": "Daily Contracts",
+        "desc": "3 contracts reset every midnight. Miss them and they're gone. Build your streak, earn rare cards."
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "What is BHAO?",
+      "a1": "BHAO is a competitive, multiplayer financial card game designed to simulate the real Indian economy. Players navigate real-world financial situations like SIP investments, IPO booms, and unexpected market crashes. The objective is to be the first player to accumulate ₹50 Lakhs in wealth while defending against attacks from other players.",
+      "q2": "How does the stock simulator work?",
+      "a2": "Unlike traditional stock simulators, BHAO uses a dynamic event-driven system. Players draw \"Decision Cards\" where they must choose between safe saving or risky investing. Successful investments yield high returns, but carry the risk of total loss. Special \"Action Cards\" allow players to trigger market-wide events that affect the entire economy.",
+      "q3": "Can I play BHAO for free?",
+      "a3": "Yes, BHAO is completely free to play. You can create an account, build your wealth, climb the Mogul Rank Ladder, and compete with friends in multiplayer rooms without any cost. The game focuses on improving financial literacy through strategic gameplay."
+    },
+    "ctaSub": "Join thousands of players racing to ₹50 Lakhs.",
+    "ctaBtn": "Play Now — It's Free",
+    "footer": "The Money Decision Game — For entertainment & financial literacy purposes. Not financial advice."
+  },
+  "report": {
+    "aria": "Your money report card",
+    "eyebrow": "Your money report",
+    "startedWith": "Started with",
+    "endedWith": "Ended with",
+    "grades": "Your grades",
+    "gradeAria": "Grade {{grade}}",
+    "forReal": "If you did this for real for {{years}} years",
+    "remember": "Remember this",
+    "learnMore": "Learn more",
+    "newInLibrary": "New in your Gyaan Library",
+    "metAgain": "Ideas you met again",
+    "metThisGame": "Ideas you met this game",
+    "openLibrary": "Open Gyaan Library",
+    "area": {
+      "saving": "Saving",
+      "investing": "Investing",
+      "risk": "Risk",
+      "emergency": "Emergency fund",
+      "protection": "Protection"
+    },
+    "persona": {
+      "thrill_seeker": "Thrill Seeker",
+      "lifestyle_lover": "Lifestyle Lover",
+      "inflation_favourite": "Inflation's Favourite Customer",
+      "firefighter": "Always Firefighting",
+      "emergency_pro": "Emergency-Ready Pro",
+      "steady_builder": "Steady Builder",
+      "safety_first": "Safety-First Saver",
+      "growth_hunter": "Growth Hunter",
+      "money_learner": "Money Learner"
+    },
+    "proj": {
+      "yourMix": "Your mix",
+      "fd": "FD / savings",
+      "index": "Index fund SIP",
+      "sub": "{{monthly}} a month for {{years}} years (you put in {{total}})",
+      "putIn": "Amount you put in",
+      "legend": "what you put in"
+    },
+    "spark": {
+      "label": "Net worth over {{years}} years: from {{start}} to {{end}}, peak {{peak}}",
+      "year": "Year {{n}}: {{amount}}",
+      "start": "Start",
+      "yearN": "Year {{n}}"
+    }
+  },
+  "concept": {
+    "example": "Example",
+    "tryThis": "Try this in real life",
+    "comingSoon": "The full write-up for this idea is coming soon."
+  },
+  "library": {
+    "title": "Gyaan Library",
+    "subtitle": "Money ideas you have met while playing",
+    "backHome": "Back to home",
+    "unlocked": "{{count}} / {{total}} unlocked",
+    "playForMore": "Play games to unlock more",
+    "progressAria": "Concepts unlocked",
+    "emptyTitle": "Your library is empty — for now!",
+    "emptyBody": "Every game unlocks the money ideas you run into. Finish one to fill your first shelf.",
+    "play": "Play",
+    "tapToRead": "Tap to read more.",
+    "lockedAria": "{{title}}: locked",
+    "playToUnlock": "Play to unlock",
+    "how": "How: {{hint}}",
+    "newCount": "{{n}} new",
+    "unlockAsYouPlay": "Money ideas unlock as you play.",
+    "ideasUnlocked": "{{count}} / {{total}} money ideas unlocked",
+    "open": "Open",
+    "hint": {
+      "inflation": "Keep cash through a year with inflation.",
+      "compounding": "Hold an investment for 3+ years or double it.",
+      "emergency_fund": "Get hit by a loss you can’t cover with cash.",
+      "sip": "Invest in an index fund.",
+      "index_funds": "Invest in an index fund.",
+      "diversification": "Hold 3 or more kinds of assets at once.",
+      "asset_risk": "Watch a risky asset swing up and down.",
+      "fd_vs_inflation": "Keep money in an FD while inflation runs high.",
+      "liquidity": "Be forced to sell an investment to pay a bill.",
+      "market_patience": "Hold on through a market crash.",
+      "scams": "Meet a “too good to be true” offer.",
+      "crypto_risk": "Hold crypto when it crashes.",
+      "lifestyle_creep": "Upgrade your lifestyle a couple of times.",
+      "pay_yourself_first": "Save three turns in a row.",
+      "health_insurance": "Face a medical emergency.",
+      "term_insurance": "Play a life-insurance card.",
+      "credit_card_debt": "Get a credit card bill you can’t fully pay.",
+      "good_vs_bad_debt": "Take on a loan or EMI.",
+      "tax_saving": "Play a tax card.",
+      "cyber_safety": "Get targeted by a fraud attack.",
+      "real_estate": "Buy or sell property.",
+      "gold": "Buy gold."
+    }
+  },
+  "guest": {
+    "tutorial": "Tutorial",
+    "tutorialDesc": "Learn the cards in 2 minutes.",
+    "campaign": "Campaign",
+    "campaignDesc": "Play through the life-stage levels.",
+    "practice": "Practice vs Bots",
+    "practiceDesc": "A quick game against computer players.",
+    "playingAs": "Playing as",
+    "guest": "Guest",
+    "ready": "Ready to play?",
+    "deviceOnly": "Guest progress is saved only on this device.",
+    "signInTitle": "Sign in to play online",
+    "signInBody": "Multiplayer rooms, ranked play, leaderboards, coins and daily contracts need a free account.",
+    "createAccount": "Create free account",
+    "onlineUnavailable": "Online play is unavailable right now.",
+    "exit": "Exit guest mode"
+  },
+  "signin": {
+    "onlineBody": "Multiplayer, ranked games, leaderboards and coins need a free BHAO account so we can save your progress and match you with other players.",
+    "playBody": "Sign in to save your progress across devices, or jump straight in as a guest.",
+    "unavailable": "Online features are unavailable right now.",
+    "signInOrCreate": "Sign in or create account",
+    "playAsGuest": "Play as Guest",
+    "backGuestHome": "Back to guest home",
+    "goHome": "Go home"
+  },
+  "legal": {
+    "home": "BHAO home",
+    "privacyShort": "Privacy",
+    "termsShort": "Terms",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "lastUpdated": "Last updated: {{date}}",
+    "englishOnly": "The full text is available in English.",
+    "sections": {
+      "privacy": {
+        "h1": "Playing as a guest",
+        "h2": "Information we collect when you create an account",
+        "h3": "Error tracking",
+        "h4": "Data stored on your device",
+        "h5": "Third-party services",
+        "h6": "What we don't do",
+        "h7": "Keeping and deleting your data",
+        "h8": "Your rights",
+        "h9": "Children",
+        "h10": "Changes"
+      },
+      "terms": {
+        "h1": "The game",
+        "h2": "Virtual items",
+        "h3": "Your account",
+        "h4": "Fair play",
+        "h5": "Availability",
+        "h6": "Liability",
+        "h7": "Privacy",
+        "h8": "Changes and governing law"
+      }
+    }
+  },
+  "tutorial": {
+    "skip": "Skip tutorial",
+    "next": "Next",
+    "watching": "Watching…",
+    "stepOf": "Step {{n}} of {{total}}",
+    "hook": {
+      "kicker": "BHAO · first match",
+      "title": "Your daily chai could be worth {{amount}}.",
+      "perDay": "chai & snacks a day",
+      "perMonth": "a month, invested as a SIP",
+      "after": "after {{years}} years at {{rate}}% a year",
+      "fine": "You put in {{paidIn}} of your own money; compounding adds the other {{growth}}. {{rate}}% is a long-run average for Indian equity index funds, not a promise — some years fall, some jump.",
+      "lead": "Let’s see how money really grows. A 4-year mini match against Rahul — about 5 minutes.",
+      "start": "Start the match",
+      "rules": "Just show me the rules (30 sec)"
+    },
+    "summary": {
+      "kickerSkipped": "BHAO in 4 ideas",
+      "kickerDone": "Tutorial complete",
+      "titleSkipped": "The 4 money moves BHAO teaches",
+      "titleDone": "You played your first 4 years!",
+      "yourNetWorth": "Your net worth",
+      "rahulNetWorth": "Rahul’s net worth",
+      "lesson": {
+        "invest": {
+          "title": "Invest early, let years do the work",
+          "body": "Idle cash loses ~6% a year to inflation. An index fund grows with the market — bumpy years, strong decades."
+        },
+        "emergency": {
+          "title": "Keep an emergency fund",
+          "body": "Cash for surprises means you never sell investments in a hurry — Rahul paid a 15% penalty selling his flat."
+        },
+        "insure": {
+          "title": "Insure the big risks",
+          "body": "Health insurance turned a hospital bill into ₹0. In BHAO, equipping a defense is free and doesn’t end your turn."
+        },
+        "scam": {
+          "title": "“Guaranteed returns” = red flag",
+          "body": "Hot tips and double-your-money schemes vanish. Check SEBI/RBI registration before you invest."
+        }
+      },
+      "play": "Play a real game",
+      "playTutorial": "Play the tutorial",
+      "replay": "Replay tutorial"
+    },
+    "nudge": {
+      "playChai": "For this lesson, play “{{card}}” — the ₹150-a-day card.",
+      "decisionSave": "Play a decision card and choose Save.",
+      "equipFirst": "Equip Health Insurance first — it’s free and your turn continues.",
+      "decision": "Play a decision card.",
+      "tapNext": "Tap Next in the tip first.",
+      "wait": "Wait a moment…",
+      "readTip": "Read the tip, then tap Next.",
+      "chooseInvest": "For this lesson, choose Invest.",
+      "chooseSave": "Choose Save — build your cash buffer first.",
+      "defenseSoon": "You’ll get to defenses in a moment.",
+      "oneEquip": "One free equip per turn.",
+      "noPass": "Passing discards a card and ends your turn — not now."
+    },
+    "step": {
+      "networth": {
+        "title": "Your money",
+        "body": "Net worth = cash + investments. You start with {{cash}} in cash and no investments. Each round of BHAO is one year of your life. Grow your net worth toward {{goal}}."
+      },
+      "rival": {
+        "title": "Meet {{name}}",
+        "body": "Rahul has the same {{netWorth}} net worth, but {{flat}} of it is a flat and only {{cash}} is cash. He invests every spare rupee and keeps no emergency fund. Keep an eye on him."
+      },
+      "pickChai": {
+        "title": "Play a card",
+        "body": "Each turn you play one card. This one is about the ₹150 a day you spend on chai and snacks — ₹4,500 a month.",
+        "todo": "Tap “{{card}}”, then ▶ Play."
+      },
+      "preview": {
+        "title": "Save, Spend or Invest?",
+        "body": "Each choice shows what it does to your money right now. Save adds cash. Spend costs cash and makes your lifestyle more expensive. Invest moves cash into an investment — your net worth stays the same today, then grows (or dips) every year."
+      },
+      "invest": {
+        "title": "Invest it",
+        "body": "An index fund owns a slice of India's top companies. Invest moves {{amount}} of your cash into it — no instant profit, it grows year by year.",
+        "bodyPart": "An index fund owns a slice of India's top companies. Invest moves part of your cash into it — no instant profit, it grows year by year.",
+        "todo": "Tap Invest."
+      },
+      "botTurn": {
+        "title": "Rahul’s turn",
+        "body": "You play one card, then your turn ends. Now Rahul plays — he puts his cash into more property."
+      },
+      "year": {
+        "title": "A year passed",
+        "market": "The market moved: your index fund went {{pct}}, {{from}} → {{to}}.",
+        "inflation": "Inflation ({{pct}}% a year) ate {{amount}} of your idle cash: prices went up, so the same rupees buy less. Cash that just sits there quietly shrinks.",
+        "inflationSome": "Inflation ({{pct}}% a year) ate some of your idle cash: prices went up, so the same rupees buy less. Cash that just sits there quietly shrinks."
+      },
+      "lure": {
+        "title": "Life event: a “hot tip”",
+        "body": "Each year can bring a life event. Rahul got a WhatsApp tip — “guaranteed 30% a month!” — and put {{amount}} into it. Let’s see how that goes.",
+        "bodyNoAmount": "Each year can bring a life event. Rahul got a WhatsApp tip — “guaranteed 30% a month!” — and put money into it. Let’s see how that goes."
+      },
+      "pickSave": {
+        "title": "Keep a buffer",
+        "body": "You have {{cash}} in cash. Investing all of it is risky: life throws surprise bills. Keep some cash as an emergency fund.",
+        "todoSave": "Tap Save.",
+        "todoCard": "Tap “{{card}}”, then ▶ Play."
+      },
+      "botTurn2": {
+        "title": "Saved!",
+        "body": "Your cash is now {{cash}}. Rahul is playing — he invests again and keeps almost no cash."
+      },
+      "medical": {
+        "title": "Medical emergency!",
+        "head": "Rahul slipped and needed hospital care.",
+        "headBill": "Rahul slipped and needed hospital care — his net worth fell by {{amount}}.",
+        "sold": "He had too little cash, so he was forced to sell part of his flat in a hurry at a 15% penalty.",
+        "you": "You keep {{cash}} in cash, so a bill like that would be paid from cash and your investments keep growing. That is what an emergency fund is for."
+      },
+      "equip": {
+        "title": "Get insured",
+        "body": "You drew Health Insurance. Defense cards block a kind of trouble — this one blocks medical bills. Equipping a defense is free: it does not use up your turn.",
+        "todo": "Tap the glowing “{{card}}” card, then 🛡️ Equip."
+      },
+      "freePlay": {
+        "title": "Still your turn",
+        "body": "Insurance is on. You can still play one card this turn — your call. Invest, save or spend: you know what each does now.",
+        "todo": "Play any card."
+      },
+      "botTurn3": {
+        "body": "Rahul plays. Then another year passes…"
+      },
+      "scam": {
+        "title": "Where did the hot tip go?",
+        "wiped": "Rahul’s “guaranteed” tip crashed two years in a row and is now wiped out. Guaranteed high returns are how scams work.",
+        "crashing": "Rahul’s “guaranteed” tip keeps crashing. Guaranteed high returns are how scams work.",
+        "blocked": "And a hospital bill hit you this year — your Health Insurance blocked it, so you paid nothing."
+      }
+    },
+    "rules": {
+      "aria": "How BHAO works",
+      "kicker": "HOW BHAO WORKS",
+      "playGuided": "Play the guided match",
+      "gotIt": "Got it",
+      "goal": {
+        "title": "The goal",
+        "p1": "Grow your net worth to the goal before your rivals — or be the richest when the years run out.",
+        "p2": "One round = one year of your life. Everyone plays one turn per year."
+      },
+      "cash": {
+        "title": "Cash vs investments",
+        "p1": "Net worth = cash + investments.",
+        "p2": "You hold {{hand}} cards. Each turn play one card: Save (adds cash), Spend (costs cash, raises your lifestyle) or Invest (moves cash into an index fund, gold, property…).",
+        "p3": "Equipping a defense is free (up to {{maxDefenses}}). Or Pass: discard one card and end your turn."
+      },
+      "year": {
+        "title": "A year passes",
+        "p1": "Every investment moves with the market: steady ones a little, risky ones a lot — crashes happen.",
+        "p2": "Inflation eats about {{inflation}}% of idle cash each year (more if you keep spending on lifestyle).",
+        "p3": "So invest what you won’t need — but keep some cash."
+      },
+      "events": {
+        "title": "Life events & defenses",
+        "p1": "Most years bring a life event: a bonus, a hospital bill, a job gap, a “guaranteed” scam tip…",
+        "p2": "Bills are paid from cash. No cash? Your investments get sold in a hurry, at a penalty. That’s why you keep an emergency fund.",
+        "p3": "Defense cards like Health Insurance block whole kinds of trouble."
+      }
+    }
   }
 }

@@ -15,6 +15,7 @@ import {
   DecisionOptions, HandActionBar, HandCardFrame, PortfolioPanel, WalletChip, YearNewsStrip, YearPill, useYearNews,
 } from './EconomyPanels'
 import { cardPlayability, rupees } from './economyUi'
+import { LanguageSwitcher } from '../LanguageSwitcher'
 import './GameBoardMobile.css'
 
 interface GameBoardMobileProps extends InnerBoardProps {
@@ -87,7 +88,7 @@ export function GameBoardMobile({
   }
 
   const renderHand = (interactive: boolean) => (
-    <div className={`mb-hand${interactive ? '' : ' preview'}`} role="listbox" aria-label="Your hand">
+    <div className={`mb-hand${interactive ? '' : ' preview'}`} role="listbox" aria-label={t('board.yourHand')}>
       <AnimatePresence>
         {hand.map(card => (
           <HandCardFrame
@@ -138,7 +139,7 @@ export function GameBoardMobile({
             key={gameState.turnStartTime}
             turnStartTime={gameState.turnStartTime}
             timeLimit={TURN_TIME_LIMIT_MS}
-            label={landscape ? (isMyTurn ? 'You' : currentPlayer?.name) : undefined}
+            label={landscape ? (isMyTurn ? t('board.you') : currentPlayer?.name) : undefined}
           />
         )}
         <button type="button" className="mb-ticker" onClick={() => setShowLog(true)}>
@@ -148,6 +149,7 @@ export function GameBoardMobile({
         <button type="button" className="board-icon-btn" aria-label={t('game.gameLog')} onClick={() => setShowLog(true)}>
           <ScrollText size={20} />
         </button>
+        <LanguageSwitcher variant="cycle" tone="dark" short />
         {onSendEmote && <EmoteButton onSendEmote={onSendEmote} direction="down" />}
       </div>
 
@@ -170,7 +172,7 @@ export function GameBoardMobile({
             </div>
             {hand.length > 0 && (
               <>
-                <div className="mb-section-head"><span>Your hand — plan ahead</span></div>
+                <div className="mb-section-head"><span>{t('board.planAhead')}</span></div>
                 {renderHand(false)}
               </>
             )}
@@ -182,7 +184,7 @@ export function GameBoardMobile({
           <div className="mb-panel mb-center">
             <div className="mb-title">{t('game.yourTurnDraw')}</div>
             <div className="mb-sub">
-              {hand.length < HAND_SIZE ? `Refill your hand to ${HAND_SIZE} cards · ` : ''}{gameState.deck.length} cards left in deck
+              {hand.length < HAND_SIZE ? `${t('board.refill', { max: HAND_SIZE })} · ` : ''}{t('board.deckLeft', { n: gameState.deck.length })}
             </div>
           </div>
         )}
@@ -191,10 +193,10 @@ export function GameBoardMobile({
         {isPlayPhase && (
           <>
             <div className="mb-section-head">
-              <span>{phase3 ? 'Pick a card' : 'Pick a card to play'}</span>
+              <span>{phase3 ? t('board.pickCard') : t('board.pickToPlay')}</span>
               {gameState.equippedThisTurn
-                ? <span className="mb-drawn-chip equip">🛡️ Equipped this turn</span>
-                : gameState.drawnCard && <span className="mb-drawn-chip">New: {cardName(gameState.drawnCard)}</span>}
+                ? <span className="mb-drawn-chip equip">🛡️ {t('board.equippedShort')}</span>
+                : gameState.drawnCard && <span className="mb-drawn-chip">{t('board.newCard', { card: cardName(gameState.drawnCard) })}</span>}
             </div>
             {renderHand(true)}
             <div className="mb-selected-info" aria-live="polite">
@@ -204,7 +206,7 @@ export function GameBoardMobile({
                   <span> — {cardFlavor(selectedCard)}</span>
                 </>
               ) : (
-                <span className="mb-muted">Tap a card to see what it does. <span className="mb-glow-word">Glowing</span> cards are playable now.</span>
+                <span className="mb-muted">{t('board.tapCard')} <span className="mb-glow-word">{t('econ.hand.glowing')}</span> {t('board.playableNow')}</span>
               )}
             </div>
           </>
@@ -224,7 +226,7 @@ export function GameBoardMobile({
                   </button>
                 )
               })}
-              {targetIndices.length === 0 && <div className="mb-sub">No opponents left to target.</div>}
+              {targetIndices.length === 0 && <div className="mb-sub">{t('board.noTargets')}</div>}
             </div>
           </div>
         )}
@@ -253,7 +255,7 @@ export function GameBoardMobile({
             />
           ) : (
             <button type="button" className="mb-primary-btn gold" disabled={!selectedCard} onClick={() => selectedCard && primary(selectedCard)}>
-              {selectedCard ? `Play ${cardName(selectedCard)}` : 'Select a card'}
+              {selectedCard ? t('econ.hand.playCard', { card: cardName(selectedCard) }) : t('board.selectCard')}
             </button>
           )}
         </div>
@@ -288,14 +290,14 @@ export function GameBoardMobile({
               <div className="mb-decision-header">
                 <h3>{cardName(pending.card)}</h3>
                 <p>{cardFlavor(pending.card)}</p>
-                {myPlayer && <div className="mb-decision-cash">💵 Cash {rupees(myPlayer.cash ?? myPlayer.wealth)} · Net worth {rupees(myPlayer.wealth)}</div>}
+                {myPlayer && <div className="mb-decision-cash">💵 {t('econ.cash')} {rupees(myPlayer.cash ?? myPlayer.wealth)} · {t('econ.netWorth')} {rupees(myPlayer.wealth)}</div>}
               </div>
               <DecisionOptions state={gameState} playerIndex={myPlayerIndex} card={pending.card} onDecision={onDecision} hi={hi} variant="compact" />
               {phase3 && (
                 <div className="econ-decision-foot">
-                  <button type="button" className="econ-btn econ-btn-pass" onClick={onCancelTargeting}><span>← Back</span></button>
+                  <button type="button" className="econ-btn econ-btn-pass" onClick={onCancelTargeting}><span>← {t('board.back')}</span></button>
                   <button type="button" className="econ-btn econ-btn-pass" onClick={() => onPass?.(pending.card.id)}>
-                    <span>Pass</span><small>discard · ends turn</small>
+                    <span>{t('econ.hand.pass')}</span><small>{t('econ.hand.passSub')}</small>
                   </button>
                 </div>
               )}
@@ -318,15 +320,15 @@ export function GameBoardMobile({
               className="econ-sheet"
               role="dialog"
               aria-modal="true"
-              aria-label="Your portfolio"
+              aria-label={t('board.yourPortfolio')}
               initial={{ y: 60 }}
               animate={{ y: 0 }}
               exit={{ y: 60 }}
               onClick={e => e.stopPropagation()}
             >
               <div className="econ-sheet-head">
-                <span className="econ-sheet-title">💼 Your money</span>
-                <button type="button" className="board-icon-btn" aria-label={t('common.close', { defaultValue: 'Close' })} onClick={() => setShowPortfolio(false)}>
+                <span className="econ-sheet-title">💼 {t('board.yourMoney')}</span>
+                <button type="button" className="board-icon-btn" aria-label={t('common.close')} onClick={() => setShowPortfolio(false)}>
                   <X size={20} />
                 </button>
               </div>
@@ -347,7 +349,7 @@ export function GameBoardMobile({
             onClick={() => setShowLog(false)}
           >
             <div className="mb-log-sheet" onClick={e => e.stopPropagation()}>
-              <button type="button" className="board-icon-btn mb-log-close" aria-label={t('common.close', { defaultValue: 'Close' })} onClick={() => setShowLog(false)}>
+              <button type="button" className="board-icon-btn mb-log-close" aria-label={t('common.close')} onClick={() => setShowLog(false)}>
                 <X size={20} />
               </button>
               <GameLog log={gameState.log} playerName={myPlayer?.name} />

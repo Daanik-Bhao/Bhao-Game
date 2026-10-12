@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { GameBoard, UIPhase } from '../components/game/GameBoard'
 import { CoachMark } from '../components/tutorial/CoachMark'
 import { TutorialHook, TutorialSummary } from '../components/tutorial/TutorialScreens'
-import { LESSON_COUNT, STEPS, StepCtx } from '../components/tutorial/steps'
+import { LESSON_COUNT, STEPS, StepCtx, tutorialCardTitle } from '../components/tutorial/steps'
 import { TutorialModal } from '../components/TutorialModal'
 import {
   advanceTurn, canEquip, doBotTurn, equipDefense, getNetWorth, passTurn, previewDecision, processDecision,
@@ -13,6 +14,7 @@ import {
   CARD_IDS, TUTORIAL_BOT_POLICY, TUTORIAL_PLAYER_ID, TUTORIAL_SEED, buildTutorialState, isCard, markTutorialDone,
 } from '../data/tutorialScript'
 import { playSound } from '../lib/audio'
+import { localizeEngineText } from '../components/game/economyUi'
 import type { GameCard, GameState } from '../types/game'
 
 type Stage = 'hook' | 'play' | 'summary'
@@ -29,10 +31,11 @@ const FROZEN_TURN_START = () => Date.now() + 365 * 24 * 60 * 60 * 1000
  */
 export function TutorialGame() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [stage, setStage] = useState<Stage>('hook')
   const [showRules, setShowRules] = useState(false)
   const [skipped, setSkipped] = useState(false)
-  const [gs, setGs] = useState<GameState>(() => buildTutorialState('You'))
+  const [gs, setGs] = useState<GameState>(() => buildTutorialState(t('board.you')))
   const [uiPhase, setUiPhase] = useState<UIPhase>('playing')
   const [stepIdx, setStepIdx] = useState(0)
   const [notice, setNotice] = useState<string | null>(null)
@@ -57,7 +60,7 @@ export function TutorialGame() {
   const start = () => {
     // Same seed + same decks = the same story every time.
     setRng(seededRng(TUTORIAL_SEED))
-    const fresh = buildTutorialState('You')
+    const fresh = buildTutorialState(t('board.you'))
     setGs({ ...fresh, turnStartTime: FROZEN_TURN_START() })
     setUiPhase('playing')
     setStepIdx(0)
@@ -131,30 +134,30 @@ export function TutorialGame() {
     if (card.type === 'defense') { handleEquip(card); return }
     switch (step.id) {
       case 'pickChai':
-        if (!isCard(card, CARD_IDS.chai)) return nudge('For this lesson, play “Daily Convenience Habit” — the ₹150-a-day card.')
+        if (!isCard(card, CARD_IDS.chai)) return nudge(t('tutorial.nudge.playChai', { card: tutorialCardTitle(CARD_IDS.chai) }))
         return openDecision(card)
       case 'pickSave':
-        if (card.type !== 'decision') return nudge('Play a decision card and choose Save.')
+        if (card.type !== 'decision') return nudge(t('tutorial.nudge.decisionSave'))
         return openDecision(card)
       case 'equip':
-        return nudge('Equip Health Insurance first — it’s free and your turn continues.')
+        return nudge(t('tutorial.nudge.equipFirst'))
       case 'freePlay':
-        if (card.type !== 'decision') return nudge('Play a decision card.')
+        if (card.type !== 'decision') return nudge(t('tutorial.nudge.decision'))
         return openDecision(card)
       default:
-        return nudge(step.kind === 'next' ? 'Tap Next in the tip first.' : 'Wait a moment…')
+        return nudge(step.kind === 'next' ? t('tutorial.nudge.tapNext') : t('tutorial.nudge.wait'))
     }
   }
 
   const handleDecision = (choice: 'spend' | 'save' | 'invest') => {
     const pending = gs.pendingDecision
     if (!pending || !myTurn) return
-    if (step.id === 'preview') return nudge('Read the tip, then tap Next.')
-    if (step.id === 'invest' && choice !== 'invest') return nudge('For this lesson, choose Invest.')
-    if (step.id === 'pickSave' && choice !== 'save') return nudge('Choose Save — build your cash buffer first.')
+    if (step.id === 'preview') return nudge(t('tutorial.nudge.readTip'))
+    if (step.id === 'invest' && choice !== 'invest') return nudge(t('tutorial.nudge.chooseInvest'))
+    if (step.id === 'pickSave' && choice !== 'save') return nudge(t('tutorial.nudge.chooseSave'))
     if (step.id !== 'invest' && step.id !== 'pickSave' && step.id !== 'freePlay') return
     const pv = previewDecision(gs, ME, pending.card, choice)
-    if (pv.disabled) return nudge(pv.disabled)
+    if (pv.disabled) return nudge(localizeEngineText(pv.disabled))
     const decided = processDecision(gs, ME, choice, pending.card)
     const next = decided.phase === 'game_over' ? decided : advanceTurn(decided)
     setGs({ ...next, pendingDecision: null, turnStartTime: FROZEN_TURN_START() })
@@ -164,15 +167,15 @@ export function TutorialGame() {
 
   const handleEquip = (card: GameCard) => {
     if (!myTurn) return
-    if (step.id !== 'equip' && step.id !== 'freePlay') return nudge('You’ll get to defenses in a moment.')
-    if (!canEquip(gs, ME, card)) return nudge('One free equip per turn.')
+    if (step.id !== 'equip' && step.id !== 'freePlay') return nudge(t('tutorial.nudge.defenseSoon'))
+    if (!canEquip(gs, ME, card)) return nudge(t('tutorial.nudge.oneEquip'))
     setGs(equipDefense(gs, ME, card))
     playSound('play')
   }
 
   const handlePass = (cardId: string) => {
     if (!myTurn) return
-    if (step.id !== 'freePlay') return nudge('Passing discards a card and ends your turn — not now.')
+    if (step.id !== 'freePlay') return nudge(t('tutorial.nudge.noPass'))
     const next = passTurn({ ...gs, pendingDecision: null }, ME, cardId)
     setGs({ ...next, turnStartTime: FROZEN_TURN_START() })
     setUiPhase('playing')
@@ -230,7 +233,7 @@ export function TutorialGame() {
       <CoachMark
         stepKey={step.id}
         kind={step.kind}
-        title={step.title}
+        title={step.title()}
         body={step.body(ctx)}
         todo={step.todo?.(ctx)}
         target={step.target(ctx)}

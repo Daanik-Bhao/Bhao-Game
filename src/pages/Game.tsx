@@ -9,7 +9,7 @@ import { Wealth } from '../components/Wealth'
 import {
   initGame, initLevelGame, startDrawPhase, processDecision, processAction,
   advanceTurn, doBotTurn, forceSkipTurn, drawCard, equipDefense, TURN_TIME_LIMIT_MS, calculateRPChange,
-  STARTING_WEALTH, canEquip, passTurn, previewDecision, assetLabel, getNetWorth, getRoundLimit
+  STARTING_WEALTH, canEquip, passTurn, previewDecision, getNetWorth, getRoundLimit
 } from '../lib/gameEngine'
 import { ARTHA_YATRA_LEVELS } from '../data/levels'
 import { saveGameResult } from '../lib/auth'
@@ -23,6 +23,10 @@ import { motion } from 'framer-motion'
 import { usePreloadImages } from '../hooks/usePreloadImages'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { GameReportPanel } from '../components/learning/GameReportPanel'
+import { assetName, cardNameFor, localizeEngineText } from '../components/game/economyUi'
+import { translateLogEntry } from '../components/game/GameLog'
+import { ASSETS } from '../data/assets'
+import { pickLang } from '../i18n/lang'
 
 type GamePhaseUI = 'setup' | UIPhase | 'result'
 
@@ -64,7 +68,7 @@ function GameClock({ startTime, timeLimit }: { startTime: number; timeLimit: num
 }
 
 export function Game() {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { levelId } = useParams()
   const [params] = useSearchParams()
   const mode = levelId ? 'campaign' : (params.get('mode') ?? 'ranked')
@@ -353,7 +357,7 @@ export function Game() {
           const finalState = newState.phase !== 'game_over' ? advanceTurn(newState) : newState
           if (finalState.phase === 'game_over') { handleGameOver(finalState) } else { setGameState(finalState) }
           playSound('attack')
-          notify(`${card.name} hit ${currentState.players[targetIndex].name}!`)
+          notify(t('game.hitTarget', { card: cardNameFor(card.name), name: currentState.players[targetIndex].name }))
         } else {
           setGameState({ ...currentState, pendingTarget: { card, playerIndex: humanPlayerIndex, effect: card.effect! } })
           setUiPhase('targeting')
@@ -363,7 +367,7 @@ export function Game() {
         const finalState = newState.phase !== 'game_over' ? advanceTurn(newState) : newState
         if (finalState.phase === 'game_over') { handleGameOver(finalState) } else { setGameState(finalState) }
         playSound('play')
-        notify(`Played ${card.name}!`)
+        notify(t('game.playedCard', { card: cardNameFor(card.name) }))
       }
     } else if (card.type === 'defense') {
       handleEquip(card, currentState)
@@ -377,17 +381,17 @@ export function Game() {
     if (canEquip(gs, humanPlayerIndex, card)) {
       setGameState(equipDefense(gs, humanPlayerIndex, card))
       playSound('play')
-      notify(i18n.language === 'hi' ? 'रक्षा कार्ड सुसज्जित! अब एक और कार्ड खेलें।' : 'Defense equipped! Now play a card.')
+      notify(t('result.defenseEquipped'))
       return
     }
     const hand = gs.players[humanPlayerIndex].hand
     if (hand.some(c => c.type !== 'defense')) {
-      notify(gs.equippedThisTurn ? 'You can equip one defense per turn. Play a decision or action card.' : 'Defense slots full (3). Play a decision or action card.')
+      notify(gs.equippedThisTurn ? t('result.oneDefense') : t('result.slotsFull', { max: 3 }))
       return
     }
     // Only defenses left and none can be equipped: discard this one as a Pass (no soft-lock)
     handlePass(card.id, gs)
-    notify(`Passed — discarded ${card.name}.`)
+    notify(t('result.passed', { card: cardNameFor(card.name) }))
   }
 
   /** Pass: discard one card and end the turn. */
@@ -404,7 +408,7 @@ export function Game() {
     const { card } = gameState.pendingDecision
     const preview = previewDecision(gameState, humanPlayerIndex, card, choice)
     if (preview.disabled) {
-      notify(preview.disabled)
+      notify(localizeEngineText(preview.disabled))
       return
     }
     const newState = processDecision(gameState, humanPlayerIndex, choice, card)
@@ -415,15 +419,15 @@ export function Game() {
     if (newState.phase !== 'game_over') {
       const invested = choice === 'invest' && preview.asset
       enqueuePopup({
-        title: invested ? (i18n.language === 'hi' ? 'निवेश किया!' : 'INVESTED') : undefined,
-        reason: i18n.language === 'hi' && card.nameHi ? card.nameHi : card.name,
+        title: invested ? t('popup.invested') : undefined,
+        reason: pickLang(card.name, card.nameHi, i18n.language),
         sourceName: newState.players[humanPlayerIndex].name,
         isSelf: true,
         description: option?.description,
         descriptionHi: option?.descriptionHi,
         insight: option?.mentorInsight ?? card.mentorInsight,
         lines: invested
-          ? [`₹${preview.investAmount.toLocaleString()} moved into ${assetLabel(preview.asset!)}`]
+          ? [t('popup.movedInto', { amount: `₹${preview.investAmount.toLocaleString('en-IN')}`, asset: `${ASSETS[preview.asset!].emoji} ${assetName(ASSETS[preview.asset!])}` })]
           : newState.log.slice(1, 4).filter(l => /Streak|had to sell|Shield/.test(l)),
         amountStr: invested ? `₹${preview.investAmount.toLocaleString()}` : `${nwDiff >= 0 ? '+' : '-'}₹${Math.abs(nwDiff).toLocaleString()}`,
         isGain: nwDiff >= 0,
@@ -433,7 +437,7 @@ export function Game() {
     const withClear = { ...finalState, pendingDecision: null }
     if (finalState.phase === 'game_over') { handleGameOver(withClear) } else { setGameState(withClear); setUiPhase('playing') }
     playSound('play')
-    notify(`${choice.charAt(0).toUpperCase() + choice.slice(1)} choice made!`)
+    notify(t('result.choiceMade', { choice: t(`econ.choice.${choice}`) }))
   }
 
   const handleTargetSelect = (targetIndex: number) => {
@@ -444,7 +448,7 @@ export function Game() {
     const withClear = { ...finalState, pendingTarget: null }
     if (finalState.phase === 'game_over') { handleGameOver(withClear) } else { setGameState(withClear); setUiPhase('playing') }
     playSound('attack')
-    notify(`${card.name} hit ${gameState.players[targetIndex].name}!`)
+    notify(t('game.hitTarget', { card: cardNameFor(card.name), name: gameState.players[targetIndex].name }))
   }
 
 
@@ -514,7 +518,7 @@ export function Game() {
         }}>
           {/* Hack to cover baked-in "LEVEL - 1" text with dynamic text */}
           <div style={{ background: '#08170D', padding: '0 24px', color: '#E8F5E9', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 26, letterSpacing: 1, borderRadius: 4 }}>
-            {mode === 'campaign' && levelId ? `LEVEL - ${levelId.split('_')[1]}` : (mode === 'ranked' ? 'RANKED' : mode.toUpperCase())}
+            {mode === 'campaign' && levelId ? t('result.levelBanner', { n: levelId.split('_')[1] }) : t(`result.mode.${mode}`, { defaultValue: mode.toUpperCase() })}
           </div>
         </div>
 
@@ -561,7 +565,7 @@ export function Game() {
           display: 'flex', alignItems: 'center', gap: 12
         }}>
           <GameClock startTime={gameState.startTime} timeLimit={gameState.timeLimit} />
-          <span style={{ fontSize: 16, opacity: 0.85 }}>Year {gameState.round ?? 1}/{getRoundLimit(gameState)}</span>
+          <span style={{ fontSize: 16, opacity: 0.85 }}>{t('econ.year.long', { n: gameState.round ?? 1, max: getRoundLimit(gameState) })}</span>
         </div>
       </div>
 
@@ -651,7 +655,7 @@ export function Game() {
 }
 
 function EventPopup({ info, onContinue }: { info: PopupInfo, onContinue: () => void }) {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   useEffect(() => {
     // Lessons and year summaries need a little longer to read
     const timer = setTimeout(() => {
@@ -661,13 +665,13 @@ function EventPopup({ info, onContinue }: { info: PopupInfo, onContinue: () => v
   }, [onContinue, info])
 
   const title = info.title ?? (info.isGain
-    ? (i18n.language === 'hi' ? 'धन प्राप्त हुआ!' : 'WEALTH GAINED')
+    ? t('popup.gained')
     : (info.sourceName && !info.isSelf && info.sourceName !== 'Game'
-      ? (i18n.language === 'hi' ? `${info.sourceName} ने हमला किया!` : `${info.sourceName} ATTACKED!`)
-      : (i18n.language === 'hi' ? 'धन की हानि!' : 'WEALTH LOST')));
+      ? t('popup.attacked', { name: info.sourceName })
+      : t('popup.lost')));
 
-  const reason = i18n.language === 'hi' && info.reasonHi ? info.reasonHi : info.reason;
-  const description = info.description ? (i18n.language === 'hi' && info.descriptionHi ? info.descriptionHi : info.description) : '';
+  const reason = pickLang(info.reason, info.reasonHi, i18n.language)
+  const description = info.description ? pickLang(info.description, info.descriptionHi, i18n.language) : ''
 
   return (
     <div
@@ -764,8 +768,9 @@ function EventPopup({ info, onContinue }: { info: PopupInfo, onContinue: () => v
 }
 
 function SetupScreen({ botCount, setBotCount, onStart, onBack, levelId }: { botCount: number; setBotCount: (n: number) => void; onStart: () => void; onBack: () => void; levelId?: string }) {
+  const { t } = useTranslation()
   const levelConfig = levelId ? ARTHA_YATRA_LEVELS.find(l => l.id === levelId) : null;
-  const wealthGoalText = levelConfig ? formatWealth(levelConfig.targetCorpus) : '₹50 Lakhs';
+  const wealthGoalText = levelConfig ? formatWealth(levelConfig.targetCorpus) : t('setup.defaultGoal');
   // Campaign levels have a fixed opponent count; only quick games let the player choose
   const opponents = levelConfig ? levelConfig.botCount : botCount;
   return (
@@ -819,12 +824,12 @@ function SetupScreen({ botCount, setBotCount, onStart, onBack, levelId }: { botC
         </div>
 
         <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14, fontFamily: 'inherit', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6, position: 'relative', zIndex: 10 }}>
-          ← Back
+          ← {t('board.back')}
         </button>
-        <h1 style={{ fontSize: 32, fontWeight: 800, color: '#002020', fontFamily: 'Space Grotesk, sans-serif', marginBottom: 28, position: 'relative', zIndex: 10 }}>New Game</h1>
+        <h1 style={{ fontSize: 32, fontWeight: 800, color: '#002020', fontFamily: 'Space Grotesk, sans-serif', marginBottom: 28, position: 'relative', zIndex: 10 }}>{t('setup.newGame')}</h1>
 
         <div style={{ background: 'rgba(255,255,255,0.7)', borderRadius: 16, padding: 24, marginBottom: 16, border: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-          <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--green-deep)', marginBottom: 16 }}>AI Opponents</h3>
+          <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--green-deep)', marginBottom: 16 }}>{t('setup.aiOpponents')}</h3>
           {!levelConfig && <div style={{ display: 'flex', gap: 10 }}>
             {[1, 2, 3].map(n => (
               <button
@@ -844,24 +849,24 @@ function SetupScreen({ botCount, setBotCount, onStart, onBack, levelId }: { botC
               </button>
             ))}
           </div>}
-          <p style={{ fontSize: 14, color: '#6b7280', marginTop: levelConfig ? 0 : 16 }}>Playing against {opponents} AI opponent{opponents > 1 ? 's' : ''} ({opponents + 1} players total)</p>
+          <p style={{ fontSize: 14, color: '#6b7280', marginTop: levelConfig ? 0 : 16 }}>{t('setup.playingAgainst', { n: opponents, total: opponents + 1 })}</p>
         </div>
 
         <div style={{ background: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: '16px 20px', marginBottom: 16, border: '1px solid rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
           <span style={{ fontSize: 20 }}>🎯</span>
           <span style={{ fontSize: 15, color: '#4b5563', fontWeight: 500 }}>
-            Race to <span style={{ color: '#d97706', fontWeight: 800 }}>{wealthGoalText}</span>
+            {t('setup.raceTo')} <span style={{ color: '#d97706', fontWeight: 800 }}>{wealthGoalText}</span>
           </span>
         </div>
 
         <div style={{ background: 'rgba(255,255,255,0.7)', borderRadius: 16, padding: '20px', marginBottom: 24, border: '1px solid rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.02)', position: 'relative', overflow: 'hidden' }}>
 
           {/* Stacked Coins Image */}
-          <img src="/avatars/coins bag.webp" alt="Entry Reward Coins" style={{ width: 80, height: 80, objectFit: 'contain', filter: 'drop-shadow(0 8px 12px rgba(217,119,6,0.3))', flexShrink: 0 }} />
+          <img src="/avatars/coins bag.webp" alt={t('setup.entryReward')} style={{ width: 80, height: 80, objectFit: 'contain', filter: 'drop-shadow(0 8px 12px rgba(217,119,6,0.3))', flexShrink: 0 }} />
 
           <div>
-            <h4 style={{ fontSize: 15, fontWeight: 700, color: 'var(--green-deep)', marginBottom: 4 }}>Entry Reward</h4>
-            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>Win the game to earn</div>
+            <h4 style={{ fontSize: 15, fontWeight: 700, color: 'var(--green-deep)', marginBottom: 4 }}>{t('setup.entryReward')}</h4>
+            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>{t('setup.winToEarn')}</div>
             <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--green-bright)' }}>+100 DC</div>
           </div>
         </div>
@@ -891,13 +896,14 @@ function SetupScreen({ botCount, setBotCount, onStart, onBack, levelId }: { botC
           <div style={{ background: 'white', color: 'var(--green-forest)', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: 8 }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
           </div>
-          Start Game
+          {t('setup.startGame')}
         </button>
       </div>
     </div>
   )
 }
 function ResultScreen({ isWinner, placement, finalWealth, rpChange, players, mode, onPlayAgain, onDashboard, nearMiss, wealthGap, gameLog, report }: { isWinner: boolean; placement: number; finalWealth: number; rpChange: number; players: PlayerState[]; mode: string; onPlayAgain: () => void; onDashboard: () => void; nearMiss?: boolean; wealthGap?: number; gameLog: string[]; report?: ReactNode }) {
+  const { t, i18n } = useTranslation()
   const sorted = [...players].sort((a, b) => b.wealth - a.wealth)
   const [showLog, setShowLog] = useState(false)
 
@@ -922,20 +928,20 @@ function ResultScreen({ isWinner, placement, finalWealth, rpChange, players, mod
             lineHeight: 1,
             letterSpacing: '-0.05em'
           }}>
-            {isWinner ? 'YOU WIN' : 'BETTER LUCK NEXT TIME'}
+            {isWinner ? t('result.youWin') : t('result.betterLuck')}
           </div>
           {!isWinner && (
             <div style={{ color: '#94a3b8', fontSize: 24, fontWeight: 700, marginTop: 8 }}>
-              {nearMiss ? 'So Close! 😤' : `${placement === 1 ? '1st' : placement === 2 ? '2nd' : placement === 3 ? '3rd' : `${placement}th`} Place`}
+              {nearMiss ? `${t('result.soClose')} 😤` : t('result.place', { n: placement, ordinal: t(`result.ordinal.${Math.min(placement, 4)}`) })}
             </div>
           )}
         </motion.div>
         {nearMiss && wealthGap !== undefined && (
           <p style={{ color: 'var(--orange-primary)', fontSize: 18, fontWeight: 600, marginBottom: 8 }}>
-            You were just {formatWealth(wealthGap)} away from winning!
+            {t('result.justAway', { amount: formatWealth(wealthGap) })}
           </p>
         )}
-        <p style={{ color: 'var(--text-muted)', marginBottom: 20, fontSize: 20 }}>Final wealth: {formatWealth(finalWealth)}</p>
+        <p style={{ color: 'var(--text-muted)', marginBottom: 20, fontSize: 20 }}>{t('game.finalWealth', { amount: formatWealth(finalWealth) })}</p>
 
         {mode === 'ranked' && (
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 12, background: rpChange > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${rpChange > 0 ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, marginBottom: 28 }}>
@@ -951,7 +957,7 @@ function ResultScreen({ isWinner, placement, finalWealth, rpChange, players, mod
         <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', marginBottom: 16, maxWidth: 720, marginLeft: 'auto', marginRight: 'auto' }}>
           <div style={{ flex: '1 1 280px', background: 'var(--green-deep)', border: '1px solid var(--green-primary)', borderRadius: 16, padding: 20 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--gray)', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              Final Rankings
+              {t('game.finalRankings')}
             </h3>
             {sorted.map((p, i) => (
               <div key={p.id} style={{
@@ -982,16 +988,16 @@ function ResultScreen({ isWinner, placement, finalWealth, rpChange, players, mod
           {gameLog && gameLog.length > 0 && (
             <div style={{ flex: '1 1 100%', display: 'flex', justifyContent: 'center' }}>
               <button className="rc-log-toggle" aria-expanded={showLog} onClick={() => setShowLog(v => !v)}>
-                {showLog ? 'Hide game log ▲' : 'Show game log ▼'}
+                {showLog ? `${t('result.hideLog')} ▲` : `${t('result.showLog')} ▼`}
               </button>
             </div>
           )}
           {showLog && gameLog && gameLog.length > 0 && (
             <div style={{ flex: '1 1 280px', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: 20, textAlign: 'left', maxHeight: 250, overflowY: 'auto' }}>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--gray)', marginBottom: 8, textTransform: 'uppercase' }}>Match Highlights</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--gray)', marginBottom: 8, textTransform: 'uppercase' }}>{t('result.highlights')}</h3>
               <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: 14, color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {gameLog.slice(0, 15).map((entry: string, idx: number) => (
-                  <li key={idx} style={{ opacity: 1 - (idx * 0.05), lineHeight: 1.4 }}>• {entry}</li>
+                  <li key={idx} style={{ opacity: 1 - (idx * 0.05), lineHeight: 1.4 }}>• {translateLogEntry(entry, i18n.language)}</li>
                 ))}
               </ul>
             </div>
@@ -1000,10 +1006,10 @@ function ResultScreen({ isWinner, placement, finalWealth, rpChange, players, mod
 
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', position: 'sticky', bottom: 0, padding: '12px 0 max(16px, env(safe-area-inset-bottom))', background: 'linear-gradient(to bottom, rgba(0,16,16,0), var(--green-black) 35%)', zIndex: 20 }}>
           <div className="btn-rebound" style={{ boxShadow: '0 0 20px rgba(244, 210, 123, 0.4)', borderRadius: 12 }}>
-            <Button variant="gold" size="lg" onClick={onPlayAgain} style={{ minWidth: 200 }}>PLAY AGAIN</Button>
+            <Button variant="gold" size="lg" onClick={onPlayAgain} style={{ minWidth: 200 }}>{t('result.playAgain')}</Button>
           </div>
           <div className="btn-rebound">
-            <Button variant="secondary" size="lg" onClick={onDashboard} style={{ minWidth: 200 }}>DASHBOARD</Button>
+            <Button variant="secondary" size="lg" onClick={onDashboard} style={{ minWidth: 200 }}>{t('result.dashboard')}</Button>
           </div>
         </div>
       </div>

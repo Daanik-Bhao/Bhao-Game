@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import type { StepTarget } from './steps'
 import { ProgressDots } from './ProgressDots'
 import './tutorial.css'
@@ -72,6 +73,7 @@ const PAD = 6
 const MARGIN = 12
 
 export function CoachMark({ stepKey, kind, title, body, todo, target, handIds, lesson, lessons, notice, onNext, onSkip }: CoachMarkProps) {
+  const { t } = useTranslation()
   const [box, setBox] = useState<Box | null>(null)
   const [vp, setVp] = useState({ w: window.innerWidth, h: window.innerHeight })
   const bubbleRef = useRef<HTMLDivElement>(null)
@@ -130,18 +132,18 @@ export function CoachMark({ stepKey, kind, title, body, todo, target, handIds, l
         >
           <div className="tut-bubble-head">
             <ProgressDots current={lesson} total={lessons} />
-            <button type="button" className="tut-skip" onClick={onSkip}>Skip tutorial</button>
+            <button type="button" className="tut-skip" onClick={onSkip}>{t('tutorial.skip')}</button>
           </div>
           <div className="tut-title">{title}</div>
           <p className="tut-body">{body}</p>
           {notice && <div className="tut-notice" role="alert">{notice}</div>}
           {kind === 'next' && (
             <div className="tut-actions">
-              <button type="button" className="tut-btn tut-btn-primary" onClick={onNext} autoFocus>Next →</button>
+              <button type="button" className="tut-btn tut-btn-primary" onClick={onNext} autoFocus>{t('tutorial.next')} →</button>
             </div>
           )}
           {kind === 'action' && todo && <div className="tut-todo"><span aria-hidden>👆</span> {todo}</div>}
-          {kind === 'wait' && <div className="tut-wait"><span className="tut-spinner" aria-hidden /> Watching…</div>}
+          {kind === 'wait' && <div className="tut-wait"><span className="tut-spinner" aria-hidden /> {t('tutorial.watching')}</div>}
         </motion.div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import { formatWealth } from '../../types/game'
 
 // Drawn in a stretchable box (preserveAspectRatio="none"); dots are HTML so they stay round.
@@ -8,7 +9,8 @@ const PAD_X = 4
 const PAD_Y = 10
 
 /** Small net-worth-over-years line. Index 0 = start of game, then one point per year. */
-export function NetWorthSparkline({ values, hindi }: { values: number[]; hindi: boolean }) {
+export function NetWorthSparkline({ values }: { values: number[] }) {
+  const { t } = useTranslation()
   const gradId = useId().replace(/:/g, '')
   const clean = values.map(v => (Number.isFinite(v) ? v : 0))
   const n = clean.length
@@ -30,9 +32,7 @@ export function NetWorthSparkline({ values, hindi }: { values: number[]; hindi: 
   const stroke = up ? '#4ade80' : '#f87171'
   const years = n - 1
 
-  const label = hindi
-    ? `${years} साल में नेट वर्थ: ${formatWealth(start)} से ${formatWealth(end)}, सबसे ऊँचा ${formatWealth(max)}`
-    : `Net worth over ${years} years: from ${formatWealth(start)} to ${formatWealth(end)}, peak ${formatWealth(max)}`
+  const label = t('report.spark.label', { years, start: formatWealth(start), end: formatWealth(end), peak: formatWealth(max) })
 
   return (
     <figure className="rc-spark">
@@ -52,7 +52,7 @@ export function NetWorthSparkline({ values, hindi }: { values: number[]; hindi: 
         {/* hover targets: native tooltip per year */}
         {clean.map((v, i) => (
           <rect key={i} x={x(i) - (W / n) / 2} y={0} width={W / n} height={H} fill="transparent">
-            <title>{`${hindi ? 'साल' : 'Year'} ${i}: ${formatWealth(v)}`}</title>
+            <title>{t('report.spark.year', { n: i, amount: formatWealth(v) })}</title>
           </rect>
         ))}
       </svg>
@@ -62,8 +62,8 @@ export function NetWorthSparkline({ values, hindi }: { values: number[]; hindi: 
       <span className="rc-spark-dot" style={{ left: `${(x(n - 1) / W) * 100}%`, top: `${(y(end) / H) * 100}%`, width: 10, height: 10, background: stroke }} aria-hidden="true" />
       </div>
       <figcaption className="rc-spark-axis" aria-hidden="true">
-        <span>{hindi ? 'शुरू' : 'Start'}</span>
-        <span>{hindi ? `साल ${years}` : `Year ${years}`}</span>
+        <span>{t('report.spark.start')}</span>
+        <span>{t('report.spark.yearN', { n: years })}</span>
       </figcaption>
     </figure>
   )
