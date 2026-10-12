@@ -33,3 +33,6 @@ testsprite_tests/tmp/config.json
 
 # Supabase CLI temp
 supabase/.temp
+
+# Claude agent worktrees
+.claude/worktrees
