@@ -73,12 +73,6 @@ export interface Profile {
   avatar_url: string | null
   rank_points: number
   daanik_coins: number
-  /**
-   * @deprecated Misspelled legacy name; the column is `daanik_coins` and this is
-   * never populated. Kept optional only so MultiplayerGame.tsx compiles until the
-   * multiplayer track removes its client-side coin writes. Do not use.
-   */
-  daank_coins?: number
   total_xp: number
   games_played: number
   games_won: number

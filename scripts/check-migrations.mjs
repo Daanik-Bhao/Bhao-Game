@@ -365,8 +365,9 @@ await check('room_players: cannot join a full or in-progress room', async () => 
   await expectError(asUser(U3, `INSERT INTO room_players (room_id, player_id, seat_order) VALUES ($1, $2, 2)`, [room, U3]), /row-level security|full/, 'full room')
   const room2 = (await one(asUser(U1, `INSERT INTO multiplayer_rooms (code, host_id, max_players) VALUES ('BBB222', $1, 4) RETURNING id`, [U1]))).id
   await asUser(U1, `INSERT INTO room_players (room_id, player_id, seat_order) VALUES ($1, $2, 0)`, [room2, U1])
-  const started = await asUser(U1, `UPDATE multiplayer_rooms SET status = 'in_progress' WHERE id = $1`, [room2])
-  eq(started.affectedRows, 1, 'host starts room')
+  // Rooms are started by the game-action edge function (service role); members can't UPDATE rooms any more
+  const started = await su(`UPDATE multiplayer_rooms SET status = 'in_progress' WHERE id = $1`, [room2])
+  eq(started.affectedRows, 1, 'server starts room')
   await expectError(asUser(U3, `INSERT INTO room_players (room_id, player_id, seat_order) VALUES ($1, $2, 1)`, [room2, U3]), /row-level security|not accepting/, 'in-progress room')
   const room3 = (await one(asUser(U1, `INSERT INTO multiplayer_rooms (code, host_id, max_players) VALUES ('CCC333', $1, 4) RETURNING id`, [U1]))).id
   await expectError(asUser(U2, `INSERT INTO room_players (room_id, player_id, seat_order) VALUES ($1, $2, 1)`, [room3, U3]), /row-level security/, 'seat for someone else')
@@ -375,14 +376,20 @@ await check('room_players: cannot join a full or in-progress room', async () => 
 
 await check('protect_room_fields: members cannot change host/code/size/status', async () => {
   const room = (await one(su(`SELECT id FROM multiplayer_rooms WHERE code = 'AAA111'`))).id
-  await expectError(asUser(U2, `UPDATE multiplayer_rooms SET host_id = $2 WHERE id = $1`, [room, U2]), /cannot be changed/, 'member takes host')
-  await expectError(asUser(U2, `UPDATE multiplayer_rooms SET host_id = $2, status = 'completed', winner_id = $2 WHERE id = $1`, [room, U2]), /cannot be changed/, 'host takeover + status')
-  await expectError(asUser(U1, `UPDATE multiplayer_rooms SET max_players = 6 WHERE id = $1`, [room]), /cannot be changed/, 'host changes size')
-  await expectError(asUser(U1, `UPDATE multiplayer_rooms SET code = 'ZZZ999' WHERE id = $1`, [room]), /cannot be changed/, 'host changes code')
-  await expectError(asUser(U2, `UPDATE multiplayer_rooms SET status = 'completed' WHERE id = $1`, [room]), /Only the host/, 'member changes status')
+  await expectError(asUser(U2, `UPDATE multiplayer_rooms SET host_id = $2 WHERE id = $1`, [room, U2]), /cannot be changed|permission denied/, 'member takes host')
+  await expectError(asUser(U2, `UPDATE multiplayer_rooms SET host_id = $2, status = 'completed', winner_id = $2 WHERE id = $1`, [room, U2]), /cannot be changed|permission denied/, 'host takeover + status')
+  await expectError(asUser(U1, `UPDATE multiplayer_rooms SET max_players = 6 WHERE id = $1`, [room]), /cannot be changed|permission denied/, 'host changes size')
+  await expectError(asUser(U1, `UPDATE multiplayer_rooms SET code = 'ZZZ999' WHERE id = $1`, [room]), /cannot be changed|permission denied/, 'host changes code')
+  await expectError(asUser(U2, `UPDATE multiplayer_rooms SET status = 'completed' WHERE id = $1`, [room]), /Only the host|permission denied/, 'member changes status')
   const seat = (await one(su(`SELECT id FROM room_players WHERE room_id = $1 AND player_id = $2`, [room, U2]))).id
   const other = (await one(su(`SELECT id FROM multiplayer_rooms WHERE code = 'BBB222'`))).id
-  await expectError(asUser(U2, `UPDATE room_players SET room_id = $2 WHERE id = $1`, [seat, other]), /cannot be moved/, 'move seat')
+  await expectError(asUser(U2, `UPDATE room_players SET room_id = $2 WHERE id = $1`, [seat, other]), /cannot be moved|permission denied/, 'move seat')
+})
+
+await check('service role (game-action) can still finish a room', async () => {
+  const room = (await one(su(`SELECT id FROM multiplayer_rooms WHERE code = 'BBB222'`))).id
+  const r = await asService(`UPDATE multiplayer_rooms SET status = 'completed', winner_id = $2 WHERE id = $1`, [room, U1])
+  eq(r.affectedRows, 1, 'service role completes room despite protect_room_fields')
 })
 
 await check('leaderboard is readable by anon', async () => {

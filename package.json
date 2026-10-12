@@ -10,7 +10,9 @@
     "lint": "eslint . --ext ts,tsx",
     "test": "vitest run --passWithNoTests",
     "icons": "node scripts/generate-icons.js",
-    "check:migrations": "node scripts/check-migrations.mjs"
+    "check:migrations": "node scripts/check-migrations.mjs",
+    "build:functions": "node scripts/build-functions.mjs",
+    "check:functions": "node scripts/build-functions.mjs --check"
   },
   "dependencies": {
     "@sentry/react": "^10.56.0",

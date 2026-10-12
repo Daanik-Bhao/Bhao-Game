@@ -139,16 +139,6 @@ export async function saveMatchResult(input: MatchResultInput): Promise<MatchRes
   return (data as { result?: MatchResultSummary } | null)?.result ?? null
 }
 
-/**
- * @deprecated Results now need a server match id (see `saveMatchResult`), and
- * multiplayer results are recorded server-side by the game-action function.
- * Kept as a no-op only so MultiplayerGame.tsx compiles until it is migrated.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function saveGameResult(..._args: unknown[]): Promise<void> {
-  console.warn('saveGameResult is deprecated; results are recorded server-side.')
-}
-
 /** Atomically spends coins on a practice/campaign extra (never in ranked). Returns the new balance. */
 export async function spendCoins(amount: number, reason: 'extra_card'): Promise<number> {
   requireSupabase()
