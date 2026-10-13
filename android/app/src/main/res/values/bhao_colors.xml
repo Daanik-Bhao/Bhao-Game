@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Same as the green-black CSS variable in src/index.css -->
+    <color name="bhao_dark">#001010</color>
+</resources>

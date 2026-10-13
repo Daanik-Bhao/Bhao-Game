@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BHAO</string>
+    <string name="title_activity_main">BHAO</string>
+    <string name="package_name">com.daanik.bhao</string>
+    <string name="custom_url_scheme">com.daanik.bhao</string>
+</resources>
