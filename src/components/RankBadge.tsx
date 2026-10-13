@@ -1,4 +1,8 @@
+import { useTranslation } from 'react-i18next'
+import { Trophy } from 'lucide-react'
 import { getRankForRP } from '../types/game'
+import { Progress } from './ui'
+import '../pages/menus.css'
 
 interface RankBadgeProps {
   rp: number
@@ -6,37 +10,32 @@ interface RankBadgeProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
-export function RankBadge({ rp, showProgress, size = 'md' }: RankBadgeProps) {
-  const rank = getRankForRP(rp)
-  const nextRank = rank.maxRP === Infinity ? null : { minRP: rank.maxRP + 1 }
-  const progress = rank.maxRP === Infinity ? 100 : ((rp - rank.minRP) / (rank.maxRP - rank.minRP)) * 100
+const rankKey = (name: string) => name.toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_|_$/g, '')
 
-  const fontSize = size === 'sm' ? 12 : size === 'lg' ? 16 : 14
-  const emojiSize = size === 'sm' ? 14 : size === 'lg' ? 22 : 18
+/** Rank ladder badge: lucide trophy + rank name + RP (no emoji crowns), optional progress to the next rank. */
+export function RankBadge({ rp, showProgress, size = 'md' }: RankBadgeProps) {
+  const { t } = useTranslation()
+  const rank = getRankForRP(rp)
+  const isTop = rank.maxRP === Infinity
+  const progress = isTop ? 100 : ((rp - rank.minRP) / (rank.maxRP - rank.minRP + 1)) * 100
+  const name = t(`profile.rank.${rankKey(rank.name)}`, { defaultValue: rank.name })
+  const rpText = t('profile.rankPoints', { n: new Intl.NumberFormat('en-IN').format(rp) })
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontSize: emojiSize }}>{rank.emoji}</span>
-        <span style={{ fontSize, fontWeight: 700, color: rank.color, fontFamily: 'Space Grotesk, sans-serif' }}>
-          {rank.name}
-        </span>
-        <span style={{ fontSize: fontSize - 2, color: 'var(--text-muted)' }}>{rp.toLocaleString()} RP</span>
+    <div className={`rank-badge rank-badge--${size}`}>
+      <div className="rank-badge__row">
+        <span className="rank-badge__icon" aria-hidden="true"><Trophy size={size === 'lg' ? 20 : 16} strokeWidth={2.25} /></span>
+        <span className="rank-badge__name">{name}</span>
+        <span className="rank-badge__rp num">{rpText}</span>
       </div>
       {showProgress && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-          <div style={{ flex: 1, height: 8, background: 'rgba(0,0,0,0.06)', borderRadius: 4, overflow: 'hidden', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' }}>
-            <div style={{
-              height: '100%', borderRadius: 4, background: `linear-gradient(90deg, ${rank.color}, #10b981)`,
-              width: `${Math.max(2, Math.min(100, progress))}%`,
-              transition: 'width 0.5s ease',
-            }} />
-          </div>
-          <span style={{ fontSize: 12, fontWeight: 700, color: rank.color }}>{Math.round(progress)}%</span>
-        </div>
-      )}
-      {showProgress && nextRank && (
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'right' }}>{rank.maxRP - rp + 1} RP to next rank</div>
+        <Progress
+          className="rank-badge__bar"
+          value={Math.max(0, Math.min(100, progress))}
+          tone="haldi"
+          ariaLabel={t('profile.rankProgress')}
+          label={isTop ? t('profile.rankTop') : t('profile.rankNext', { n: new Intl.NumberFormat('en-IN').format(rank.maxRP - rp + 1) })}
+        />
       )}
     </div>
   )
