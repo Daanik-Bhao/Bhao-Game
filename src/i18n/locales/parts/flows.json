@@ -118,6 +118,21 @@
         "lifestyle": "Lifestyle {{pct}}%",
         "goals": "Goals {{done}}/{{total}}"
       }
+    },
+    "library": {
+      "emptyTitle2": "No money ideas yet",
+      "emptyBody2": "Play your first game to unlock them.",
+      "playNow": "Play now",
+      "new": "New",
+      "filterAria": "Show topics",
+      "topic": {
+        "all": "All",
+        "saving": "Saving",
+        "investing": "Investing",
+        "risk": "Risk",
+        "tax": "Tax",
+        "protection": "Protection"
+      }
     }
   },
   "hi": {
@@ -239,6 +254,21 @@
         "lifestyle": "लाइफ़स्टाइल {{pct}}%",
         "goals": "लक्ष्य {{done}}/{{total}}"
       }
+    },
+    "library": {
+      "emptyTitle2": "अभी कोई पैसों का आइडिया नहीं",
+      "emptyBody2": "इन्हें खोलने के लिए अपना पहला खेल खेलें।",
+      "playNow": "अभी खेलें",
+      "new": "नया",
+      "filterAria": "विषय दिखाएँ",
+      "topic": {
+        "all": "सभी",
+        "saving": "बचत",
+        "investing": "निवेश",
+        "risk": "जोखिम",
+        "tax": "टैक्स",
+        "protection": "सुरक्षा"
+      }
     }
   },
   "hinglish": {
@@ -359,6 +389,21 @@
         "streak": "Streak {{n}}",
         "lifestyle": "Lifestyle {{pct}}%",
         "goals": "Goals {{done}}/{{total}}"
+      }
+    },
+    "library": {
+      "emptyTitle2": "Abhi koi money idea nahi",
+      "emptyBody2": "Inhe kholne ke liye apna pehla game khelo.",
+      "playNow": "Abhi khelo",
+      "new": "Naya",
+      "filterAria": "Topics dikhao",
+      "topic": {
+        "all": "Sab",
+        "saving": "Saving",
+        "investing": "Investing",
+        "risk": "Risk",
+        "tax": "Tax",
+        "protection": "Protection"
       }
     }
   }

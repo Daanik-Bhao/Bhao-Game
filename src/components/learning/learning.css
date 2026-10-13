@@ -76,6 +76,41 @@ html.lang-hi .why-list__item { line-height: 1.65; }
 .concept__box--tip { background: var(--save-soft); }
 .concept__box--tip .concept__label { color: var(--save-strong); }
 
+/* ---------- Gyaan Library page (E.8) ---------- */
+.library__main { max-width: 1120px; }
+.library__lede { margin-bottom: var(--sp-4); }
+.library__empty { margin-bottom: var(--sp-4); }
+.library__filters { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin-bottom: var(--sp-5); }
+.lib-ring { position: relative; width: 48px; height: 48px; display: inline-grid; place-items: center; flex: none; }
+.lib-ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.lib-ring__track { fill: none; stroke: var(--bg-sunken); stroke-width: 4; }
+.lib-ring__fill { fill: none; stroke: var(--save); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset var(--dur-ceremony) var(--ease-standard); }
+.lib-ring__text { position: relative; font-size: 12px; font-weight: 800; color: var(--text); }
+.library-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); }
+@media (min-width: 600px) { .library-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .library-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.library-grid__item { display: flex; }
+.lib-tile { --_band: var(--save-strong); position: relative; width: 100%; min-height: 184px; display: flex; flex-direction: column; text-align: left; padding: 0 0 var(--sp-4); border-radius: var(--r-card-full); background: var(--cream-100); border: 2px solid var(--card-edge); box-shadow: 0 4px 0 var(--line-strong); color: var(--ink-900); overflow: hidden; font: inherit; }
+button.lib-tile { cursor: pointer; }
+button.lib-tile:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--line-strong); }
+.lib-tile__band { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; background: var(--_band); color: var(--white); }
+.lib-tile__topic { font: 700 12px/1 var(--font-body); text-transform: var(--tt-caps); letter-spacing: var(--ls-caps); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lib-tile__new { position: absolute; top: 44px; right: 8px; min-height: 22px; padding: 2px 8px; border-radius: var(--r-pill); background: var(--haldi-400); color: var(--haldi-ink); font: 700 12px/18px var(--font-body); }
+.lib-tile__title { padding: var(--sp-3) var(--sp-4) 0; font: 700 18px/1.2 var(--font-display); color: var(--ink-900); overflow-wrap: break-word; }
+html.lang-hi .lib-tile__title { line-height: 1.35; }
+.lib-tile__new + .lib-tile__title { padding-right: 56px; }
+.lib-tile__text { padding: 6px var(--sp-4) 0; font: 400 var(--fs-ui)/var(--lh-ui) var(--font-body); color: var(--ink-700); }
+.topic-band--saving { --_band: var(--save-strong); }
+.topic-band--investing { --_band: var(--invest-strong); }
+.topic-band--risk { --_band: var(--risk-strong); }
+.topic-band--tax { --_band: var(--event); }
+.topic-band--protection { --_band: var(--defence-strong); }
+.lib-tile.is-locked { background: var(--cream-200); border: 2px dashed var(--sand-500); box-shadow: none; padding-top: var(--sp-4); }
+.lib-tile.is-locked .lib-tile__title { color: var(--ink-700); padding-top: var(--sp-3); }
+.lib-tile__lock { margin: 0 var(--sp-4); width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--white); color: var(--ink-700); border: 1px solid var(--line); }
+.lib-tile__locked-label { padding: 6px var(--sp-4) 0; font: 600 var(--fs-ui)/1.3 var(--font-body); color: var(--ink-900); }
+.lib-tile.is-locked .lib-tile__text { color: var(--ink-700); }
+
 /* Topic colours (library filter topics) */
 .topic--saving { background: var(--save-soft); color: var(--save-strong); --topic: var(--save-strong); }
 .topic--investing { background: var(--invest-soft); color: var(--invest-strong); --topic: var(--invest-strong); }
