@@ -6,6 +6,7 @@
   padding: 0;
 }
 
+/* clip (not hidden): hidden would make html/body scroll containers and break sticky bars */
 html, body {
   min-height: 100%;
   width: 100%;
@@ -24,14 +25,6 @@ html, body {
 button { cursor: pointer; }
 img, svg, canvas, video { max-width: 100%; }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
@@ -42,112 +35,4 @@ img, svg, canvas, video { max-width: 100%; }
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
-}
-
-.animate-pulse { animation: pulse 2s infinite; }
-
-/* =====================================================================
-   legacy alias — remove after Phase 2
-   Old variable and class names still used by screens that have not been
-   migrated yet. They point at the new tokens so un-migrated screens
-   already pick up the new palette.
-   ===================================================================== */
-:root {
-  --font-sans: var(--font-body);
-  --green-black: var(--teal-950);
-  --green-deep: var(--teal-900);
-  --green-forest: var(--teal-800);
-  --green-teal-dark: var(--teal-900);
-  --green-primary: var(--teal-800);
-  --green-mid: var(--teal-600);
-  --green-action: var(--save-strong);
-  --green-success: var(--save-strong);
-  --green-bright: var(--save);
-  --green-highlight: var(--save);
-  --green-light: var(--teal-100);
-  --gold: var(--haldi-400);
-  --gold-light: var(--risk-soft);
-  --coin-orange: var(--haldi-600);
-  --coin-shadow: var(--haldi-600);
-  --orange-primary: var(--spend-strong);
-  --orange-dark: var(--spend-strong);
-  --orange-bright: var(--spend);
-  --orange-soft: var(--spend-on-dark);
-  --orange-light: var(--spend-soft);
-  --blue-primary: var(--invest-strong);
-  --blue-deep: var(--invest-strong);
-  --blue-light: var(--invest-soft);
-  --blue-soft: var(--defence-soft);
-  --text-dark: var(--ink-900);
-  --text-soft-black: var(--ink-900);
-  --gray: var(--ink-500);
-  --gray-light: var(--sand-400);
-  --black: var(--ink-900);
-  --card-paper: var(--cream-100);
-  --card-cream: var(--cream-200);
-  --border-soft: var(--sand-500);
-  --bg-mint-white: var(--cream-50);
-  --bg-soft-cream: var(--cream-200);
-  --bg-warm-white: var(--cream-50);
-  --color-bg: var(--teal-950);
-  --color-text: var(--text);
-  --color-text-2: var(--text);
-  --color-text-3: var(--text-muted);
-  --color-success: var(--success);
-  --color-warning: var(--warning);
-  --color-error: var(--danger);
-  --color-info: var(--info);
-  --color-gold: var(--haldi-400);
-  --radius-sm: var(--r-sm);
-  --radius-md: var(--r-md);
-  --radius-lg: var(--r-lg);
-  --radius-xl: var(--r-xl);
-  --shadow-sm: var(--e-1);
-  --shadow-md: var(--e-2);
-  --shadow-lg: var(--e-2);
-  --shadow-glow-blue: var(--e-2);
-  --shadow-glow-gold: var(--e-2);
-  --shadow-glow-green: var(--e-2);
-  --shadow-glow-orange: var(--e-2);
-}
-
-.glass-panel, .glass-card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  box-shadow: var(--e-1);
-}
-
-.mobile-only, .mobile-flex { display: none; }
-.desktop-only { display: block; }
-.desktop-flex { display: flex; }
-@media (max-width: 1023px) {
-  .mobile-only { display: block; }
-  .mobile-flex { display: flex; }
-  .desktop-only, .desktop-flex { display: none; }
-}
-
-.player-board-wrapper { min-width: 165px; max-width: 210px; padding: 10px 12px; }
-
-.btn-rebound { transition: transform var(--dur-press) var(--ease-standard); }
-.btn-rebound:active { transform: translateY(2px); }
-
-/* Old in-match page HUD (Game.tsx) — replaced by the board top bar in Phase 2. */
-.mobile-landscape-flex { display: none; }
-.desktop-game-flex { display: flex; }
-.game-content-wrapper { padding-top: 100px; }
-@media (max-width: 950px) {
-  .desktop-game-flex { display: none; }
-  .mobile-landscape-flex { display: flex; }
-  .game-content-wrapper { padding-top: 56px; }
-}
-.game-stage-bg { width: 1246px; height: 614px; }
-
-/* Hindi (Devanagari): uppercase does nothing and wide tracking breaks the joined
-   headline (shirorekha). New components use --tt-caps/--ls-caps; this guards the
-   not-yet-migrated ones. Class set by src/i18n/i18n.ts. */
-html.lang-hi body *,
-html.lang-hi body *::before,
-html.lang-hi body *::after {
-  text-transform: none !important;
-  letter-spacing: normal !important;
 }
