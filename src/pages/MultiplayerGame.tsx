@@ -19,6 +19,7 @@ import { usePreloadImages } from '../hooks/usePreloadImages'
 import { GameReportPanel } from '../components/learning/GameReportPanel'
 import { progressOwnerKey } from '../lib/campaignProgress'
 import { useRoomComms } from '../hooks/useRoomComms'
+import { reportPlayer } from '../lib/reports'
 import { useAppResume, useBackButton, useKeepAwake } from '../hooks/useBackButton'
 import { ChatBubble, ChatPanel, CommsControls, PokeOverlay, voiceBadges } from '../components/game/RoomComms'
 
@@ -661,7 +662,13 @@ export function MultiplayerGame() {
       )}
       <ChatBubble comms={comms} nameOf={nameOfPlayer} myId={myPlayerId} />
       <PokeOverlay comms={comms} nameOf={nameOfPlayer} />
-      <ChatPanel comms={comms} players={commsPlayers} myId={myPlayerId} />
+      <ChatPanel
+        comms={comms}
+        players={commsPlayers}
+        myId={myPlayerId}
+        onReport={user ? (playerId, reason, details) =>
+          reportPlayer({ reportedId: playerId, roomId, reason, details, feed: comms.feed }) : undefined}
+      />
       {gameState && (
         <GameBoard
           gameState={gameState}
