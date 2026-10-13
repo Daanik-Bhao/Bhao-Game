@@ -1,0 +1,15 @@
+/* Practice setup (spec §E.11) and result / report screen (spec §E.20). Light paper pages. */
+
+/* ---------- Setup ---------- */
+.setup__main { display: flex; flex-direction: column; gap: var(--sp-6); }
+.setup__intro { display: flex; align-items: center; gap: var(--sp-4); }
+.setup__race { font: 700 var(--fs-title)/var(--lh-title) var(--font-display); color: var(--text); }
+.setup__block { display: flex; flex-direction: column; gap: var(--sp-3); }
+.setup__opt { display: inline-flex; align-items: center; gap: 10px; }
+.setup__opt .num { font-size: 20px; }
+.setup__stack { display: inline-flex; }
+.setup__stack .avatar + .avatar { margin-left: -10px; }
+.setup__stack .avatar { width: 26px; height: 26px; font-size: 12px; box-shadow: 0 0 0 1px var(--seat); }
+.setup__summary { display: flex; flex-direction: column; gap: var(--sp-3); font: 400 var(--fs-body)/var(--lh-body) var(--font-body); color: var(--text); }
+.setup__coins { display: flex; align-items: center; gap: var(--sp-3); font-weight: 600; color: var(--text); }
+.setup__coins .btn { margin-left: auto; }

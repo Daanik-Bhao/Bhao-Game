@@ -1,0 +1,44 @@
+{
+  "en": {
+    "setup": {
+      "title": "New practice game",
+      "race": "Race to {{goal}} in {{years}} years.",
+      "opponents": "Opponents",
+      "botsAria_one": "{{count}} bot",
+      "botsAria_other": "{{count}} bots",
+      "summary_one": "You + {{count}} bot · about {{min}} minutes · start with {{start}}",
+      "summary_other": "You + {{count}} bots · about {{min}} minutes · start with {{start}}",
+      "coinsWin": "Win to earn {{n}} Daanik Coins",
+      "coinsInfoLabel": "What are Daanik Coins?",
+      "startGame": "Start game"
+    }
+  },
+  "hi": {
+    "setup": {
+      "title": "नया अभ्यास खेल",
+      "race": "{{years}} साल में {{goal}} तक पहुँचो।",
+      "opponents": "विरोधी",
+      "botsAria_one": "{{count}} बॉट",
+      "botsAria_other": "{{count}} बॉट",
+      "summary_one": "आप + {{count}} बॉट · लगभग {{min}} मिनट · शुरुआत {{start}} से",
+      "summary_other": "आप + {{count}} बॉट · लगभग {{min}} मिनट · शुरुआत {{start}} से",
+      "coinsWin": "जीतने पर {{n}} दानिक कॉइन",
+      "coinsInfoLabel": "दानिक कॉइन क्या हैं?",
+      "startGame": "खेल शुरू करें"
+    }
+  },
+  "hinglish": {
+    "setup": {
+      "title": "Naya practice game",
+      "race": "{{years}} saal mein {{goal}} tak pahuncho.",
+      "opponents": "Opponents",
+      "botsAria_one": "{{count}} bot",
+      "botsAria_other": "{{count}} bots",
+      "summary_one": "Aap + {{count}} bot · lagbhag {{min}} minute · start {{start}} se",
+      "summary_other": "Aap + {{count}} bots · lagbhag {{min}} minute · start {{start}} se",
+      "coinsWin": "Jeetne par {{n}} Daanik Coins",
+      "coinsInfoLabel": "Daanik Coins kya hain?",
+      "startGame": "Game shuru karo"
+    }
+  }
+}

@@ -1,14 +1,15 @@
-import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useBackButton, useKeepAwake } from '../hooks/useBackButton'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { recordLevelResult, progressOwnerKey } from '../lib/campaignProgress'
+import { recordLevelResult, progressOwnerKey, STARS_TO_UNLOCK_NEXT } from '../lib/campaignProgress'
+import { SetupScreen } from './game/SetupScreen'
+import { ResultScreen } from './game/ResultScreen'
+import { PageLoader } from '../components/ui'
 import { computeLevelStars, type LevelStarsResult } from '../lib/levelRules'
-import { LevelStars, LevelRuleHUD } from '../components/campaign'
+import { LevelRuleHUD } from '../components/campaign'
 import { ForfeitModal } from '../components/ForfeitModal'
-import { Button } from '../components/ui/Button'
-import { GameState, PlayerState, GameCard as GameCardType, formatWealth } from '../types/game'
-import { Wealth } from '../components/Wealth'
+import { GameState, GameCard as GameCardType } from '../types/game'
 import {
   initGame, initLevelGame, startDrawPhase, processDecision, processAction,
   advanceTurn, doBotTurn, forceSkipTurn, drawCard, equipDefense, TURN_TIME_LIMIT_MS,
@@ -21,14 +22,11 @@ import type { MatchResultSummary } from '../types/database'
 import { useTranslation } from 'react-i18next'
 import { ALL_CARDS } from '../data/cards'
 import { playSound } from '../lib/audio'
-import Confetti from 'react-confetti'
 import { GameBoard, UIPhase } from '../components/game/GameBoard'
 import { motion } from 'framer-motion'
 import { usePreloadImages } from '../hooks/usePreloadImages'
 import { TrendingUp, TrendingDown } from 'lucide-react'
-import { GameReportPanel } from '../components/learning/GameReportPanel'
 import { assetName, cardNameFor, localizeEngineText } from '../components/game/economyUi'
-import { translateLogEntry } from '../components/game/GameLog'
 import { ASSETS } from '../data/assets'
 import { pickLang } from '../i18n/lang'
 
@@ -503,6 +501,14 @@ export function Game() {
 
 
 
+  // Campaign levels start straight away (spec §E.11): the level intro was the confirmation.
+  const autoStartedRef = useRef(false)
+  useEffect(() => {
+    if (!levelId || uiPhase !== 'setup' || gameState || autoStartedRef.current) return
+    autoStartedRef.current = true // StrictMode runs effects twice: open only one server match
+    startGame()
+  }, [levelId, uiPhase, gameState, startGame])
+
   // --- Android back button + keep-awake while a game is running ---
   const gameInProgress = !!gameState && uiPhase !== 'setup' && uiPhase !== 'result' && gameState.phase !== 'game_over'
   useKeepAwake(gameInProgress)
@@ -522,7 +528,9 @@ export function Game() {
   useBackButton(() => setShowForfeitModal(false), showForfeitModal)
 
   if (uiPhase === 'setup') {
-    return <SetupScreen botCount={botCount} setBotCount={setBotCount} onStart={startGame} onBack={() => navigate(levelId ? '/campaign' : '/dashboard')} levelId={levelId} />
+    // Campaign levels skip setup: the level intro already confirmed the start (auto-start effect above).
+    if (levelId) return <PageLoader />
+    return <SetupScreen botCount={botCount} setBotCount={setBotCount} onStart={startGame} onBack={() => navigate('/dashboard')} signedIn={!!profile?.id} />
   }
 
   if (uiPhase === 'result' && gameState) {
@@ -536,42 +544,29 @@ export function Game() {
     const rpChange = mode !== 'ranked' ? 0
       : serverResult ? serverResult.rp_change
       : calculateRankRP(rankedPlacement(isWinner, placement), gameState.players.length, profile?.win_streak ?? 0)
-    // Near-miss: player was within 20% of the goal but didn't win
-    const wealthGap = gameState.wealthGoal - humanPlayer.wealth
-    const nearMiss = !isWinner && wealthGap > 0 && wealthGap < gameState.wealthGoal * 0.2
+    // Campaign: "Next level" when this result unlocked it.
+    const levelIdx = levelId ? ARTHA_YATRA_LEVELS.findIndex(l => l.id === levelId) : -1
+    const nextLevel = levelIdx >= 0 && (levelStars?.stars ?? 0) >= STARS_TO_UNLOCK_NEXT ? ARTHA_YATRA_LEVELS[levelIdx + 1] : undefined
 
     return (
-      <>
       <ResultScreen
-        isWinner={isWinner}
-        placement={placement}
-        finalWealth={humanPlayer.wealth}
-        rpChange={rpChange}
-        nearMiss={nearMiss}
-        wealthGap={wealthGap}
-        players={gameState.players}
+        gameState={gameState}
+        humanIndex={humanPlayerIndex}
         mode={mode}
-        gameLog={gameState.log}
-        report={
-          <>
-          {levelId && levelStars && (
-            <div style={{ background: 'rgba(255,255,255,0.92)', borderRadius: 16, padding: 16, marginBottom: 16 }}>
-              <LevelStars stars={levelStars.stars} criteria={levelStars.criteria} animate />
-            </div>
-          )}
-          <GameReportPanel
-            state={gameState}
-            playerId={humanPlayer.id}
-            ownerKey={progressOwnerKey(user?.id)}
-            onOpenLibrary={() => navigate('/library')}
-          />
-          </>
-        }
-        onPlayAgain={() => { setGameState(null); setLevelStars(null); setUiPhase('setup') }}
-        onDashboard={() => navigate('/dashboard')}
+        levelId={levelId}
+        levelStars={levelStars}
+        rpChange={rpChange}
+        ownerKey={progressOwnerKey(user?.id)}
+        onPlayAgain={() => {
+          setLevelStars(null)
+          // Campaign levels restart straight away (the level intro was already confirmed).
+          if (levelId) startGame()
+          else { setGameState(null); setUiPhase('setup') }
+        }}
+        onHome={() => navigate('/dashboard')}
+        onNextLevel={nextLevel ? () => navigate(`/game/level/${nextLevel.id}`) : undefined}
+        onOpenLibrary={() => navigate('/library')}
       />
-
-      </>
     )
   }
 
@@ -835,256 +830,6 @@ function EventPopup({ info, onContinue }: { info: PopupInfo, onContinue: () => v
           </div>
         )}
       </motion.div>
-    </div>
-  )
-}
-
-function SetupScreen({ botCount, setBotCount, onStart, onBack, levelId }: { botCount: number; setBotCount: (n: number) => void; onStart: () => void; onBack: () => void; levelId?: string }) {
-  const { t } = useTranslation()
-  const levelConfig = levelId ? ARTHA_YATRA_LEVELS.find(l => l.id === levelId) : null;
-  const wealthGoalText = levelConfig ? formatWealth(levelConfig.targetCorpus) : t('setup.defaultGoal');
-  // Campaign levels have a fixed opponent count; only quick games let the player choose
-  const opponents = levelConfig ? levelConfig.botCount : botCount;
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: '#d1fae5', position: 'relative', overflow: 'hidden' }}>
-
-      <style>{`
-        @keyframes float1 { 0%, 100% { transform: translateY(0) rotate(-15deg); } 50% { transform: translateY(-20px) rotate(-12deg); } }
-        @keyframes float2 { 0%, 100% { transform: translateY(0) rotate(10deg); } 50% { transform: translateY(-15px) rotate(13deg); } }
-        @keyframes float3 { 0%, 100% { transform: translateY(0) rotate(25deg); } 50% { transform: translateY(-25px) rotate(20deg); } }
-        @keyframes float4 { 0%, 100% { transform: translateY(0) rotate(-20deg); } 50% { transform: translateY(-18px) rotate(-25deg); } }
-      `}</style>
-
-      {/* Subtle Background Elements */}
-      <div style={{ position: 'absolute', top: '10%', left: '10%', fontSize: 160, opacity: 0.04, animation: 'float1 8s ease-in-out infinite', pointerEvents: 'none' }}>📈</div>
-      <div style={{ position: 'absolute', bottom: '10%', right: '10%', fontSize: 200, opacity: 0.04, animation: 'float2 10s ease-in-out infinite', pointerEvents: 'none' }}>🏦</div>
-      <div style={{ position: 'absolute', top: '20%', right: '15%', fontSize: 100, opacity: 0.05, animation: 'float3 7s ease-in-out infinite', pointerEvents: 'none' }}>🪙</div>
-      <div style={{ position: 'absolute', bottom: '25%', left: '15%', fontSize: 120, opacity: 0.05, animation: 'float4 9s ease-in-out infinite', pointerEvents: 'none' }}>💰</div>
-      <div style={{ position: 'absolute', top: '50%', left: '50%', width: '100vw', height: '100vw', background: 'radial-gradient(circle, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 60%)', transform: 'translate(-50%, -50%)', pointerEvents: 'none' }}></div>
-
-      <div className="glass-card" style={{ width: '100%', maxWidth: 480, animation: 'slideUp 0.4s ease', background: '#eef8ef', padding: '24px 32px', borderRadius: 24, border: '1px solid rgba(255,255,255,0.8)', position: 'relative', overflow: 'hidden', zIndex: 1, boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}>
-
-        {/* Decorative background elements (Confetti & Coins) */}
-        <div style={{ position: 'absolute', top: 30, right: 120, width: 8, height: 8, background: '#3b82f6', transform: 'rotate(45deg)' }}></div>
-        <div style={{ position: 'absolute', top: 50, right: 150, width: 8, height: 8, background: '#10b981', transform: 'rotate(15deg)' }}></div>
-        <div style={{ position: 'absolute', top: 80, right: 100, width: 10, height: 10, background: '#f59e0b', transform: 'rotate(30deg)' }}></div>
-        <div style={{ position: 'absolute', top: 40, right: 80, width: 6, height: 6, background: '#ef4444', transform: 'rotate(60deg)' }}></div>
-        <div style={{ position: 'absolute', top: 20, right: 180, width: 8, height: 8, background: '#f59e0b', transform: 'rotate(20deg)' }}></div>
-
-        {/* Small floating coins */}
-        <div style={{ position: 'absolute', top: 25, right: 140, width: 28, height: 28, background: 'linear-gradient(135deg, #FCD34D, #F59E0B)', borderRadius: '50%', boxShadow: '0 4px 8px rgba(245,158,11,0.3)', border: '2px solid #FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: 'rotate(-10deg)' }}>
-          <span style={{ fontSize: 14, color: '#D97706', fontWeight: 900 }}>$</span>
-        </div>
-        <div style={{ position: 'absolute', top: 70, right: 110, width: 18, height: 18, background: 'linear-gradient(135deg, #FCD34D, #F59E0B)', borderRadius: '50%', boxShadow: '0 2px 4px rgba(245,158,11,0.3)', border: '1px solid #FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: 9, color: '#D97706', fontWeight: 900 }}>$</span>
-        </div>
-
-        {/* Large Gold Coin */}
-        <div style={{
-          position: 'absolute', top: 20, right: -10,
-          width: 90, height: 90,
-          background: 'linear-gradient(135deg, #FBBF24, #D97706)',
-          borderRadius: '50%',
-          boxShadow: '0 8px 16px rgba(217,119,6,0.4), inset 0 4px 8px rgba(255,255,255,0.4), inset 0 -4px 8px rgba(0,0,0,0.2)',
-          border: '4px solid #FEF3C7',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transform: 'rotate(-15deg)'
-        }}>
-          <div style={{ width: 64, height: 64, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: 36, color: '#FEF3C7', fontWeight: 800, textShadow: '0 2px 4px rgba(217,119,6,0.8)' }}>S</span>
-          </div>
-        </div>
-
-        <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14, fontFamily: 'inherit', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6, position: 'relative', zIndex: 10 }}>
-          ← {t('board.back')}
-        </button>
-        <h1 style={{ fontSize: 32, fontWeight: 800, color: '#002020', fontFamily: 'Space Grotesk, sans-serif', marginBottom: 28, position: 'relative', zIndex: 10 }}>{t('setup.newGame')}</h1>
-
-        <div style={{ background: 'rgba(255,255,255,0.7)', borderRadius: 16, padding: 24, marginBottom: 16, border: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-          <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--green-deep)', marginBottom: 16 }}>{t('setup.aiOpponents')}</h3>
-          {!levelConfig && <div style={{ display: 'flex', gap: 10 }}>
-            {[1, 2, 3].map(n => (
-              <button
-                key={n}
-                onClick={() => setBotCount(n)}
-                style={{
-                  width: 52, height: 52, borderRadius: 12,
-                  border: botCount === n ? '2px solid #3b82f6' : '1px solid rgba(0,0,0,0.08)',
-                  background: botCount === n ? '#eff6ff' : '#ffffff',
-                  color: botCount === n ? '#1d4ed8' : '#4b5563',
-                  fontWeight: 700, fontSize: 20,
-                  cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit',
-                  boxShadow: botCount === n ? '0 2px 8px rgba(59,130,246,0.15)' : 'none'
-                }}
-              >
-                {n}
-              </button>
-            ))}
-          </div>}
-          <p style={{ fontSize: 14, color: '#6b7280', marginTop: levelConfig ? 0 : 16 }}>{t('setup.playingAgainst', { n: opponents, total: opponents + 1 })}</p>
-        </div>
-
-        <div style={{ background: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: '16px 20px', marginBottom: 16, border: '1px solid rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-          <span style={{ fontSize: 20 }}>🎯</span>
-          <span style={{ fontSize: 15, color: '#4b5563', fontWeight: 500 }}>
-            {t('setup.raceTo')} <span style={{ color: '#d97706', fontWeight: 800 }}>{wealthGoalText}</span>
-          </span>
-        </div>
-
-        <div style={{ background: 'rgba(255,255,255,0.7)', borderRadius: 16, padding: '20px', marginBottom: 24, border: '1px solid rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.02)', position: 'relative', overflow: 'hidden' }}>
-
-          {/* Stacked Coins Image */}
-          <img src="/avatars/coins bag.webp" alt={t('setup.entryReward')} style={{ width: 80, height: 80, objectFit: 'contain', filter: 'drop-shadow(0 8px 12px rgba(217,119,6,0.3))', flexShrink: 0 }} />
-
-          <div>
-            <h4 style={{ fontSize: 15, fontWeight: 700, color: 'var(--green-deep)', marginBottom: 4 }}>{t('setup.entryReward')}</h4>
-            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>{t('setup.winToEarn')}</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--green-bright)' }}>+100 DC</div>
-          </div>
-        </div>
-
-        <button
-          onClick={onStart}
-          style={{
-            width: '100%',
-            background: 'var(--green-forest)',
-            color: 'white',
-            borderRadius: 12,
-            padding: '16px',
-            fontSize: 17,
-            fontWeight: 700,
-            border: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            gap: 12,
-            cursor: 'pointer',
-            boxShadow: '0 8px 20px rgba(0,48,32,0.3)',
-            transition: 'transform 0.15s, box-shadow 0.15s'
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,48,32,0.4)' }}
-          onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,48,32,0.3)' }}
-        >
-          <div style={{ background: 'white', color: 'var(--green-forest)', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: 8 }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-          </div>
-          {t('setup.startGame')}
-        </button>
-      </div>
-    </div>
-  )
-}
-function ResultScreen({ isWinner, placement, finalWealth, rpChange, players, mode, onPlayAgain, onDashboard, nearMiss, wealthGap, gameLog, report }: { isWinner: boolean; placement: number; finalWealth: number; rpChange: number; players: PlayerState[]; mode: string; onPlayAgain: () => void; onDashboard: () => void; nearMiss?: boolean; wealthGap?: number; gameLog: string[]; report?: ReactNode }) {
-  const { t, i18n } = useTranslation()
-  const sorted = [...players].sort((a, b) => b.wealth - a.wealth)
-  const [showLog, setShowLog] = useState(false)
-
-  return (
-    <div style={{ minHeight: '100vh', background: 'var(--green-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(16px, 4vw, 24px)', paddingBottom: 0, zIndex: 100, position: 'relative' }}>
-      {isWinner && <Confetti width={window.innerWidth} height={window.innerHeight} recycle={false} numberOfPieces={500} colors={['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#f1f5f9']} />}
-      <div style={{ width: '100%', maxWidth: 900, textAlign: 'center', zIndex: 10 }}>
-        {/* Massive Text Stamp */}
-        <motion.div
-          initial={{ scale: 3, opacity: 0, rotate: isWinner ? 0 : -15 }}
-          animate={{ scale: 1, opacity: 1, rotate: isWinner ? 0 : -5 }}
-          transition={{ type: 'spring', damping: 12, stiffness: 100 }}
-          style={{ marginBottom: 24 }}
-        >
-          <div style={{
-            fontSize: 'clamp(60px, 15vw, 100px)',
-            fontWeight: 900,
-            fontFamily: 'Space Grotesk, sans-serif',
-            color: isWinner ? '#f59e0b' : '#64748b',
-            textTransform: 'uppercase',
-            textShadow: isWinner ? '0 0 40px rgba(245,158,11,0.6), 0 0 100px rgba(245,158,11,0.4)' : '0 10px 20px rgba(0,0,0,0.8)',
-            lineHeight: 1,
-            letterSpacing: '-0.05em'
-          }}>
-            {isWinner ? t('result.youWin') : t('result.betterLuck')}
-          </div>
-          {!isWinner && (
-            <div style={{ color: '#94a3b8', fontSize: 24, fontWeight: 700, marginTop: 8 }}>
-              {nearMiss ? `${t('result.soClose')} 😤` : t('result.place', { n: placement, ordinal: t(`result.ordinal.${Math.min(placement, 4)}`) })}
-            </div>
-          )}
-        </motion.div>
-        {nearMiss && wealthGap !== undefined && (
-          <p style={{ color: 'var(--orange-primary)', fontSize: 18, fontWeight: 600, marginBottom: 8 }}>
-            {t('result.justAway', { amount: formatWealth(wealthGap) })}
-          </p>
-        )}
-        <p style={{ color: 'var(--text-muted)', marginBottom: 20, fontSize: 20 }}>{t('game.finalWealth', { amount: formatWealth(finalWealth) })}</p>
-
-        {mode === 'ranked' && (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 12, background: rpChange > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${rpChange > 0 ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, marginBottom: 28 }}>
-            <span style={{ fontSize: 20, fontWeight: 800, color: rpChange > 0 ? 'var(--green-primary)' : 'var(--orange-primary)', fontFamily: 'Space Grotesk, sans-serif' }}>
-              {rpChange > 0 ? '+' : ''}{rpChange} RP
-            </span>
-          </div>
-        )}
-
-        {report}
-
-        {/* Final Rankings & Highlights */}
-        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', marginBottom: 16, maxWidth: 720, marginLeft: 'auto', marginRight: 'auto' }}>
-          <div style={{ flex: '1 1 280px', background: 'var(--green-deep)', border: '1px solid var(--green-primary)', borderRadius: 16, padding: 20 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--gray)', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              {t('game.finalRankings')}
-            </h3>
-            {sorted.map((p, i) => (
-              <div key={p.id} style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '10px 0',
-                borderBottom: i < sorted.length - 1 ? '1px solid var(--green-primary)' : 'none',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 25, width: 28 }}>
-                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
-                  </span>
-                  <span style={{
-                    fontSize: 18,
-                    fontWeight: !p.isBot ? 700 : 500,
-                    color: !p.isBot ? 'var(--green-bright)' : 'var(--green-light)',
-                  }}>
-                    {p.name}
-                  </span>
-                </div>
-                <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--green-bright)', fontFamily: 'Space Grotesk, sans-serif' }}>
-                  <Wealth amount={p.wealth} />
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Match Highlights (collapsed by default; the report card above is the summary) */}
-          {gameLog && gameLog.length > 0 && (
-            <div style={{ flex: '1 1 100%', display: 'flex', justifyContent: 'center' }}>
-              <button className="rc-log-toggle" aria-expanded={showLog} onClick={() => setShowLog(v => !v)}>
-                {showLog ? `${t('result.hideLog')} ▲` : `${t('result.showLog')} ▼`}
-              </button>
-            </div>
-          )}
-          {showLog && gameLog && gameLog.length > 0 && (
-            <div style={{ flex: '1 1 280px', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: 20, textAlign: 'left', maxHeight: 250, overflowY: 'auto' }}>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--gray)', marginBottom: 8, textTransform: 'uppercase' }}>{t('result.highlights')}</h3>
-              <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: 14, color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {gameLog.slice(0, 15).map((entry: string, idx: number) => (
-                  <li key={idx} style={{ opacity: 1 - (idx * 0.05), lineHeight: 1.4 }}>• {translateLogEntry(entry, i18n.language)}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', position: 'sticky', bottom: 0, padding: '12px 0 max(16px, env(safe-area-inset-bottom))', background: 'linear-gradient(to bottom, rgba(0,16,16,0), var(--green-black) 35%)', zIndex: 20 }}>
-          <div className="btn-rebound" style={{ boxShadow: '0 0 20px rgba(244, 210, 123, 0.4)', borderRadius: 12 }}>
-            <Button variant="primary" size="l" onClick={onPlayAgain} style={{ minWidth: 200 }}>{t('result.playAgain')}</Button>
-          </div>
-          <div className="btn-rebound">
-            <Button variant="secondary" size="l" onClick={onDashboard} style={{ minWidth: 200 }}>{t('result.dashboard')}</Button>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom'
 import React from 'react'
 import { Suspense, lazy } from 'react'
 import { AuthProvider, useAuth } from './hooks/useAuth'
@@ -98,6 +98,12 @@ function GameRoute() {
   return <Game />
 }
 
+/** A fresh Game per level, so "Next level" (same route, new :levelId) starts clean. */
+function LevelGame() {
+  const { levelId } = useParams()
+  return <Game key={levelId} />
+}
+
 /** Signed-in users get the full dashboard; guests get the offline guest home. */
 function HomeRoute() {
   const { user, isGuest, loading } = useAuth()
@@ -129,7 +135,7 @@ function AppRoutes() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/dashboard" element={<HomeRoute />} />
         <Route path="/game" element={<GameRoute />} />
-        <Route path="/game/level/:levelId" element={<PlayableRoute><Game /></PlayableRoute>} />
+        <Route path="/game/level/:levelId" element={<PlayableRoute><LevelGame /></PlayableRoute>} />
         <Route path="/campaign" element={<PlayableRoute><Campaign /></PlayableRoute>} />
         <Route path="/library" element={<PlayableRoute><Library /></PlayableRoute>} />
         <Route path="/tutorial" element={<PlayableRoute><TutorialGame /></PlayableRoute>} />
