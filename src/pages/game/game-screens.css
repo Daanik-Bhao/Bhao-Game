@@ -41,3 +41,7 @@
 .standings__nw { font-size: 17px; text-align: right; color: var(--text); }
 .result__bar .result__primary { flex: 1.5 1 0; }
 .result-card.result-card--flush { padding: 0; }
+
+/* ---------- Multiplayer page chrome ---------- */
+.mp-busy { position: fixed; bottom: calc(16px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: var(--z-toast); min-height: 36px; display: inline-flex; align-items: center; padding: 6px 16px; border-radius: var(--r-pill); background: var(--ink-900); color: var(--white); font: 600 var(--fs-ui)/1.2 var(--font-body); box-shadow: var(--e-2); pointer-events: none; }
+.mp-reconnect { align-self: center; }

@@ -188,6 +188,13 @@
       "micOn": "Mic on",
       "chat": "Chat",
       "inVoice": "{{n}} in voice"
+    },
+    "game": {
+      "connectionLost": "Connection lost",
+      "reconnecting": "Trying to reconnect to the game…",
+      "sendingMove": "Sending move…",
+      "mpTitle": "Friends match",
+      "actionFailed": "Something went wrong. Please try again."
     }
   },
   "hi": {
@@ -379,6 +386,13 @@
       "micOn": "माइक चालू",
       "chat": "चैट",
       "inVoice": "{{n}} आवाज़ में"
+    },
+    "game": {
+      "connectionLost": "कनेक्शन टूट गया",
+      "reconnecting": "खेल से दोबारा जुड़ने की कोशिश हो रही है…",
+      "sendingMove": "चाल भेजी जा रही है…",
+      "mpTitle": "दोस्तों का मैच",
+      "actionFailed": "कुछ गड़बड़ हो गई। फिर कोशिश करें।"
     }
   },
   "hinglish": {
@@ -570,6 +584,13 @@
       "micOn": "Mic on",
       "chat": "Chat",
       "inVoice": "{{n}} voice mein"
+    },
+    "game": {
+      "connectionLost": "Connection toot gaya",
+      "reconnecting": "Game se dobara judne ki koshish ho rahi hai…",
+      "sendingMove": "Move bheja ja raha hai…",
+      "mpTitle": "Friends match",
+      "actionFailed": "Kuch gadbad ho gayi. Phir try karo."
     }
   }
 }
