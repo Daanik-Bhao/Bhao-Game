@@ -20,3 +20,4 @@
 .uxg-swatch i { display: block; height: 52px; }
 .uxg-swatch span { display: block; padding: 6px 8px; }
 .uxg-cards .gcard[data-overflow="true"] { outline: 3px solid var(--attack-on-dark); outline-offset: 2px; }
+.uxg-dock-demo { display: flex; gap: var(--sp-3); padding: var(--sp-5); }

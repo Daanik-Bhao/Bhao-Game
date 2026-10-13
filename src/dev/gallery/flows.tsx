@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { ChatPanel, CommsControls } from '../../components/game/RoomComms'
 import { LobbyMenuView, WaitingRoomView, type LobbyTab } from '../../pages/lobby/LobbyViews'
 import type { MultiplayerMode } from '../../types/game'
 import { ResultScreen } from '../../pages/game/ResultScreen'
-import { makeFinishedGame } from '../mocks'
+import { makeFinishedGame, MOCK_PLAYERS, useMockComms } from '../mocks'
 import { computeLevelStars } from '../../lib/levelRules'
 import type { GalleryScreen } from './types'
 
@@ -53,8 +54,47 @@ function WaitingMock({ host }: { host: boolean }) {
   )
 }
 
+function ChatMock({ report = false }: { report?: boolean }) {
+  const comms = useMockComms({ panelOpen: true, voice: 'live' })
+  const onReport = async () => { await new Promise(r => setTimeout(r, 600)) }
+  return (
+    <div className="surface-table" style={{ minHeight: '100dvh' }}>
+      <div className="uxg-dock-demo">
+        <CommsControls comms={comms} myId="me" />
+      </div>
+      <ChatPanel comms={comms} players={MOCK_PLAYERS} myId="me" onReport={onReport} />
+      {report && <AutoOpenReport />}
+    </div>
+  )
+}
+
+/** Clicks the first report button so the report dialog shows (gallery only). */
+function AutoOpenReport() {
+  useEffect(() => {
+    const id = setTimeout(() => {
+      document.querySelector<HTMLButtonElement>('.chat-people button[aria-haspopup="dialog"]')?.click()
+    }, 400)
+    return () => clearTimeout(id)
+  }, [])
+  return null
+}
+
+function DockMock() {
+  const off = useMockComms({ voice: 'off', unread: 3 })
+  const live = useMockComms({ voice: 'live', unread: 0 })
+  const muted = useMockComms({ voice: 'muted', unread: 12 })
+  return (
+    <div className="surface-table uxg-table" style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {[off, live, muted].map((c, i) => <div key={i} className="uxg-dock-demo"><CommsControls comms={c} myId="me" /></div>)}
+    </div>
+  )
+}
+
 /** Owned by Agent 3: result screen, Lobby menu + waiting room, chat panel, report sheet… */
 export const FLOW_SCREENS: GalleryScreen[] = [
+  { path: 'comms-dock', title: 'Comms dock buttons (voice off / mic on / muted, unread badge)', group: 'Multiplayer', render: () => <DockMock /> },
+  { path: 'chat', title: 'Chat panel (voice live)', group: 'Multiplayer', render: () => <ChatMock /> },
+  { path: 'chat-report', title: 'Report dialog', group: 'Multiplayer', render: () => <ChatMock report /> },
   { path: 'lobby-create', title: 'Lobby: create room', group: 'Multiplayer', render: () => <LobbyMenuMock initialTab="create" /> },
   { path: 'lobby-join', title: 'Lobby: join room', group: 'Multiplayer', render: () => <LobbyMenuMock initialTab="join" /> },
   { path: 'lobby-waiting-host', title: 'Waiting room (host)', group: 'Multiplayer', render: () => <WaitingMock host /> },

@@ -181,6 +181,13 @@
       "errJoin": "Could not join the room. Check the code and try again.",
       "errReady": "Could not update your ready status.",
       "errStart": "Could not start the game. Try again."
+    },
+    "comms": {
+      "voiceOff": "Voice off",
+      "muted": "Muted",
+      "micOn": "Mic on",
+      "chat": "Chat",
+      "inVoice": "{{n}} in voice"
     }
   },
   "hi": {
@@ -365,6 +372,13 @@
       "errJoin": "रूम में नहीं जुड़ पाए। कोड जाँचें और फिर कोशिश करें।",
       "errReady": "आपकी तैयारी अपडेट नहीं हो पाई।",
       "errStart": "खेल शुरू नहीं हो पाया। फिर कोशिश करें।"
+    },
+    "comms": {
+      "voiceOff": "आवाज़ बंद",
+      "muted": "म्यूट",
+      "micOn": "माइक चालू",
+      "chat": "चैट",
+      "inVoice": "{{n}} आवाज़ में"
     }
   },
   "hinglish": {
@@ -549,6 +563,13 @@
       "errJoin": "Room join nahi ho paya. Code check karke phir try karo.",
       "errReady": "Aapka ready status update nahi hua.",
       "errStart": "Game shuru nahi ho paya. Phir try karo."
+    },
+    "comms": {
+      "voiceOff": "Voice off",
+      "muted": "Muted",
+      "micOn": "Mic on",
+      "chat": "Chat",
+      "inVoice": "{{n}} voice mein"
     }
   }
 }
