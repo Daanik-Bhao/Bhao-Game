@@ -427,6 +427,64 @@ await check('buy_stock/sell_stock charge the server price; client price params a
   eq((await one(su(`SELECT daanik_coins FROM profiles WHERE id = $1`, [U1]))).daanik_coins, 10, 'coins unchanged')
 })
 
+// --- player reports ------------------------------------------------------------------
+const reportSql = `SELECT report_player($1, $2, $3, $4, $5::jsonb) AS id`
+const REPORT_ROOM = 'bbbbbbbb-0000-4000-8000-000000000001'
+
+await check('report_player inserts a report owned by the caller and returns its id', async () => {
+  const evidence = JSON.stringify([{ at: '2026-10-13T10:00:00.000Z', kind: 'text', text: 'give me your UPI pin' }])
+  const id = (await one(asUser(U1, reportSql, [U2, REPORT_ROOM, 'scam', '  asked for my PIN  ', evidence]))).id
+  assert(id, 'returned id')
+  const r = await one(su(`SELECT reporter_id, reported_id, room_id, reason, details, status, jsonb_array_length(evidence) AS n FROM player_reports WHERE id = $1`, [id]))
+  eq(r.reporter_id, U1, 'reporter'); eq(r.reported_id, U2, 'reported'); eq(r.room_id, REPORT_ROOM, 'room')
+  eq(r.reason, 'scam', 'reason'); eq(r.details, 'asked for my PIN', 'details trimmed'); eq(r.status, 'open', 'status'); eq(r.n, 1, 'evidence lines')
+  const noRoom = (await one(asUser(U1, reportSql, [U3, null, 'spam', null, null]))).id
+  eq((await one(su(`SELECT evidence::text AS e, details FROM player_reports WHERE id = $1`, [noRoom]))).e, '[]', 'null evidence -> []')
+})
+
+await check('report_player rejects self-report, bad input, duplicates, anon', async () => {
+  await expectError(asUser(U1, reportSql, [U1, REPORT_ROOM, 'abuse', null, '[]']), /yourself/, 'self report')
+  await expectError(asUser(U1, reportSql, [U3, REPORT_ROOM, 'rude', null, '[]']), /Invalid reason/, 'unknown reason')
+  await expectError(asUser(U1, reportSql, [U3, REPORT_ROOM, 'abuse', 'x'.repeat(501), '[]']), /too long/, 'long details')
+  await expectError(asUser(U1, reportSql, [U3, REPORT_ROOM, 'abuse', null, '{"a":1}']), /Invalid evidence/, 'evidence not array')
+  await expectError(asUser(U1, reportSql, [U3, REPORT_ROOM, 'abuse', null, JSON.stringify(Array.from({ length: 11 }, () => 'x'))]), /Invalid evidence/, '11 evidence lines')
+  await expectError(asUser(U1, reportSql, [U3, REPORT_ROOM, 'abuse', null, JSON.stringify(['x'.repeat(4100)])]), /Invalid evidence/, 'evidence too big')
+  await expectError(asUser(U1, reportSql, ['00000000-0000-4000-8000-0000000000ff', REPORT_ROOM, 'abuse', null, '[]']), /Unknown player/, 'unknown player')
+  await expectError(asUser(U1, reportSql, [U2, REPORT_ROOM, 'abuse', null, '[]']), /Already reported/, 'same player same room')
+  await expectError(asUser(U1, reportSql, [U3, null, 'abuse', null, '[]']), /Already reported/, 'same player, no room')
+  await expectError(asAnon(reportSql, [U2, REPORT_ROOM, 'abuse', null, '[]']), /permission denied/, 'anon')
+})
+
+await check('player_reports: no direct insert/select/update/delete for authenticated or anon', async () => {
+  await expectError(asUser(U1, `INSERT INTO player_reports (reported_id, reason) VALUES ($1, 'abuse')`, [U3]), /permission denied|row-level/, 'direct insert')
+  await expectError(asUser(U1, `SELECT * FROM player_reports`), /permission denied/, 'select own reports')
+  await expectError(asUser(U2, `SELECT * FROM player_reports`), /permission denied/, 'reported user reads reports')
+  await expectError(asUser(U1, `UPDATE player_reports SET status = 'dismissed'`), /permission denied/, 'update')
+  await expectError(asUser(U2, `DELETE FROM player_reports`), /permission denied/, 'delete')
+  await expectError(asAnon(`SELECT * FROM player_reports`), /permission denied/, 'anon select')
+  eq((await one(su(`SELECT count(*)::int AS c FROM player_reports`))).c, 2, 'rows untouched')
+})
+
+await check('report_player: max 10 reports per reporter per day', async () => {
+  // U3 reports U2 in 10 different rooms, the 11th is refused
+  for (let i = 0; i < 10; i++) {
+    await asUser(U3, reportSql, [U2, `cccccccc-0000-4000-8000-0000000000${String(i).padStart(2, '0')}`, 'spam', null, '[]'])
+  }
+  await expectError(asUser(U3, reportSql, [U2, 'cccccccc-0000-4000-8000-000000000099', 'spam', null, '[]']), /limit/, '11th report')
+  // reports older than 24h don't count
+  await su(`UPDATE player_reports SET created_at = now() - interval '25 hours' WHERE reporter_id = $1`, [U3])
+  assert((await one(asUser(U3, reportSql, [U2, 'cccccccc-0000-4000-8000-000000000099', 'spam', null, '[]']))).id, 'allowed again next day')
+})
+
+await check('deleting an account removes reports made by and about it', async () => {
+  const U5 = '00000000-0000-4000-8000-000000000005'
+  await su(`INSERT INTO auth.users (id) VALUES ($1)`, [U5])
+  await asUser(U5, reportSql, [U1, null, 'abuse', null, '[]'])
+  await asUser(U1, reportSql, [U5, null, 'abuse', null, '[]'])
+  await su(`DELETE FROM auth.users WHERE id = $1`, [U5])
+  eq((await one(su(`SELECT count(*)::int AS c FROM player_reports WHERE reporter_id = $1 OR reported_id = $1`, [U5]))).c, 0, 'reports left')
+})
+
 await db.close()
 console.log(`\n${files.length} migrations applied, ${passed} checks passed, ${failures.length} failed`)
 if (failures.length) process.exit(1)
