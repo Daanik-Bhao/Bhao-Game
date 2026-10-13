@@ -8,7 +8,7 @@ import { Capacitor } from '@capacitor/core'
 import { backStack } from './backButton'
 
 /** Status bar colour: matches `--green-primary` / the PWA theme-color in index.html. */
-export const STATUS_BAR_COLOR = '#004030'
+export const STATUS_BAR_COLOR = '#001010' // matches the native system-bar strips (android bhao_colors.xml)
 
 export function isNative(): boolean {
   try {
