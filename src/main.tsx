@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/react'
 import './index.css'
 import './i18n/i18n'
 import App from './App'
+import { initNativeShell } from './lib/native'
 
 const sentryDsn = (import.meta.env.VITE_SENTRY_DSN as string | undefined)?.trim()
 
@@ -31,3 +32,6 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+// Android shell (status bar, splash, back button). No-op in the browser.
+initNativeShell()

@@ -189,6 +189,18 @@ export async function fetchMyHand(roomId: string, playerId: string): Promise<{ h
   return data ? { hand: (data.hand ?? []) as GameCard[], version: data.version ?? 0 } : null
 }
 
+/**
+ * Fresh copy of the public room state + the viewer's hand (same reads as the initial
+ * fetch in `subscribeToGame`). Used to resync after the app was in the background.
+ */
+export async function fetchGameSnapshot(
+  roomId: string,
+  playerId: string,
+): Promise<{ publicState: MpPublicState | null; hand: { hand: GameCard[]; version: number } | null }> {
+  const [room, hand] = await Promise.all([getRoom(roomId), fetchMyHand(roomId, playerId)])
+  return { publicState: room && isPublicGameState(room.game_state) ? room.game_state : null, hand }
+}
+
 /** Cosmetic broadcast events on the game channel (never part of the game state). */
 export const COMMS_EVENTS = ['chat', 'poke', 'voice'] as const
 export type CommsEvent = typeof COMMS_EVENTS[number]

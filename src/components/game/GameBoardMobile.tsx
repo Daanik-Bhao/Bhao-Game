@@ -16,6 +16,7 @@ import {
 } from './EconomyPanels'
 import { cardPlayability, rupees } from './economyUi'
 import { LanguageSwitcher } from '../LanguageSwitcher'
+import { useBackButton } from '../../hooks/useBackButton'
 import './GameBoardMobile.css'
 
 interface GameBoardMobileProps extends InnerBoardProps {
@@ -55,6 +56,9 @@ export function GameBoardMobile({
   const [showLog, setShowLog] = useState(false)
   const [showPortfolio, setShowPortfolio] = useState(false)
   const yearNews = useYearNews(gameState)
+  // Android back closes these sheets first (they register on top of the page's handler).
+  useBackButton(() => setShowPortfolio(false), showPortfolio)
+  useBackButton(() => setShowLog(false), showLog)
 
   const myPlayerIndex = gameState.players.findIndex(p => p.id === myPlayerId)
   const isMyTurn = gameState.players[gameState.currentPlayerIndex]?.id === myPlayerId

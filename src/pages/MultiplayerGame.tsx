@@ -8,7 +8,7 @@ import type { MpActionResponse, MpAction, MpEvent, MpPublicState } from '../type
 import { Wealth } from '../components/Wealth'
 import { canEquip, previewDecision, assetLabel, TURN_TIME_LIMIT_MS } from '../lib/gameEngine'
 import { computePlacements, toBoardState, withOwnHand, HEARTBEAT_MS } from '../lib/multiplayerAuthority'
-import { invokeGameAction, leaveRoom, sendHeartbeat, subscribeToGame } from '../lib/multiplayerEngine'
+import { fetchGameSnapshot, invokeGameAction, leaveRoom, sendHeartbeat, subscribeToGame } from '../lib/multiplayerEngine'
 import Confetti from 'react-confetti'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { ForfeitModal } from '../components/ForfeitModal'
@@ -19,6 +19,7 @@ import { usePreloadImages } from '../hooks/usePreloadImages'
 import { GameReportPanel } from '../components/learning/GameReportPanel'
 import { progressOwnerKey } from '../lib/campaignProgress'
 import { useRoomComms } from '../hooks/useRoomComms'
+import { useAppResume, useBackButton, useKeepAwake } from '../hooks/useBackButton'
 import { ChatBubble, ChatPanel, CommsControls, PokeOverlay, voiceBadges } from '../components/game/RoomComms'
 
 function GameClock({ startTime, timeLimit }: { startTime: number; timeLimit: number }) {
@@ -94,6 +95,9 @@ export function MultiplayerGame() {
   const eventsSeenRef = useRef(0)
   const notifyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const resultHandledRef = useRef(false)
+  /** Bumped to rebuild the realtime subscription (e.g. it closed while the app was in the background). */
+  const [channelEpoch, setChannelEpoch] = useState(0)
+  const resyncInFlightRef = useRef(false)
 
   // Social layer: chat, pokes and voice (cosmetic, never part of the game state).
   const playerIds = useMemo(() => publicGs?.players.map(p => p.id) ?? [], [publicGs?.players])
@@ -215,7 +219,7 @@ export function MultiplayerGame() {
       channelRef.current = null
       channel.unsubscribe()
     }
-  }, [roomId, myPlayerId, applyPublic, applyHand, showEmote])
+  }, [roomId, myPlayerId, applyPublic, applyHand, showEmote, channelEpoch])
 
   // --- Heartbeat every 10 s (the server forfeits players whose heartbeat goes stale) ---
   useEffect(() => {
@@ -427,6 +431,48 @@ export function MultiplayerGame() {
     })
     navigate('/dashboard')
   }
+
+  // --- Back to the foreground (app resume / tab visible again): heartbeat now, refetch the
+  //     room + our hand, and rebuild the realtime channel if it died in the background ---
+  const resync = useCallback(async () => {
+    if (!roomId || !myPlayerId) return
+    sendHeartbeat(roomId).catch(() => { /* the interval retries */ })
+    const channelState = channelRef.current ? String(channelRef.current.state) : 'closed'
+    if (channelState === 'closed' || channelState === 'errored') {
+      // A closed channel never rejoins on its own; an errored one may sit in back-off for a
+      // long time after a background stint. A fresh subscription re-fetches on SUBSCRIBED.
+      setChannelEpoch(e => e + 1)
+    }
+    if (resyncInFlightRef.current) return
+    resyncInFlightRef.current = true
+    try {
+      const snap = await fetchGameSnapshot(roomId, myPlayerId)
+      if (snap.publicState) applyPublic(snap.publicState)
+      if (snap.hand) applyHand(snap.hand.hand, snap.hand.version)
+    } catch (e) {
+      console.warn('[mp] resync failed', e)
+    } finally {
+      resyncInFlightRef.current = false
+    }
+  }, [roomId, myPlayerId, applyPublic, applyHand])
+  useAppResume(() => { void resync() }, !!roomId && !!myPlayerId)
+
+  // --- Android back button + keep-awake ---
+  const gameInProgress = uiPhase !== 'loading' && uiPhase !== 'result'
+  useKeepAwake(gameInProgress)
+  // Back never silently leaves a running game: drop a half-made pick, else ask to forfeit.
+  useBackButton(() => {
+    if (pending) { setPending(null); return }
+    setShowForfeitModal(true)
+  }, gameInProgress)
+  // Result screen: leave the room the same way the Dashboard button does.
+  useBackButton(() => {
+    if (roomId && myPlayerId) leaveRoom(roomId, myPlayerId).catch(() => { /* ignore */ })
+    navigate('/dashboard')
+  }, uiPhase === 'result')
+  // Overlays register when they open, so they sit above the handlers above.
+  useBackButton(() => comms.setPanelOpen(false), comms.panelOpen)
+  useBackButton(() => setShowForfeitModal(false), showForfeitModal)
 
   // ---- Render ----
 

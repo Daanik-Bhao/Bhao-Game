@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
+import { useBackButton, useKeepAwake } from '../hooks/useBackButton'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { recordLevelResult, progressOwnerKey } from '../lib/campaignProgress'
@@ -501,6 +502,24 @@ export function Game() {
   }
 
 
+
+  // --- Android back button + keep-awake while a game is running ---
+  const gameInProgress = !!gameState && uiPhase !== 'setup' && uiPhase !== 'result' && gameState.phase !== 'game_over'
+  useKeepAwake(gameInProgress)
+  // Back never silently leaves a running game: it backs out of a pick, closes the outcome
+  // popup, or else asks for the forfeit confirmation.
+  useBackButton(() => {
+    if (popupInfo) { handlePopupContinue(); return }
+    const gs = gameStateRef.current
+    if ((uiPhase === 'targeting' || uiPhase === 'decision') && gs) {
+      setGameState({ ...gs, pendingTarget: null })
+      setUiPhase('playing')
+      return
+    }
+    setShowForfeitModal(true)
+  }, gameInProgress)
+  // Pushed on top when the modal opens, so a second back press closes it.
+  useBackButton(() => setShowForfeitModal(false), showForfeitModal)
 
   if (uiPhase === 'setup') {
     return <SetupScreen botCount={botCount} setBotCount={setBotCount} onStart={startGame} onBack={() => navigate(levelId ? '/campaign' : '/dashboard')} levelId={levelId} />
