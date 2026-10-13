@@ -3,6 +3,7 @@ import React from 'react'
 import { Suspense, lazy } from 'react'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import { WalletLoader } from './components/WalletLoader'
+import { useNativeBackNavigation } from './hooks/useBackButton'
 
 // Automatically reload the page if a dynamically imported chunk fails to load 
 // (which happens when a new version is deployed to Vercel while a user has the app open)
@@ -114,6 +115,12 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return user ? <Navigate to="/dashboard" replace /> : <>{children}</>
 }
 
+/** Android back button: router fallback when no screen handled the press. */
+function NativeBackNavigation() {
+  useNativeBackNavigation()
+  return null
+}
+
 function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
@@ -139,6 +146,7 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
+      <NativeBackNavigation />
       <Sentry.ErrorBoundary fallback={<FallbackComponent />}>
         <AuthProvider>
           <AppRoutes />

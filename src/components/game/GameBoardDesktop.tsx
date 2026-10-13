@@ -12,6 +12,7 @@ import { EmoteButton, PlayersStrip, TurnCountdown } from './BoardShared'
 import { DecisionOptions, HandActionBar, HandCardFrame, PortfolioPanel, YearNewsStrip, YearPill, useYearNews } from './EconomyPanels'
 import { cardPlayability, rupees } from './economyUi'
 import { LanguageSwitcher } from '../LanguageSwitcher'
+import { useBackButton } from '../../hooks/useBackButton'
 import './GameBoardDesktop.css'
 
 function PlayerTimerRing({ turnStartTime, timeLimit }: { turnStartTime: number, timeLimit: number }) {
@@ -95,6 +96,7 @@ export function GameBoardDesktop({
   const { t, i18n } = useTranslation()
   const hi = i18n.language === 'hi'
   const [showGameLog, setShowGameLog] = useState(false)
+  useBackButton(() => setShowGameLog(false), showGameLog)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const yearNews = useYearNews(gameState)
   const myPlayerIndex = gameState.players.findIndex(p => p.id === myPlayerId)

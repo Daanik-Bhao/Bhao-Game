@@ -7,6 +7,7 @@ import {
 } from '../lib/roomChat'
 import { VoiceError, VoiceMesh, parseVoiceSignal, voiceUnsupportedReason, type VoiceErrorCode, type VoiceSnapshot } from '../lib/voiceChat'
 import { playSound } from '../lib/audio'
+import { vibrate } from '../lib/native'
 
 const EMPTY_VOICE: VoiceSnapshot = { joined: false, joining: false, muted: false, members: {}, speaking: [] }
 const POKE_SHOW_MS = 2600
@@ -151,7 +152,7 @@ export function useRoomComms({ channelRef, myId, playerIds, onlineIds }: {
         if (pokeTimer.current) clearTimeout(pokeTimer.current)
         pokeTimer.current = setTimeout(() => setPokeHit(null), POKE_SHOW_MS)
         playSound('poke')
-        try { navigator.vibrate?.([90, 50, 90]) } catch { /* not supported */ }
+        vibrate([90, 50, 90])
       }
     } else if (event === 'voice') {
       const sig = parseVoiceSignal(payload)
