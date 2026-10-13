@@ -15,6 +15,14 @@
     "check:functions": "node scripts/build-functions.mjs --check"
   },
   "dependencies": {
+    "@capacitor-community/keep-awake": "8.0.1",
+    "@capacitor/android": "8.5.2",
+    "@capacitor/app": "8.1.1",
+    "@capacitor/browser": "8.0.4",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/haptics": "8.0.2",
+    "@capacitor/splash-screen": "8.0.2",
+    "@capacitor/status-bar": "8.0.3",
     "@sentry/react": "^10.56.0",
     "@supabase/supabase-js": "^2.45.0",
     "framer-motion": "^12.40.0",
@@ -28,6 +36,8 @@
     "use-sound": "^5.0.0"
   },
   "devDependencies": {
+    "@capacitor/assets": "3.0.5",
+    "@capacitor/cli": "8.5.2",
     "@electric-sql/pglite": "0.5.8",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
