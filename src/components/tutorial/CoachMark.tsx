@@ -35,6 +35,13 @@ const HAND_CARD_SELECTORS = ['[data-tour="hand-card"]', '.econ-hand-card']
 function resolveTarget(target: StepTarget, handIds: string[]): { box: Box | null; el: Element | null } {
   if (!target) return { box: null, el: null }
   if ('card' in target) {
+    // Once the card's sheet is open, point at the sheet's control instead of the hidden card
+    for (const sel of target.preferSelectors ?? []) {
+      for (const el of Array.from(document.querySelectorAll(sel))) {
+        const r = visibleRect(el)
+        if (r) return { box: union([r]), el }
+      }
+    }
     const i = handIds.indexOf(target.card)
     let cards: Element[] = []
     for (const sel of HAND_CARD_SELECTORS) {

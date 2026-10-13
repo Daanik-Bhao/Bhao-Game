@@ -264,6 +264,3 @@ body:has(.dk-board) .toast-region--top { top: calc(80px + env(safe-area-inset-to
   .cardsheet .gcard--sheet { --card-w: 72px; --card-h: 104px; }
 }
 
-/* One toast at a time in a match: the leaving toast cross-fades in place instead of sitting beside the next one */
-body:has(.game-board-root) .toast-region { display: grid; justify-items: center; }
-body:has(.game-board-root) .toast-region > .toast { grid-area: 1 / 1; }

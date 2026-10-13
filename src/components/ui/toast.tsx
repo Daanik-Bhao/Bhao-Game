@@ -95,7 +95,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         role="status"
         aria-live="polite"
       >
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {current && (
             <motion.div
               key={current.id}

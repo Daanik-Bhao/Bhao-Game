@@ -11,7 +11,6 @@ import { ForfeitModal } from '../components/ForfeitModal'
 import { playSound } from '../lib/audio'
 import { GameBoard, UIPhase } from '../components/game/GameBoard'
 import { useTranslation } from 'react-i18next'
-import { usePreloadImages } from '../hooks/usePreloadImages'
 import { progressOwnerKey } from '../lib/campaignProgress'
 import { useRoomComms } from '../hooks/useRoomComms'
 import { reportPlayer } from '../lib/reports'
@@ -46,7 +45,6 @@ const noop = () => { /* no extra-card purchase in multiplayer */ }
  * runs out. It never mutates the game locally.
  */
 export function MultiplayerGame() {
-  usePreloadImages()
   const { roomId } = useParams<{ roomId: string }>()
   const navigate = useNavigate()
   const { user, profile, refreshProfile } = useAuth()
