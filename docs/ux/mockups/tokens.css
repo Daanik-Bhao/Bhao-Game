@@ -1,0 +1,279 @@
+/* =====================================================================
+   BHAO design tokens — "Chai & Chips" (docs/ux/02-design-spec.md §B)
+   This file is the reference implementation for src/styles/tokens.css
+   and src/styles/fonts.css. Mockups load it directly.
+   ===================================================================== */
+
+/* ---------- Fonts (self-hosted woff2; see spec §C) ---------- */
+/* Baloo 2 — variable wght 400..800. Display, buttons, numbers. */
+@font-face { font-family: 'Baloo 2'; font-style: normal; font-weight: 400 800; font-display: swap;
+  src: url('fonts/baloo2-var-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Baloo 2'; font-style: normal; font-weight: 400 800; font-display: swap;
+  src: url('fonts/baloo2-var-rupee.woff2') format('woff2');
+  unicode-range: U+20B9; }
+@font-face { font-family: 'Baloo 2'; font-style: normal; font-weight: 400 800; font-display: swap;
+  src: url('fonts/baloo2-var-devanagari.woff2') format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF; }
+/* Mukta 400 + 600 — body / UI. */
+@font-face { font-family: 'Mukta'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('fonts/mukta-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Mukta'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('fonts/mukta-400-rupee.woff2') format('woff2'); unicode-range: U+20B9; }
+@font-face { font-family: 'Mukta'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('fonts/mukta-400-devanagari.woff2') format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF; }
+@font-face { font-family: 'Mukta'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('fonts/mukta-600-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Mukta'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('fonts/mukta-600-rupee.woff2') format('woff2'); unicode-range: U+20B9; }
+@font-face { font-family: 'Mukta'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('fonts/mukta-600-devanagari.woff2') format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF; }
+
+:root {
+  /* ---------- Families ---------- */
+  --font-display: 'Baloo 2', 'Noto Sans Devanagari', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Mukta', 'Noto Sans Devanagari', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-num: var(--font-display);
+  --font-emoji: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
+
+  /* ---------- Raw palette ---------- */
+  --cream-50: #FFFCF6;
+  --cream-100: #FFF8EC;   /* paper */
+  --cream-200: #FCEFD9;   /* paper-2 / sunken */
+  --cream-300: #F3E4C8;
+  --sand-400: #EADFCB;    /* hairline */
+  --sand-500: #D6C7AC;    /* strong line */
+  --ink-900: #1E1A14;
+  --ink-700: #5E5548;
+  --ink-500: #7A6F5F;
+  --ink-300: #9A8F7E;     /* disabled text only */
+  --teal-950: #062A22;
+  --teal-900: #0A3329;    /* table panel */
+  --teal-850: #0A3A30;    /* table edge */
+  --teal-800: #0E4D3F;    /* brand / table */
+  --teal-700: #12463A;    /* table raised */
+  --teal-600: #1B6352;
+  --teal-100: #DCEFE8;
+  --haldi-300: #FFD45E;
+  --haldi-400: #FFC530;   /* primary CTA */
+  --haldi-600: #C98A00;   /* CTA press-edge */
+  --haldi-ink: #2A1B00;
+
+  /* ---------- Semantic: surfaces (light "menu" mode = default) ---------- */
+  --bg: var(--cream-100);
+  --bg-sunken: var(--cream-200);
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --line: var(--sand-400);
+  --line-strong: var(--sand-500);
+  --text: var(--ink-900);
+  --text-muted: var(--ink-700);
+  --text-subtle: var(--ink-500);
+  --text-disabled: var(--ink-300);
+  --text-on-brand: #FFFFFF;
+  --link: var(--teal-800);
+  --focus-ring: #3D5AFE;
+  --brand: var(--teal-800);
+  --brand-strong: var(--teal-950);
+  --brand-soft: var(--teal-100);
+  --primary: var(--haldi-400);
+  --primary-hover: var(--haldi-300);
+  --primary-edge: var(--haldi-600);
+  --on-primary: var(--haldi-ink);
+
+  /* ---------- Semantic: money meaning (same in both modes; *-fg switches) ---------- */
+  --spend: #E2572B;   --spend-strong: #B83F18;   --spend-soft: #FDE7DE;   --spend-on-dark: #FF9B7A;
+  --save: #1E9E5A;    --save-strong: #157A45;    --save-soft: #E3F4EA;    --save-on-dark: #5EE08F;
+  --invest: #3D5AFE;  --invest-strong: #2E47D1;  --invest-soft: #E6EBFF;  --invest-on-dark: #8FA6FF;
+  --defence: #11A3A3; --defence-strong: #0A6E6E; --defence-soft: #DDF3F3; --defence-on-dark: #4FD1C5;
+  --attack: #D93636;  --attack-strong: #B42318;  --attack-soft: #FDE4E1;  --attack-on-dark: #FF8A80;
+  --risk: #F59E0B;    --risk-strong: #8A5A00;    --risk-soft: #FFF1CC;    --risk-on-dark: #FFC530;
+  --event: #46607A;   --event-soft: #E4EAF1;     --event-on-dark: #A8B9CC;
+  --opportunity: #F2A900; --opportunity-ink: #1E1A14;
+  --gain-fg: #157A3E; --loss-fg: #B42318;        /* text on light */
+  --success: var(--save-strong); --danger: var(--attack-strong); --warning: var(--risk-strong); --info: var(--invest-strong);
+
+  /* ---------- Tier gems (graphics only, never text) ---------- */
+  --tier-common: #7B8594;
+  --tier-rare: #2F80ED;
+  --tier-epic: #8B5CF6;
+  --tier-legendary: #B8860B;
+  --tier-legendary-hi: #F5C542;
+
+  /* ---------- Type scale (mobile first; desktop overrides below) ---------- */
+  --fs-display-xl: 40px;  --lh-display-xl: 1.05;
+  --fs-display-l: 30px;   --lh-display-l: 1.1;
+  --fs-title: 22px;       --lh-title: 1.15;
+  --fs-subtitle: 18px;    --lh-subtitle: 1.2;
+  --fs-body-l: 17px;      --lh-body-l: 1.5;
+  --fs-body: 16px;        --lh-body: 1.5;
+  --fs-ui: 14px;          --lh-ui: 1.4;
+  --fs-caption: 12px;     --lh-caption: 1.35;
+  --fs-btn-l: 18px; --fs-btn-m: 16px; --fs-btn-s: 14px;
+  --fs-num-xl: 36px; --fs-num-l: 24px; --fs-num-m: 18px; --fs-num-s: 14px;
+  --lh-num: 1.05;
+  --ls-caps: 0.06em;
+  --tt-caps: uppercase;
+
+  /* ---------- Spacing (4-pt) ---------- */
+  --sp-0: 0; --sp-1: 2px; --sp-2: 4px; --sp-3: 8px; --sp-4: 12px; --sp-5: 16px;
+  --sp-6: 20px; --sp-7: 24px; --sp-8: 32px; --sp-9: 40px; --sp-10: 48px; --sp-11: 64px;
+  --gutter: 16px;
+
+  /* ---------- Radii ---------- */
+  --r-xs: 6px; --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-pill: 999px;
+  --r-card-hand: 10px; --r-card-full: 16px;
+
+  /* ---------- Elevation (no blur filters; shadows only on light) ---------- */
+  --e-0: none;
+  --e-1: 0 1px 2px rgba(60,40,10,.08), 0 1px 1px rgba(60,40,10,.04);
+  --e-2: 0 4px 12px rgba(60,40,10,.10), 0 1px 2px rgba(60,40,10,.06);
+  --e-3: 0 -8px 24px rgba(30,20,5,.18);
+  --e-card-table: 0 4px 0 rgba(0,0,0,.28);
+  --e-card-lift: 0 10px 18px rgba(0,0,0,.35);
+  --btn-edge: 4px;
+
+  /* ---------- Z-index ---------- */
+  --z-base: 0; --z-raised: 10; --z-sticky: 100; --z-tabbar: 110; --z-hud: 200; --z-dock: 300;
+  --z-toast: 400; --z-backdrop: 500; --z-sheet: 510; --z-modal: 600; --z-coach: 700; --z-system: 900;
+
+  /* ---------- Motion ---------- */
+  --dur-press: 80ms; --dur-fast: 150ms; --dur-base: 220ms; --dur-slow: 320ms; --dur-ceremony: 700ms;
+  --ease-standard: cubic-bezier(.2,0,0,1);
+  --ease-enter: cubic-bezier(.05,.7,.1,1);
+  --ease-exit: cubic-bezier(.3,0,.8,.15);
+  --ease-overshoot: cubic-bezier(.34,1.56,.64,1);
+
+  --tap-min: 44px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --fs-display-xl: 64px; --lh-display-xl: 1.02;
+    --fs-display-l: 40px;
+    --fs-title: 26px;
+    --fs-subtitle: 20px;
+    --fs-body-l: 18px;
+    --fs-num-xl: 44px; --fs-num-l: 28px;
+    --gutter: 32px;
+  }
+}
+
+/* Dark "table" surface: put .surface-table on the match root (and anything rendered on the board). */
+.surface-table {
+  --bg: var(--teal-800);
+  --bg-sunken: var(--teal-900);
+  --surface: var(--teal-900);
+  --surface-raised: var(--teal-700);
+  --line: #2A5E51;
+  --line-strong: #3B7565;
+  --text: #F6F1E7;
+  --text-muted: #B9CFC6;
+  --text-subtle: #B9CFC6;
+  --text-disabled: #6F8F85;
+  --link: var(--haldi-300);
+  --focus-ring: var(--haldi-300);
+  --gain-fg: var(--save-on-dark);
+  --loss-fg: var(--attack-on-dark);
+  color: var(--text);
+  background:
+    radial-gradient(120% 80% at 50% 35%, #0F5545 0%, var(--teal-800) 45%, var(--teal-850) 100%);
+}
+
+/* Hindi: html.lang-hi (Hinglish uses Latin, keeps en metrics) */
+html.lang-hi {
+  --lh-body-l: 1.65; --lh-body: 1.65; --lh-ui: 1.55; --lh-caption: 1.5;
+  --lh-display-xl: 1.25; --lh-display-l: 1.3; --lh-title: 1.3; --lh-subtitle: 1.35; --lh-num: 1.15;
+  --fs-caption: 13px; --fs-ui: 15px;
+  --ls-caps: 0; --tt-caps: none;
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: var(--font-body); font-size: var(--fs-body); line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 800; }
+a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums lining-nums; font-weight: 700; line-height: var(--lh-num); }
+.caps { text-transform: var(--tt-caps); letter-spacing: var(--ls-caps); }
+
+/* ---------- Buttons ---------- */
+.btn {
+  --_bg: var(--surface); --_fg: var(--text); --_edge: var(--line-strong); --_bd: var(--line-strong);
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 0 20px; border-radius: var(--r-md);
+  font-family: var(--font-display); font-weight: 700; font-size: var(--fs-btn-m); line-height: 1;
+  background: var(--_bg); color: var(--_fg); border: 2px solid var(--_bd);
+  box-shadow: 0 var(--btn-edge) 0 var(--_edge);
+  transform: translateY(0); transition: transform var(--dur-press) var(--ease-standard), box-shadow var(--dur-press) var(--ease-standard);
+  cursor: pointer; text-decoration: none; white-space: nowrap; margin-bottom: var(--btn-edge);
+}
+.btn:active, .btn.is-pressed { transform: translateY(var(--btn-edge)); box-shadow: 0 0 0 var(--_edge); }
+.btn--primary { --_bg: var(--primary); --_fg: var(--on-primary); --_edge: var(--primary-edge); --_bd: var(--primary); }
+.btn--secondary { --_bg: var(--brand); --_fg: #fff; --_edge: var(--brand-strong); --_bd: var(--brand); }
+.btn--outline { --_bg: var(--surface); --_fg: var(--brand); --_edge: var(--line-strong); --_bd: var(--line-strong); }
+.surface-table .btn--outline { --_bg: transparent; --_fg: var(--text); --_edge: rgba(0,0,0,.35); --_bd: var(--line-strong); }
+.btn--ghost { --_bg: transparent; --_fg: var(--link); --_edge: transparent; --_bd: transparent; box-shadow: none; margin-bottom: 0; }
+.btn--ghost:active { transform: none; background: rgba(0,0,0,.05); }
+.btn--danger { --_bg: var(--attack-strong); --_fg: #fff; --_edge: #7E180F; --_bd: var(--attack-strong); }
+.btn--spend { --_bg: var(--spend-strong); --_fg: #fff; --_edge: #7A2A10; --_bd: var(--spend-strong); }
+.btn--save { --_bg: var(--save-strong); --_fg: #fff; --_edge: #0D4F2D; --_bd: var(--save-strong); }
+.btn--invest { --_bg: var(--invest-strong); --_fg: #fff; --_edge: #1D2F96; --_bd: var(--invest-strong); }
+.btn--l { min-height: 56px; font-size: var(--fs-btn-l); padding: 0 24px; border-radius: var(--r-lg); }
+.btn--s { min-height: 40px; font-size: var(--fs-btn-s); padding: 0 14px; border-radius: var(--r-sm); --btn-edge: 3px; }
+.btn--block { width: 100%; }
+.btn[disabled], .btn.is-disabled { --_bg: var(--bg-sunken); --_fg: var(--text-disabled); --_edge: var(--line); --_bd: var(--line); cursor: not-allowed; }
+.btn--icon { width: 48px; min-width: 48px; padding: 0; border-radius: var(--r-md); }
+.btn--icon.btn--s { width: 44px; min-width: 44px; min-height: 44px; }
+
+/* ---------- Chips ---------- */
+.chip { display: inline-flex; align-items: center; gap: 4px; min-height: 28px; padding: 2px 10px; border-radius: var(--r-pill);
+  font: 600 var(--fs-caption)/1 var(--font-body); background: var(--bg-sunken); color: var(--text-muted); border: 1px solid var(--line); white-space: nowrap; }
+.chip--spend { background: var(--spend-soft); color: var(--spend-strong); border-color: transparent; }
+.chip--save { background: var(--save-soft); color: var(--save-strong); border-color: transparent; }
+.chip--invest { background: var(--invest-soft); color: var(--invest-strong); border-color: transparent; }
+.chip--defence { background: var(--defence-soft); color: var(--defence-strong); border-color: transparent; }
+.chip--risk { background: var(--risk-soft); color: var(--risk-strong); border-color: transparent; }
+.chip--attack { background: var(--attack-soft); color: var(--attack-strong); border-color: transparent; }
+.chip--solid-spend { background: var(--spend-strong); color: #fff; border-color: transparent; }
+.chip--solid-save { background: var(--save-strong); color: #fff; border-color: transparent; }
+.chip--solid-invest { background: var(--invest-strong); color: #fff; border-color: transparent; }
+
+/* ---------- Panels ---------- */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--e-1); }
+.surface-table .panel { box-shadow: none; }
+
+/* ---------- Progress ---------- */
+.progress { height: 10px; border-radius: var(--r-pill); background: var(--bg-sunken); overflow: hidden; border: 1px solid var(--line); }
+.progress > i { display: block; height: 100%; border-radius: inherit; background: var(--save); }
+
+/* ---------- Game card ---------- */
+.gcard { --_band: var(--opportunity); --_bandfg: var(--opportunity-ink);
+  position: relative; flex: none; display: flex; flex-direction: column; width: 72px; height: 104px; border-radius: var(--r-card-hand);
+  background: var(--cream-100); color: var(--ink-900); border: 2px solid #E7D7B9; overflow: hidden; box-shadow: var(--e-card-table);
+  text-align: left; padding: 0; font-family: var(--font-body); }
+.gcard__band { height: 26px; background: var(--_band); color: var(--_bandfg); display: flex; align-items: center; justify-content: center; }
+.gcard__band svg { width: 16px; height: 16px; }
+.gcard__name { font: 700 13px/1.05 var(--font-display); padding: 5px 5px 0; overflow-wrap: break-word; hyphens: auto; flex: 1; }
+.gcard__name.is-long { font-size: 12px; }
+.gcard__value { font: 800 16px/1 var(--font-num); font-variant-numeric: tabular-nums; padding: 0 5px 6px; }
+.gcard__gem { position: absolute; top: 5px; right: 5px; width: 10px; height: 10px; transform: rotate(45deg); border-radius: 2px; border: 1.5px solid rgba(30,26,20,.55); }
+.gcard--attack { --_band: var(--attack-strong); --_bandfg: #fff; }
+.gcard--defence { --_band: var(--defence-strong); --_bandfg: #fff; }
+.gcard--event { --_band: var(--event); --_bandfg: #fff; }
+.gcard.is-legendary { border-color: var(--tier-legendary-hi); box-shadow: 0 0 0 1px var(--tier-legendary), var(--e-card-table); }
+.gcard.is-locked { filter: saturate(.25); opacity: .72; }
+.gcard.is-selected { transform: translateY(-14px) scale(1.06); box-shadow: 0 0 0 3px var(--haldi-400), var(--e-card-lift); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+}

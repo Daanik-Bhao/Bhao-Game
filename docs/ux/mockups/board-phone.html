@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BHAO board — phone</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="mock.css">
+<script src="icons.js"></script><script src="gullu.js"></script><script src="mock.js"></script>
+<style>
+  body { overflow: hidden; }
+  .lastplay { position: relative; }
+  .lastplay .count, .deck .count { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); background: var(--cream-100); color: var(--ink-900); font: 600 12px/1 var(--font-body); padding: 5px 9px; border-radius: 999px; white-space: nowrap; }
+  .table-centre { flex: 0 1 auto; padding-top: 20px; }
+  .turnmsg { max-width: none; align-items: center; text-align: center; padding: 22px 16px 0; flex: 1; justify-content: flex-start; }
+  .turnmsg .eventchip { align-self: center; }
+  .gcard__name { overflow-wrap: break-word; }
+  .sheet .fcard__name { font-size: 14px; } .sheet .fcard__band { height: 28px; font-size: 0; } .sheet .fcard__flavor { display: none; }
+</style>
+</head>
+<body class="surface-table">
+<div class="board" id="board"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const state = q.get('state') || 'play';
+const hi = q.get('lang') === 'hi';
+if (hi) { document.documentElement.lang = 'hi'; document.documentElement.classList.add('lang-hi'); }
+const T = hi ? {
+  year: 'साल 3 / 20', left: '17 साल बाकी', rank: 'आप #2 हैं', nw: 'नेट वर्थ', goal: 'लक्ष्य ₹50 लाख', cash: 'नकद', inv: 'निवेश', life: 'लाइफ़स्टाइल',
+  turn: 'आपकी बारी', turnSub: 'एक कार्ड चुनें — खर्च, बचत या निवेश।', hint: 'कार्ड पर टैप करें: खेलें, लगाएँ या पास करें', deck: '38 कार्ड', infl: 'महँगाई 6%',
+} : {
+  year: 'Year 3 of 20', left: '17 years left', rank: 'You are #2', nw: 'Net worth', goal: 'Goal ₹50 L', cash: 'Cash', inv: 'Invested', life: 'Lifestyle',
+  turn: 'Your turn', turnSub: 'Pick a card. Spend it, save it or invest it.', hint: 'Tap a card to play, equip or pass', deck: '38 cards', infl: 'Inflation 6% this year',
+};
+const cards = hi ? [
+  { name: 'बच्चे की सेहत', type: 'event', cat: 'medical', value: '−₹35K', tier: 'common' },
+  { name: 'दिवाली बोनस', type: 'opportunity', value: 'choose', tier: 'rare' },
+  { name: 'बाज़ार में गिरावट', type: 'attack', cat: 'market', value: '−20%', tier: 'epic' },
+  { name: 'हेल्थ बीमा', type: 'defence', value: 'बचाव', tier: 'rare' },
+  { name: 'कुबेर', type: 'opportunity', value: 'choose', tier: 'legendary' },
+] : [
+  { name: "Child's Health", type: 'event', cat: 'medical', value: '−₹35K', tier: 'common' },
+  { name: 'Diwali Bonus', type: 'opportunity', value: 'choose', tier: 'rare' },
+  { name: 'Market Crash', type: 'attack', cat: 'market', value: '−20%', tier: 'epic' },
+  { name: 'Health Insurance', type: 'defence', value: 'Block', tier: 'rare' },
+  { name: 'Kuber', type: 'opportunity', value: 'choose', tier: 'legendary', locked: false },
+];
+if (state === 'sheet') cards[1].sel = true;
+
+const rivals = `
+<div class="rivals" aria-label="Rivals">
+  <div class="rival is-turn"><div class="av" style="background:#7C4DCC">R<em>#1</em></div><div class="meta"><span class="nm">Rahul</span><span class="nw">₹14.1 L</span><span class="delta-up">▲ 8%</span></div></div>
+  <div class="rival"><div class="av" style="background:#C2431A">P<em>#3</em></div><div class="meta"><span class="nm">Priya</span><span class="nw">₹9.8 L</span><span class="delta-down">▼ 3%</span></div></div>
+  <div class="rival"><div class="av" style="background:#2E7D6B">A<em>#4</em></div><div class="meta"><span class="nm">Aman</span><span class="nw">₹7.2 L</span><span class="delta-up">▲ 1%</span></div></div>
+</div>`;
+
+const topbar = `
+<div class="topbar">
+  <button class="iconbtn" aria-label="Pause menu">${icon('menu', 22)}</button>
+  <div class="yearbox"><div class="lbl">${T.year}<span>${T.left}</span></div><div class="yearbar"><i style="width:15%"></i></div></div>
+  <button class="iconbtn" aria-label="Game log">${icon('scroll-text', 22)}</button>
+  ${ring(42)}
+</div>`;
+
+const centre = `
+<div class="table-centre">
+  <div class="deck" aria-label="Deck, ${T.deck}"><div class="cardback" style="transform:translate(6px,6px) rotate(4deg)"></div><div class="cardback" style="transform:translate(3px,3px) rotate(2deg)"></div><div class="cardback"><span>BHAO</span></div><span class="count">${T.deck}</span></div>
+  <div class="lastplay">${fcard({ name: hi ? 'सोने में निवेश' : 'Gold Rush', type: 'opportunity', value: '+₹40K', tier: 'common', w: 92, h: 132, flavor: '' })}<span class="count">${hi ? 'राहुल ने खेला' : 'Rahul played'}</span></div>
+</div>
+<div class="turnmsg">
+  <span class="eventchip">${icon('trending-up', 14)} ${T.infl}</span>
+  <h2>${T.turn}</h2>
+  <p>${T.turnSub}</p>
+  <ul class="feed" aria-label="Recent moves">
+    <li>${icon('piggy-bank',16)}<span><b>Priya</b> saved ₹26,000 (streak ×2)</span></li>
+    <li>${icon('trending-up',16)}<span><b>Aman</b>'s index fund grew 8% this year</span></li>
+  </ul>
+</div>`;
+
+const hud = `
+<div class="hud" role="button" aria-label="Open my money">
+  <div><div class="cap">${T.nw}</div><div class="big">₹12,40,500</div></div>
+  <div class="rank">${T.rank}<br><span class="delta-up" style="font-size:13px">▲ ₹48,200 ${hi ? 'इस साल' : 'this year'}</span></div>
+  <div class="goal"><div class="bar"><i style="width:25%"></i></div>${T.goal}</div>
+  <div class="hudchips">
+    <div class="hudchip"><span>${T.cash}</span><b>₹4.2 L</b></div>
+    <div class="hudchip"><span>${T.inv}</span><b>₹8.2 L</b></div>
+    <div class="hudchip"><span>${T.life}</span><b style="display:flex;gap:3px;align-items:center;padding-top:3px">${[1,1,0,0,0].map(f=>`<i style="width:12px;height:8px;border-radius:2px;background:${f?'var(--spend-on-dark)':'rgba(255,255,255,.16)'}"></i>`).join('')}</b></div>
+  </div>
+</div>`;
+
+const hand = `<div class="hand" aria-label="Your hand, 5 cards">${cards.map(c => hcard({...c, w: 70, h: 104})).join('')}</div>`;
+const action = state === 'draw'
+  ? `<div class="actionbar"><button class="btn btn--primary btn--l btn--block">${icon('layers', 22)} ${hi ? 'कार्ड उठाएँ' : 'Draw a card'}</button></div>`
+  : `<div class="actionbar"><span class="hint">${T.hint}</span></div>`;
+
+let sheet = '';
+if (state === 'sheet') {
+  sheet = `<div class="backdrop"></div>
+  <section class="sheet" role="dialog" aria-label="Diwali Bonus — choose">
+    <div class="sheet__grab"></div>
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px">
+      ${fcard({ name: 'Diwali Bonus', type: 'opportunity', value: 'choose', tier: 'rare', w: 84, h: 120 })}
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;gap:6px;margin-bottom:6px"><span class="chip" style="background:#FFF1CC;color:#6B4F00;border-color:transparent">${icon("indian-rupee",13)} Decision</span><span class="chip"><i class="gem-rare" style="width:9px;height:9px;transform:rotate(45deg);border-radius:2px;display:inline-block"></i> Rare</span></div>
+        <h2 style="font-size:24px;line-height:1.1">Diwali Bonus</h2>
+        <p style="margin:4px 0 0;font-size:15px;line-height:1.4;color:var(--ink-700)">Your company pays a ₹50,000 festival bonus. What will you do with it?</p>
+      </div>
+      <button class="btn btn--outline btn--icon btn--s" aria-label="Close" style="margin:0">${icon('x', 20)}</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--ink-700);margin-bottom:10px"><span>Cash <b class="num" style="color:var(--ink-900)">₹4,20,000</b></span><span>Net worth <b class="num" style="color:var(--ink-900)">₹12,40,500</b></span></div>
+    <button class="choice choice--spend"><span class="stripe"></span>
+      <span class="top"><span class="chip chip--solid-spend">${icon('wallet',13)} Spend</span><span class="title">New phone</span></span><span class="amt">+₹10K</span>
+      <span class="why">Keep ₹10K. Lifestyle +1, so inflation bites harder every year.</span>
+    </button>
+    <button class="choice choice--save"><span class="stripe"></span>
+      <span class="top"><span class="chip chip--solid-save">${icon('piggy-bank',13)} Save</span><span class="title">Emergency fund</span></span><span class="amt">+₹50K</span>
+      <span class="why">Safe cash for bad days. Save again next turn for a streak bonus.</span>
+    </button>
+    <button class="choice choice--invest"><span class="stripe"></span>
+      <span class="top"><span class="chip chip--solid-invest">${icon('chart-line',13)} Invest</span><span class="title">Index fund SIP</span></span><span class="amt">~12%/yr</span>
+      <span class="why">Grows with the market. Can fall in a crash year.</span>
+      <span class="tag"><span class="chip chip--risk">Medium risk</span><span class="chip">Locks ₹50K</span></span>
+    </button>
+    <div style="display:flex;justify-content:center;margin-top:2px"><button class="btn btn--ghost" style="color:var(--ink-700);font-family:var(--font-body);font-weight:600;font-size:15px">${icon('x',16)} Pass: discard this card (ends turn)</button></div>
+  </section>`;
+}
+if (state === 'outcome') {
+  sheet = `<section class="outcome outcome--good" role="status">
+    <div style="display:flex;gap:12px;align-items:center">
+      <div data-gullu="cheer" data-size="64"></div>
+      <div style="flex:1"><div style="font:800 22px/1.1 var(--font-display);color:var(--save-strong)">Smart save! <span class="num">+₹50,000</span></div>
+      <p style="margin:4px 0 0;font-size:15px;line-height:1.4;color:var(--ink-700)">An emergency fund means a hospital bill won't force you to sell investments.</p></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:14px"><button class="btn btn--outline" style="flex:1">${icon('book-open',18)} Learn more</button><button class="btn btn--save" style="flex:1.4">Next ${icon('arrow-right',18)}</button></div>
+  </section>`;
+}
+
+document.getElementById('board').innerHTML = topbar + rivals + centre + hud + hand + action + sheet;
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BHAO — landing</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="mock.css">
+<script src="icons.js"></script><script src="gullu.js"></script><script src="mock.js"></script>
+<style>
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 var(--gutter); }
+  .hero { display: grid; grid-template-columns: 1fr; gap: 28px; padding: 28px 0 40px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); font: 600 14px/1 var(--font-body); }
+  .hero h1 { font-size: var(--fs-display-xl); line-height: var(--lh-display-xl); margin: 14px 0 12px; color: var(--ink-900); }
+  .hero h1 em { -webkit-box-decoration-break: clone; box-decoration-break: clone; font-style: normal; color: var(--brand); background: linear-gradient(transparent 62%, var(--haldi-300) 62%); }
+  .lede { font-size: var(--fs-body-l); line-height: 1.5; color: var(--text-muted); margin: 0 0 22px; max-width: 520px; }
+  .ctas { display: flex; flex-direction: column; gap: 10px; max-width: 420px; }
+  .trust { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 14px; color: var(--text-muted); font: 600 14px/1.3 var(--font-body); }
+  .trust span { display: inline-flex; gap: 6px; align-items: center; }
+  .guide { display: flex; align-items: center; gap: 8px; align-self: stretch; }
+  .showcase { position: relative; border-radius: 28px; padding: 16px 16px 26px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; gap: 0; min-height: 270px; overflow: hidden; }
+  .showcase .fcard { margin: 0 -12px; }
+  .showcase .fcard:nth-child(1) { transform: rotate(-10deg) translateY(16px); }
+  .showcase .fcard:nth-child(2) { transform: rotate(-2deg) translateY(-6px); z-index: 2; }
+  .showcase .fcard:nth-child(3) { transform: rotate(8deg) translateY(14px); }
+  .showcase .g { position: absolute; left: 12px; bottom: 6px; z-index: 3; }
+  .bubble { position: relative; z-index: 3; background: #fff; color: var(--ink-900); border-radius: 14px; padding: 8px 12px; font: 600 14px/1.25 var(--font-body); box-shadow: var(--e-2); max-width: 170px; }
+  .benefits { display: grid; gap: 12px; grid-template-columns: 1fr; padding-bottom: 40px; }
+  .benefit { display: flex; gap: 14px; align-items: flex-start; padding: 16px; }
+  .benefit .ib { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; flex: none; }
+  .benefit h3 { font-size: 18px; line-height: 1.2; margin-bottom: 4px; }
+  .benefit p { margin: 0; color: var(--text-muted); font-size: 15px; line-height: 1.45; }
+  footer { border-top: 1px solid var(--line); padding: 20px 0 32px; display: flex; gap: 8px 20px; flex-wrap: wrap; align-items: center; color: var(--text-muted); font-size: 14px; }
+  footer a { display: inline-flex; align-items: center; min-height: 44px; }
+  @media (min-width: 1024px) {
+    .hero { grid-template-columns: 1.05fr .95fr; align-items: center; padding: 56px 0 64px; }
+    .ctas { flex-direction: row; max-width: none; }
+    .showcase { min-height: 440px; }
+    .showcase .fcard { width: 168px !important; height: 240px !important; margin: 0 -16px; }
+    .showcase .fcard__name { font-size: 22px; } .showcase .fcard__value { font-size: 28px; } .showcase .fcard__flavor { font-size: 14px; }
+    .benefits { grid-template-columns: repeat(3, 1fr); }
+    .bubble { font-size: 16px; max-width: 260px; } .showcase { padding: 24px 24px 40px; }
+  }
+</style>
+</head>
+<body>
+<header class="appbar">
+  <span class="wordmark"><b>₹</b>BHAO</span>
+  <span class="spacer"></span>
+  <button class="lang" aria-label="Language: English. Change language"><span data-icon="globe" data-size="18"></span> EN</button>
+  <a class="btn btn--ghost btn--s" href="#" style="min-height:44px">Sign in</a>
+</header>
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <span class="eyebrow"><span data-icon="sparkles" data-size="16"></span> Free money card game · Made in India</span>
+      <h1>Make smart <em>money moves.</em> Have fun doing it.</h1>
+      <p class="lede">Every card is a real-life money choice: Diwali bonus, a medical bill, a market crash. Spend, save or invest, and watch 20 years of your life play out in 15 minutes.</p>
+      <div class="ctas">
+        <a class="btn btn--primary btn--l" href="#"><span data-icon="play" data-size="22"></span> Play free, no sign-up</a>
+        <a class="btn btn--outline btn--l" href="#">I have an account</a>
+      </div>
+      <div class="trust"><span><span data-icon="graduation-cap" data-size="18"></span> Learn SIP, inflation, insurance</span><span><span data-icon="globe" data-size="18"></span> English · हिंदी · Hinglish</span></div>
+    </div>
+    <div class="showcase" style="background: radial-gradient(120% 90% at 50% 30%, #0F5545, #0A3A30)">
+      <div class="guide"><div data-gullu="happy" data-size="72"></div>
+      <div class="bubble"><b style="font-family:var(--font-display);font-size:1.1em">Paisa banao. Smart bano.</b><br><span style="font-weight:400;color:var(--ink-700)">Hi, I am Gullu. Let me show you!</span></div></div>
+      <div id="fan" style="display:flex;align-items:flex-end;padding-top:8px"></div>
+    </div>
+  </section>
+  <section class="benefits" aria-label="Why play BHAO">
+    <div class="panel benefit"><span class="ib" style="background:var(--save-soft);color:var(--save-strong)"><span data-icon="sprout" data-size="22"></span></span><div><h3>Real money ideas</h3><p>SIPs, FDs, inflation, emergency funds and insurance, explained in one line each.</p></div></div>
+    <div class="panel benefit"><span class="ib" style="background:var(--invest-soft);color:var(--invest-strong)"><span data-icon="users" data-size="22"></span></span><div><h3>Play friends or bots</h3><p>Quick games against bots, a 4-level life campaign, and rooms with friends.</p></div></div>
+    <div class="panel benefit"><span class="ib" style="background:var(--risk-soft);color:var(--risk-strong)"><span data-icon="trophy" data-size="22"></span></span><div><h3>Get a money report card</h3><p>See what your choices would earn in real life over 10 years.</p></div></div>
+  </section>
+  <footer><span class="wordmark" style="font-size:18px">BHAO</span><a href="#">Privacy</a><a href="#">Terms</a><a href="#">support@daanik.com</a><span style="margin-left:auto">For ages 13+. No real money is used.</span></footer>
+</main>
+<script>
+document.getElementById('fan').innerHTML = [
+  { name: 'Market Crash', type: 'attack', cat: 'market', value: '−20%', tier: 'epic', flavor: 'Every rival loses 20% of invested wealth.' },
+  { name: 'Diwali Bonus', type: 'opportunity', value: '+₹50,000', tier: 'rare', flavor: 'Spend it, save it or invest it.' },
+  { name: 'Health Insurance', type: 'defence', value: 'Block', tier: 'rare', flavor: 'Blocks medical bills for the whole game.' },
+].map(c => fcard({ ...c, w: 132, h: 190 })).join('');
+</script>
+</body>
+</html>

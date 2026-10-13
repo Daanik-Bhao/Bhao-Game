@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BHAO — result</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="mock.css">
+<script src="icons.js"></script><script src="gullu.js"></script><script src="mock.js"></script>
+<style>
+  main { max-width: 560px; margin: 0 auto; padding: 16px var(--gutter) 120px; }
+  .top { text-align: center; padding: 6px 0 14px; }
+  .top .cap { font: 600 13px/1 var(--font-body); color: var(--text-muted); text-transform: var(--tt-caps); letter-spacing: var(--ls-caps); }
+  .top h1 { font-size: 34px; line-height: 1.05; margin: 8px 0 6px; }
+  .top h1 .num { color: var(--gain-fg); font-weight: 800; }
+  .top p { margin: 0; color: var(--text-muted); font-size: 16px; }
+  .nw { padding: 16px; margin-bottom: 12px; }
+  .nw .row1 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .nw .from { font: 600 14px var(--font-body); color: var(--text-muted); }
+  .nw .big { font: 800 36px/1 var(--font-num); font-variant-numeric: tabular-nums; }
+  .card { padding: 16px; margin-bottom: 12px; }
+  .card h2 { font-size: 18px; line-height: 1.2; margin-bottom: 10px; }
+  .st { display: grid; grid-template-columns: 28px 36px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+  .st:first-of-type { border-top: 0; }
+  .st .rk { font: 800 18px var(--font-num); color: var(--text-muted); text-align: center; }
+  .st .av { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #fff; font: 800 15px var(--font-display); }
+  .st .v { font: 700 17px var(--font-num); font-variant-numeric: tabular-nums; text-align: right; }
+  .st.me { background: var(--risk-soft); margin: 0 -16px; padding: 8px 16px; }
+  .report { background: var(--surface); border: 2px solid var(--ink-900); border-radius: var(--r-lg); box-shadow: 0 5px 0 var(--ink-900); padding: 16px; margin-bottom: 12px; }
+  .report .badge { display: flex; gap: 12px; align-items: center; }
+  .report h2 { font-size: 22px; line-height: 1.1; }
+  .grades { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 14px; }
+  .g { text-align: center; padding: 8px 2px; border-radius: 12px; background: var(--bg-sunken); }
+  .g b { display: block; font: 800 24px/1 var(--font-display); }
+  .g span { font: 600 12px/1.2 var(--font-body); color: var(--text-muted); }
+  .gA b { color: var(--save-strong); } .gB b { color: var(--invest-strong); } .gD b { color: var(--spend-strong); }
+  .bars .lbl { display: flex; justify-content: space-between; font: 600 14px var(--font-body); margin: 10px 0 4px; }
+  .bars .lbl b { font: 700 16px var(--font-num); }
+  .bars .b { height: 12px; border-radius: 6px; background: var(--bg-sunken); overflow: hidden; }
+  .bars .b i { display: block; height: 100%; border-radius: 6px; }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sticky { position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-sticky); background: var(--bg); border-top: 1px solid var(--line); padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom)); display: flex; gap: 10px; }
+  .sticky .btn { flex: 1; margin-bottom: 4px; }
+  .sticky .btn--primary { flex: 1.5; }
+</style>
+</head>
+<body>
+<main>
+  <section class="top">
+    <div data-gullu="cheer" data-size="88"></div>
+    <div class="cap">Game over · 20 years played</div>
+    <h1>Your money grew <span class="num">2.9×</span></h1>
+    <p>You finished <b>3rd of 3</b>. Rahul reached ₹50 lakh first.</p>
+  </section>
+
+  <section class="panel nw" aria-label="Net worth">
+    <div class="row1"><span class="from">Start ₹5,00,000</span><span class="delta-up" style="font-size:15px">▲ +186%</span></div>
+    <div class="big">₹14,30,000</div>
+    <svg viewBox="0 0 300 54" width="100%" height="54" aria-hidden="true" style="margin-top:8px"><polyline points="0,48 30,46 60,44 90,45 120,38 150,36 180,30 210,26 240,18 270,14 300,8" fill="none" stroke="var(--save)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="48" x2="300" y2="48" stroke="var(--line)" stroke-dasharray="4 4"/></svg>
+  </section>
+
+  <section class="panel card" aria-label="Final standings">
+    <h2>Final standings</h2>
+    <div class="st"><span class="rk">1</span><span class="av" style="background:#7C4DCC">R</span><span>Rahul</span><span class="v">₹52,10,000</span></div>
+    <div class="st"><span class="rk">2</span><span class="av" style="background:#C2431A">P</span><span>Priya</span><span class="v">₹21,40,000</span></div>
+    <div class="st me"><span class="rk">3</span><span class="av" style="background:#B8860B">T</span><span><b>You</b></span><span class="v">₹14,30,000</span></div>
+  </section>
+
+  <section class="report" aria-label="Money report card">
+    <div class="badge"><div data-gullu="think" data-size="64"></div><div><div class="cap" style="font:600 12px var(--font-body);color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">Your money style</div><h2>Inflation's Favourite Customer</h2></div></div>
+    <p style="margin:10px 0 0;font-size:15px;line-height:1.45;color:var(--ink-700)">You saved a lot, but kept it all in cash. Inflation quietly took <b class="num" style="color:var(--loss-fg)">₹7,10,589</b>. Next game, invest part of every bonus.</p>
+    <div class="grades">
+      <div class="g gA"><b>A</b><span>Saving</span></div>
+      <div class="g gD"><b>D</b><span>Investing</span></div>
+      <div class="g gB"><b>B</b><span>Risk</span></div>
+      <div class="g gA"><b>A</b><span>Emergency</span></div>
+      <div class="g gD"><b>D</b><span>Protection</span></div>
+    </div>
+    <a class="btn btn--outline btn--s" href="#" style="margin-top:14px;width:100%">See why for each grade <span data-icon="chevron-right" data-size="18"></span></a>
+  </section>
+
+  <section class="panel card bars" aria-label="Real life projection">
+    <h2>If you did this for real for 10 years</h2>
+    <p style="margin:0;color:var(--text-muted);font-size:14px">₹5,000 a month, ₹6 lakh put in</p>
+    <div class="lbl"><span>Your mix (cash)</span><b>₹7.0 L</b></div><div class="b"><i style="width:60%;background:var(--spend)"></i></div>
+    <div class="lbl"><span>FD / savings</span><b>₹8.7 L</b></div><div class="b"><i style="width:75%;background:var(--defence)"></i></div>
+    <div class="lbl"><span>Index fund SIP</span><b>₹11.6 L</b></div><div class="b"><i style="width:100%;background:var(--save)"></i></div>
+    <p style="margin:10px 0 0;color:var(--text-subtle);font-size:13px">Long-run averages. Real returns change every year and are never guaranteed.</p>
+  </section>
+
+  <section class="panel card" aria-label="Unlocked">
+    <h2>New in your Gyaan Library</h2>
+    <div class="pills"><span class="chip chip--save"><span data-icon="book-open" data-size="14"></span> Inflation</span><span class="chip chip--save"><span data-icon="book-open" data-size="14"></span> Emergency fund</span><span class="chip chip--save"><span data-icon="book-open" data-size="14"></span> SIP</span></div>
+  </section>
+</main>
+<div class="sticky">
+  <a class="btn btn--outline" href="#"><span data-icon="house" data-size="20"></span> Home</a>
+  <a class="btn btn--primary" href="#"><span data-icon="play" data-size="20"></span> Play again</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BHAO board — landscape</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="mock.css">
+<script src="icons.js"></script><script src="gullu.js"></script><script src="mock.js"></script>
+<style>
+  body { overflow: hidden; }
+  .L { height: 100vh; display: grid; grid-template-columns: 196px 1fr; grid-template-rows: 52px 1fr; }
+  .L .topbar { grid-column: 1 / -1; padding: 4px max(8px, env(safe-area-inset-left)); }
+  .L .rivals { padding: 0; flex: 1.6; }
+  .L .rival { padding: 4px 8px; }
+  .L .rival .av { width: 30px; height: 30px; }
+  .side { padding: 0 0 8px max(8px, env(safe-area-inset-left)); display: flex; flex-direction: column; gap: 8px; }
+  .side .hud { margin: 0; grid-template-columns: 1fr; padding: 10px; }
+  .side .big { font-size: 24px; }
+  .side .hudchips { flex-direction: column; }
+  .side .hudchip { flex-direction: row; justify-content: space-between; align-items: center; padding: 6px 8px; }
+  .main { display: flex; flex-direction: column; min-width: 0; }
+  .mid { flex: 1; display: flex; align-items: center; justify-content: center; gap: 16px; min-height: 0; }
+  .mid .turnmsg { max-width: 220px; }
+  .L .hand { padding: 6px 8px 8px; }
+  .lp { position: relative; }
+  .lp .count, .deck .count { position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); background: var(--cream-100); color: var(--ink-900); font: 600 12px/1 var(--font-body); padding: 4px 8px; border-radius: 999px; white-space: nowrap; }
+  .has-panel .L { grid-template-columns: 1fr; } .has-panel .side, .has-panel .mid .turnmsg { display: none; }
+  .sidepanel { position: absolute; top: 0; right: 0; bottom: 0; width: 392px; z-index: var(--z-sheet); background: var(--cream-100); border-radius: var(--r-xl) 0 0 var(--r-xl); padding: 12px 16px 12px; overflow: auto; box-shadow: -8px 0 24px rgba(0,0,0,.25); }
+  .sidepanel .choice { padding-top: 8px; padding-bottom: 8px; margin-bottom: 8px; }
+  .sidepanel .why { font-size: 13.5px; }
+</style>
+</head>
+<body class="surface-table">
+<div class="L" id="b"></div>
+<script>
+if (new URLSearchParams(location.search).get('state') === 'sheet') document.documentElement.classList.add('has-panel');
+const q = new URLSearchParams(location.search); const st = q.get('state') || 'play';
+const cards = [
+  { name: "Child's Health", type: 'event', cat: 'medical', value: '−₹35K', tier: 'common' },
+  { name: 'Diwali Bonus', type: 'opportunity', value: 'choose', tier: 'rare', sel: st === 'sheet' },
+  { name: 'Market Crash', type: 'attack', cat: 'market', value: '−20%', tier: 'epic' },
+  { name: 'Health Insurance', type: 'defence', value: 'Block', tier: 'rare' },
+  { name: 'Kuber', type: 'opportunity', value: 'choose', tier: 'legendary' },
+];
+document.getElementById('b').innerHTML = `
+<div class="topbar">
+  <button class="iconbtn" aria-label="Pause menu">${icon('menu', 22)}</button>
+  <div class="yearbox" style="flex:0 0 150px"><div class="lbl">Year 3 of 20</div><div class="yearbar"><i style="width:15%"></i></div></div>
+  <div class="rivals">
+    <div class="rival is-turn"><div class="av" style="background:#7C4DCC">R<em>#1</em></div><div class="meta"><span class="nm">Rahul</span><span class="nw">₹14.1 L <span class="delta-up">▲8%</span></span></div></div>
+    <div class="rival"><div class="av" style="background:#C2431A">P<em>#3</em></div><div class="meta"><span class="nm">Priya</span><span class="nw">₹9.8 L <span class="delta-down">▼3%</span></span></div></div>
+    <div class="rival"><div class="av" style="background:#2E7D6B">A<em>#4</em></div><div class="meta"><span class="nm">Aman</span><span class="nw">₹7.2 L <span class="delta-up">▲1%</span></span></div></div>
+  </div>
+  <button class="iconbtn" aria-label="Game log">${icon('scroll-text', 22)}</button>
+  ${ring(42)}
+</div>
+<aside class="side">
+  <div class="hud">
+    <div><div class="cap">Net worth</div><div class="big">₹12,40,500</div></div>
+    <div class="rank" style="text-align:left">You are #2 <span class="delta-up">▲ ₹48,200</span></div>
+    <div class="goal"><div class="bar"><i style="width:25%"></i></div>₹50 L</div>
+    <div class="hudchips">
+      <div class="hudchip"><span>Cash</span><b>₹4.2 L</b></div>
+      <div class="hudchip"><span>Invested</span><b>₹8.2 L</b></div>
+      <div class="hudchip"><span>Lifestyle</span><b style="display:flex;gap:3px">${[1,1,0,0,0].map(f=>`<i style="width:10px;height:8px;border-radius:2px;background:${f?'var(--spend-on-dark)':'rgba(255,255,255,.16)'}"></i>`).join('')}</b></div>
+    </div>
+  </div>
+</aside>
+<main class="main" style="${st === 'sheet' ? 'padding-right:392px' : ''}">
+  <div class="mid">
+    <div class="deck" style="width:74px;height:106px"><div class="cardback" style="transform:translate(4px,4px) rotate(3deg)"></div><div class="cardback"><span style="font-size:16px">BHAO</span></div><span class="count">38</span></div>
+    <div class="lp">${fcard({ name: 'Gold Rush', type: 'opportunity', value: '+₹40K', w: 74, h: 106 })}<span class="count">Rahul played</span></div>
+    <div class="turnmsg"><span class="eventchip">${icon('trending-up',14)} Inflation 6%</span><h2>Your turn</h2><p>Tap a card to play, equip or pass</p></div>
+  </div>
+  <div class="hand">${cards.map(c => hcard({ ...c, w: 70, h: 104 })).join('')}</div>
+</main>
+${st === 'sheet' ? `<section class="sidepanel paper" role="dialog" aria-label="Diwali Bonus">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+    <div><div style="display:flex;gap:6px;margin-bottom:4px"><span class="chip" style="background:#FFF1CC;color:#6B4F00;border-color:transparent">Decision</span><span class="chip">Rare</span></div>
+    <h2 style="font-size:22px;line-height:1.1">Diwali Bonus</h2></div>
+    <button class="btn btn--outline btn--icon btn--s" aria-label="Close" style="margin:0">${icon('x', 20)}</button>
+  </div>
+  <p style="margin:4px 0 8px;font-size:14px;color:var(--ink-700)">₹50,000 festival bonus. What will you do with it?</p>
+  <button class="choice choice--spend"><span class="stripe"></span><span class="top"><span class="chip chip--solid-spend">Spend</span><span class="title">New phone</span></span><span class="amt">+₹10K</span><span class="why">Lifestyle +1: inflation bites harder.</span></button>
+  <button class="choice choice--save"><span class="stripe"></span><span class="top"><span class="chip chip--solid-save">Save</span><span class="title">Emergency fund</span></span><span class="amt">+₹50K</span><span class="why">Safe cash. Streak bonus next turn.</span></button>
+  <button class="choice choice--invest"><span class="stripe"></span><span class="top"><span class="chip chip--solid-invest">Invest</span><span class="title">Index fund SIP</span></span><span class="amt">~12%/yr</span><span class="why">Medium risk · can fall in a crash year.</span></button>
+  <button class="btn btn--ghost" style="width:100%;color:var(--ink-700);font:600 14px var(--font-body)">Pass: discard this card</button>
+</section>` : ''}
+`;
+</script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BHAO style guide</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="mock.css">
+<script src="icons.js"></script><script src="gullu.js"></script><script src="mock.js"></script>
+<style>
+  body { padding: 32px 40px 64px; }
+  h1.pg { font-size: 44px; line-height: 1; display: flex; align-items: center; gap: 14px; }
+  .sub { color: var(--text-muted); margin: 6px 0 28px; }
+  section { margin-bottom: 36px; }
+  section > h2 { font-size: 24px; margin-bottom: 4px; }
+  section > p { margin: 0 0 14px; color: var(--text-muted); font-size: 15px; }
+  .sw { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; }
+  .s { border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: #fff; }
+  .s i { display: block; height: 58px; }
+  .s div { padding: 6px 8px; font: 600 12px/1.3 var(--font-body); }
+  .s div span { display: block; color: var(--text-muted); font-weight: 400; font-variant-numeric: tabular-nums; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .tbox { padding: 20px; }
+  .tr { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: baseline; padding: 6px 0; border-top: 1px solid var(--line); }
+  .tr:first-of-type { border-top: 0; }
+  .tr small { color: var(--text-muted); font: 600 12px/1.3 var(--font-body); }
+  .row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+  .tablebox { border-radius: 24px; padding: 24px; }
+  .input { display: flex; flex-direction: column; gap: 6px; width: 280px; }
+  .input label { font: 600 14px var(--font-body); }
+  .input .f { min-height: 48px; border-radius: var(--r-sm); border: 2px solid var(--line-strong); background: #fff; padding: 0 14px; display: flex; align-items: center; font-size: 16px; color: var(--text-subtle); }
+  .input .f.err { border-color: var(--attack-strong); }
+  .input .hint { font-size: 13px; color: var(--text-muted); } .input .hint.err { color: var(--attack-strong); font-weight: 600; }
+  .seg { display: inline-flex; padding: 4px; gap: 4px; background: var(--bg-sunken); border-radius: 999px; border: 1px solid var(--line); }
+  .seg button { min-height: 40px; min-width: 64px; padding: 0 16px; border-radius: 999px; border: 0; background: transparent; font: 600 15px var(--font-body); color: var(--text-muted); }
+  .seg button[aria-pressed=true] { background: var(--brand); color: #fff; }
+  .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--line); }
+  .tabs button { min-height: 44px; padding: 0 16px; border: 0; background: none; font: 700 16px var(--font-display); color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; }
+  .tabs button.on { color: var(--brand); border-color: var(--brand); }
+  .moods { display: flex; gap: 18px; } .moods div { text-align: center; font: 600 13px var(--font-body); color: var(--text-muted); }
+  .spinner { width: 20px; height: 20px; border-radius: 50%; border: 3px solid rgba(42,27,0,.25); border-top-color: var(--haldi-ink); display: inline-block; }
+  .empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 24px; width: 340px; }
+  .skel { background: linear-gradient(90deg, var(--cream-200), var(--cream-300), var(--cream-200)); border-radius: 10px; }
+</style>
+</head>
+<body>
+<h1 class="pg"><span class="wordmark" style="font-size:44px"><b style="width:44px;height:44px;font-size:28px;line-height:44px;border-radius:12px">₹</b>BHAO</span> style guide</h1>
+<p class="sub">"Chai &amp; Chips": warm paper menus, a deep teal money table, haldi-yellow actions. Baloo 2 + Mukta. Tokens: docs/ux/mockups/tokens.css</p>
+
+<section><h2>Colour</h2><p>Paper surfaces and the table. Semantic money colours mean the same thing everywhere.</p>
+<div class="sw" id="sw"></div></section>
+
+<section class="two">
+  <div class="panel tbox"><h2 style="font-size:20px;margin-bottom:8px">Type · English / Hinglish</h2>
+    <div class="tr"><small>Display XL 40/64 · Baloo 800</small><span style="font:800 40px/1.05 var(--font-display)">Paisa banao.</span></div>
+    <div class="tr"><small>Display L 30/40</small><span style="font:800 30px/1.1 var(--font-display)">Your money life</span></div>
+    <div class="tr"><small>Title 22/26 · Baloo 700</small><span style="font:700 22px/1.15 var(--font-display)">Diwali Bonus</span></div>
+    <div class="tr"><small>Subtitle 18/20</small><span style="font:700 18px/1.2 var(--font-display)">Quick play</span></div>
+    <div class="tr"><small>Body 16 · Mukta 400</small><span>An emergency fund means a hospital bill won't force you to sell investments.</span></div>
+    <div class="tr"><small>UI 14 · Mukta 600</small><span style="font:600 14px var(--font-body)">Tap a card to play, equip or pass</span></div>
+    <div class="tr"><small>Caption 12 · caps</small><span class="caps" style="font:600 12px var(--font-body);color:var(--text-muted)">Net worth</span></div>
+    <div class="tr"><small>Number XL 36/44 tnum</small><span class="num" style="font-size:36px;font-weight:800">₹12,40,500</span></div>
+    <div class="tr"><small>Number M 18 tnum</small><span class="num" style="font-size:18px">₹1,11,111 · ₹98,765 · −₹35K</span></div>
+  </div>
+  <div class="panel tbox" lang="hi" style="--lh-body:1.65"><h2 style="font-size:20px;margin-bottom:8px;line-height:1.3">टाइप · हिंदी (html.lang-hi)</h2>
+    <div class="tr"><small>Display XL · lh 1.25</small><span style="font:800 40px/1.25 var(--font-display)">पैसा बनाओ।</span></div>
+    <div class="tr"><small>Display L · lh 1.3</small><span style="font:800 30px/1.3 var(--font-display)">आपकी पैसों की यात्रा</span></div>
+    <div class="tr"><small>Title · lh 1.3</small><span style="font:700 22px/1.3 var(--font-display)">दिवाली बोनस</span></div>
+    <div class="tr"><small>Body 16 · lh 1.65</small><span style="line-height:1.65">इमरजेंसी फ़ंड हो तो अस्पताल का बिल आने पर निवेश बेचना नहीं पड़ता।</span></div>
+    <div class="tr"><small>UI 15 · lh 1.55</small><span style="font:600 15px/1.55 var(--font-body)">कार्ड पर टैप करें: खेलें, लगाएँ या पास करें</span></div>
+    <div class="tr"><small>Caption 13 · no caps</small><span style="font:600 13px/1.5 var(--font-body);color:var(--text-muted)">नेट वर्थ</span></div>
+    <div class="tr"><small>Number · lh 1.15</small><span class="num" style="font-size:36px;font-weight:800;line-height:1.15">₹12,40,500</span></div>
+  </div>
+</section>
+
+<section><h2>Buttons</h2><p>Chunky 3D press: 4px edge, moves down 4px in 80ms. One primary per screen. Min height 48 (40 for small, still 44px hit area).</p>
+  <div class="row">
+    <button class="btn btn--primary btn--l"><span data-icon="play" data-size="20"></span> Play free</button>
+    <button class="btn btn--primary">Primary</button>
+    <button class="btn btn--primary is-pressed">Pressed</button>
+    <button class="btn btn--primary"><span class="spinner"></span> Loading</button>
+    <button class="btn btn--primary" disabled>Disabled</button>
+    <button class="btn btn--secondary">Secondary</button>
+    <button class="btn btn--outline">Outline</button>
+    <button class="btn btn--ghost">Ghost link</button>
+    <button class="btn btn--danger">Quit game</button>
+    <button class="btn btn--outline btn--icon" aria-label="Close"><span data-icon="x" data-size="22"></span></button>
+    <button class="btn btn--primary btn--s">Small</button>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <button class="btn btn--spend"><span data-icon="wallet" data-size="18"></span> Spend</button>
+    <button class="btn btn--save"><span data-icon="piggy-bank" data-size="18"></span> Save</button>
+    <button class="btn btn--invest"><span data-icon="chart-line" data-size="18"></span> Invest</button>
+  </div>
+  <div class="tablebox surface-table row" style="margin-top:14px">
+    <button class="btn btn--primary btn--l"><span data-icon="layers" data-size="20"></span> Draw a card</button>
+    <button class="btn btn--outline">Outline on table</button>
+    <button class="iconbtn" aria-label="Menu"><span data-icon="menu" data-size="22"></span></button>
+    <span id="ringdemo"></span>
+    <span class="chip" style="background:rgba(245,158,11,.16);color:var(--risk-on-dark);border:0"><span data-icon="timer" data-size="14"></span> 1:58 left</span>
+  </div>
+</section>
+
+<section class="two">
+  <div><h2>Chips, inputs, tabs</h2><p>Chips are 28px tall labels; anything tappable is ≥44px.</p>
+    <div class="row" style="margin-bottom:12px"><span class="chip chip--spend">Spend</span><span class="chip chip--save">Save</span><span class="chip chip--invest">Invest</span><span class="chip chip--defence">Shield</span><span class="chip chip--attack">Attack</span><span class="chip chip--risk">Medium risk</span><span class="chip">Locks ₹50K</span></div>
+    <div class="row" style="margin-bottom:16px">
+      <div class="input"><label>Room code</label><div class="f" style="color:var(--ink-900);font:700 20px var(--font-num);letter-spacing:.12em">K7Q2M</div><span class="hint">Ask your friend for the 5-letter code</span></div>
+      <div class="input"><label>Your name</label><div class="f err">Te</div><span class="hint err">Use at least 3 letters</span></div>
+    </div>
+    <div class="row" style="gap:20px;align-items:center"><div class="seg" role="group" aria-label="Language"><button aria-pressed="true">EN</button><button aria-pressed="false" lang="hi">हिंदी</button><button aria-pressed="false">Hinglish</button></div>
+    <div class="tabs"><button class="on">Home</button><button>Leaderboard</button><button>Contracts</button></div></div>
+    <div style="margin-top:16px;display:flex;gap:14px;align-items:center"><div class="progress" style="width:260px"><i style="width:25%"></i></div><span style="font:600 14px var(--font-body);color:var(--text-muted)">₹12.4 L of ₹50 L</span></div>
+    <div style="margin-top:16px;display:flex;gap:10px;align-items:center"><span class="avatar">T</span><span class="avatar" style="background:#7C4DCC;color:#fff;box-shadow:0 0 0 2px #7C4DCC">R</span><span class="toast"><span data-icon="check" data-size="18"></span> Shield equipped: Health insurance</span></div>
+  </div>
+  <div><h2>Gullu, the gullak</h2><p>Mascot for coach marks, outcomes, empty states. 5 moods.</p>
+    <div class="moods"><div><span data-gullu="happy" data-size="84"></span><br>happy</div><div><span data-gullu="cheer" data-size="84"></span><br>cheer</div><div><span data-gullu="think" data-size="84"></span><br>think</div><div><span data-gullu="worried" data-size="84"></span><br>worried</div><div><span data-gullu="wow" data-size="84"></span><br>wow</div></div>
+    <div class="row" style="margin-top:16px;align-items:stretch">
+      <div class="panel empty"><span data-gullu="think" data-size="72"></span><b style="font:700 18px var(--font-display)">No money ideas yet</b><span style="color:var(--text-muted);font-size:15px">Play your first game to unlock them.</span><button class="btn btn--primary btn--s">Play now</button></div>
+      <div class="panel" style="padding:16px;width:220px;display:flex;flex-direction:column;gap:10px"><div class="skel" style="height:18px;width:60%"></div><div class="skel" style="height:64px"></div><div class="skel" style="height:64px"></div><span style="font:600 12px var(--font-body);color:var(--text-muted)">Skeleton loading</span></div>
+    </div>
+  </div>
+</section>
+
+<section><h2>Game cards</h2><p>Cards are cream paper objects on the table. Type = band colour + icon + label; tier = corner gem. Hand (compact) 70×104 · full 128×184 · sheet header 84×120. Never baked text in images.</p>
+  <div class="tablebox surface-table" style="display:flex;gap:28px;align-items:flex-end;flex-wrap:wrap">
+    <div class="row" id="full"></div>
+    <div class="row" id="hand" style="gap:6px"></div>
+    <div class="deck" style="width:92px;height:132px"><div class="cardback" style="transform:translate(5px,5px) rotate(3deg)"></div><div class="cardback"><span>BHAO</span></div></div>
+  </div>
+</section>
+<script>
+const SW = [
+  ['Paper', '--cream-100', '#FFF8EC'], ['Paper 2', '--cream-200', '#FCEFD9'], ['Line', '--sand-400', '#EADFCB'], ['Ink', '--ink-900', '#1E1A14'], ['Ink muted', '--ink-700', '#5E5548'], ['Table', '--teal-800', '#0E4D3F'], ['Table panel', '--teal-900', '#0A3329'], ['Haldi CTA', '--haldi-400', '#FFC530'],
+  ['Spend', '--spend', '#E2572B · strong #B83F18'], ['Save', '--save', '#1E9E5A · strong #157A45'], ['Invest', '--invest', '#3D5AFE · strong #2E47D1'], ['Shield', '--defence', '#11A3A3 · strong #0A6E6E'], ['Attack', '--attack', '#D93636 · strong #B42318'], ['Risk', '--risk', '#F59E0B · text #8A5A00'], ['Life event', '--event', '#46607A'], ['Decision', '--opportunity', '#F2A900'],
+];
+document.getElementById('sw').innerHTML = SW.map(([n, v, h]) => `<div class="s"><i style="background:var(${v})"></i><div>${n}<span>${h}</span></div></div>`).join('') +
+  ['common', 'rare', 'epic', 'legendary'].map(t => `<div class="s"><i class="gem-${t}"></i><div>Tier ${t}<span>gem only</span></div></div>`).join('');
+document.getElementById('ringdemo').innerHTML = ring(12, 60, 'var(--attack-on-dark)');
+document.getElementById('full').innerHTML = [
+  { name: 'Diwali Bonus', type: 'opportunity', value: 'choose', tier: 'rare', flavor: '₹50,000 festival bonus. Spend, save or invest?' },
+  { name: 'Tax Raid', type: 'attack', cat: 'tax', value: '−₹30K', tier: 'common', flavor: 'Hit one rival who skipped paperwork.' },
+  { name: 'Health Insurance', type: 'defence', value: 'Block', tier: 'rare', flavor: 'Blocks medical events. Equip for free.' },
+  { name: 'Roof Leak', type: 'event', cat: 'property', value: '−₹45K', tier: 'common', flavor: 'Monsoon damage. Everyone pays.' },
+  { name: 'Kuber', type: 'opportunity', value: 'choose', tier: 'legendary', flavor: 'You set the rules of the game.' },
+].map(fcard).join('');
+document.getElementById('hand').innerHTML = [
+  { name: 'Market Crash', type: 'attack', cat: 'market', value: '−20%', tier: 'epic' },
+  { name: 'Health Insurance', type: 'defence', value: 'Block', tier: 'rare', locked: true },
+  { name: 'Diwali Bonus', type: 'opportunity', value: 'choose', tier: 'rare', sel: true },
+].map(c => hcard({ ...c, w: 70, h: 104 })).join('');
+</script>
+</body>
+</html>
