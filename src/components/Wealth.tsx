@@ -1,14 +1,8 @@
-import React from 'react';
-import { formatWealth } from '../types/game';
+import { formatMoney } from '../lib/format'
+import { useLang } from '../i18n/lang'
 
-export function Wealth({ amount, style, showPlus = false }: { amount: number, style?: React.CSSProperties, showPlus?: boolean }) {
-  const formatted = formatWealth(Math.abs(amount));
-  const sign = amount >= 0 && showPlus ? '+' : amount < 0 ? '-' : '';
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.1em', ...style }}>
-      {sign}
-      <img src="/avatars/coins.png" alt="coin" style={{ width: '1.2em', height: '1.2em', objectFit: 'contain' }} />
-      {formatted}
-    </span>
-  );
+/** A ₹ amount in the number font (spec §B.5): compact Indian format, real minus sign, never a coin image. */
+export function Wealth({ amount, showPlus = false, compact = true, className = '' }: { amount: number; showPlus?: boolean; compact?: boolean; className?: string }) {
+  const lang = useLang()
+  return <span className={`num ${className}`.trim()}>{formatMoney(amount, { compact, signed: showPlus, lang })}</span>
 }
