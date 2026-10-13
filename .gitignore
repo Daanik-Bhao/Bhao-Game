@@ -41,3 +41,4 @@ supabase/.temp
 keystore.properties
 *.jks
 *.keystore
+docs/ux/current/
