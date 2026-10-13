@@ -1,25 +1,28 @@
 import type { AssetClass, DecisionOption, GameCard, GameState, Holding, PlayerState } from '../../types/game'
-import { formatWealth } from '../../types/game'
 import { ASSETS, MAX_LIFESTYLE_LEVEL } from '../../data/assets'
 import type { AssetInfo } from '../../data/assets'
 import { ALL_CARDS } from '../../data/cards'
 import { BUILTIN_LIFE_EVENTS } from '../../data/lifeEvents'
 import i18n from '../../i18n/i18n'
 import { pickLang } from '../../i18n/lang'
+import { formatMoney } from '../../lib/format'
 import {
   canEquip, getCash, getHoldings, getNetWorth, getRoundLimit, inflationPct, previewDecision, MAX_ACTIVE_DEFENSES, SAVE_STREAK_CAP,
 } from '../../lib/gameEngine'
 
-/** "₹1.2L" (no sign). */
+/** "₹1.2 L" (no sign, compact, short units — fits chips and tiles in every language). */
 export function rupees(amount: number): string {
-  return `₹${formatWealth(Math.abs(Math.round(amount)))}`
+  return formatMoney(Math.abs(Math.round(amount)), { compact: true, abbr: true, lang: i18n.language })
+}
+
+/** "₹12,40,500" (no sign, full Indian grouping). */
+export function rupeesFull(amount: number): string {
+  return formatMoney(Math.abs(Math.round(amount)), { lang: i18n.language })
 }
 
 /** "+₹1.2L" / "−₹40K" / "₹0". Uses a real minus sign. */
 export function signedRupees(amount: number): string {
-  const r = Math.round(amount)
-  if (r === 0) return '₹0'
-  return `${r > 0 ? '+' : '−'}${rupees(r)}`
+  return formatMoney(Math.round(amount), { compact: true, abbr: true, signed: true, lang: i18n.language })
 }
 
 /** "+12%" / "−8.5%" */
@@ -29,12 +32,9 @@ export function signedPct(pct: number): string {
   return `${rounded > 0 ? '+' : '−'}${Math.abs(rounded)}%`
 }
 
-export const RISK_META: Record<AssetInfo['risk'], { color: string; bg: string }> = {
-  none: { color: '#a7f3d0', bg: 'rgba(16,185,129,0.22)' },
-  low: { color: '#bbf7d0', bg: 'rgba(34,197,94,0.22)' },
-  medium: { color: '#fde68a', bg: 'rgba(234,179,8,0.24)' },
-  high: { color: '#fed7aa', bg: 'rgba(249,115,22,0.26)' },
-  extreme: { color: '#fecaca', bg: 'rgba(239,68,68,0.3)' },
+/** Chip tone for an asset risk level (tokens only). */
+export const RISK_TONE: Record<AssetInfo['risk'], 'save' | 'risk' | 'attack'> = {
+  none: 'save', low: 'save', medium: 'risk', high: 'risk', extreme: 'attack',
 }
 
 const t = (key: string, opts?: Record<string, unknown>): string => i18n.t(key, opts)

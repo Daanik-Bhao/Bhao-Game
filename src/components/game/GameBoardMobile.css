@@ -1,333 +1,56 @@
-/* GameBoardMobile.css — compact board for phones / small tablets (portrait & landscape).
-   Fills the box GameBoard gives it; nothing here may overflow that box. */
+/* Compact board: phone portrait (E.12), phone landscape (E.23), tablet portrait (E.25). */
 
-.mb-board {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: grid;
-  gap: 8px;
-  padding: 8px 12px;
-  box-sizing: border-box;
-  overflow: hidden;
-  color: #f8fafc;
-  background: rgba(6, 30, 20, 0.55);
+.mb-board { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ---------- Portrait ---------- */
+.mb-table { position: relative; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.mb-portrait .table-centre { padding-top: var(--sp-6); }
+.mb-table.has-dock .turnmsg { padding-right: 56px; }
+
+/* Short phones (360×740): smaller table cards, one feed line */
+@media (max-height: 760px) {
+  .mb-portrait .table-centre { padding-top: var(--sp-4); }
+  .mb-portrait .deck { --deck-w: 80px; --deck-h: 116px; }
+  .mb-portrait .lastplay .gcard--mini { --card-w: 80px; --card-h: 116px; }
+  .mb-portrait .lastplay.is-empty { width: 80px; height: 116px; }
+  .mb-portrait .turnmsg { padding-top: 18px; gap: var(--sp-2); }
+  .mb-portrait .board-feed { margin-top: var(--sp-2); }
 }
-
-/* Portrait: players / status / main / footer stacked */
-.mb-board.mb-portrait {
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
-  grid-template-areas: 'players' 'status' 'wallet' 'main' 'footer';
+@media (max-height: 700px) {
+  .mb-portrait .board-feed__item:nth-child(2) { display: none; }
 }
-
-/* Landscape: players in a left rail, everything else on the right */
-.mb-board.mb-landscape {
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  grid-template-areas:
-    'players status'
-    'players main'
-    'players footer';
-  padding: 6px 12px;
-  gap: 6px 12px;
+@media (max-height: 640px) {
+  .mb-portrait .board-feed { display: none; }
 }
 
-/* ---------- Players ---------- */
-.mb-players {
-  grid-area: players;
-  display: flex;
-  gap: 8px;
-  min-width: 0;
-  min-height: 0;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-.mb-players::-webkit-scrollbar { display: none; }
-.mb-portrait .mb-players {
-  flex-direction: row;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 10px 2px 2px;
-}
-.mb-landscape .mb-players {
-  flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 10px 6px 2px 2px;
-  align-items: center;
-}
+/* Tablet portrait (≥ 600 wide): bigger hand, centred column */
+.mb-tablet .table-centre__cards { gap: var(--sp-7); }
+.mb-tablet .hud-wrap, .mb-tablet .rivals { width: 100%; max-width: 720px; margin: 0 auto; }
 
-/* ---------- Status bar ---------- */
-.mb-statusbar {
-  grid-area: status;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-.mb-ticker {
-  flex: 1;
-  min-width: 0;
-  min-height: 44px;
-  text-align: left;
-  background: rgba(11, 16, 32, 0.7);
-  border: 1px solid rgba(255, 215, 0, 0.25);
-  border-radius: 12px;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 4px 10px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-  font-family: inherit;
-}
+/* ---------- Landscape ---------- */
+.mb-landscape .topbar { padding-left: max(var(--sp-3), env(safe-area-inset-left)); gap: var(--sp-3); }
+.mb-landscape .yearbox { flex: 0 1 150px; }
+.mb-landscape .rivals { flex: 1.6 1 0; padding: 0; }
+.mbl-body { flex: 1 1 auto; min-height: 0; display: flex; gap: var(--sp-3); padding: 0 var(--sp-3) 0 max(var(--sp-3), env(safe-area-inset-left)); }
+.mbl-side { flex: none; width: 196px; padding-bottom: var(--sp-3); overflow-y: auto; scrollbar-width: none; }
+.mbl-main { position: relative; flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.table-centre--landscape { flex-direction: row; align-items: center; justify-content: center; gap: var(--sp-5); padding: var(--sp-2) 0 0; }
+.table-centre--landscape .deck { --deck-w: 74px; --deck-h: 106px; }
+.table-centre--landscape .deck__back span { font-size: 16px; }
+.table-centre--landscape .lastplay .gcard--mini { --card-w: 74px; --card-h: 106px; }
+.table-centre--landscape .lastplay .gcard--mini .gcard__name { font-size: 13px; }
+.table-centre--landscape .lastplay .gcard--mini .gcard__value { font-size: 16px; }
+.table-centre--landscape .lastplay.is-empty { width: 74px; height: 106px; }
+.table-centre--landscape .table-centre__cards { gap: var(--sp-4); }
+.table-centre--landscape .turnmsg { flex: 0 1 240px; align-items: flex-start; text-align: left; padding-top: 0; gap: var(--sp-2); }
+.table-centre--landscape .turnmsg__title { justify-content: flex-start; }
+.table-centre--landscape .table-centre__pill { top: var(--sp-2); left: 0; }
+.mb-landscape .hand { padding: 6px var(--sp-3) calc(var(--sp-3) + env(safe-area-inset-bottom)); }
+.mb-landscape .year-banner { top: 20%; }
 
-/* ---------- Main ---------- */
-.mb-main {
-  grid-area: main;
-  min-height: 0;
-  min-width: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  -webkit-overflow-scrolling: touch;
-}
-
-.mb-panel {
-  background: rgba(11, 40, 40, 0.8);
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  border-radius: 16px;
-  padding: 16px;
-}
-.mb-center {
-  margin: auto 0;
-  text-align: center;
-}
-.mb-big-emoji { font-size: 40px; margin-bottom: 8px; }
-.mb-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-.mb-sub { font-size: 14px; color: #94a3b8; }
-.mb-muted { color: #94a3b8; }
-
-.mb-section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #b4ffbe;
-}
-.mb-drawn-chip {
-  text-transform: none;
-  letter-spacing: 0;
-  font-weight: 700;
-  background: rgba(250, 204, 21, 0.18);
-  color: #fde68a;
-  border-radius: 999px;
-  padding: 2px 10px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 60%;
-}
-
-/* ---------- Hand ---------- */
-.mb-hand {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 12px 4px 14px;
-  scroll-snap-type: x proximity;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  flex-shrink: 0;
-}
-.mb-hand::-webkit-scrollbar { display: none; }
-
-.mb-card {
-  position: relative;
-  flex: 0 0 auto;
-  scroll-snap-align: center;
-  border-radius: 16px;
-  transition: transform 0.15s ease;
-}
-.mb-card > button {
-  width: var(--mb-card-w, 120px) !important;
-  height: var(--mb-card-h, 170px) !important;
-}
-.mb-card.is-selected { transform: translateY(-6px); }
-.mb-hand.preview .mb-card > button {
-  width: calc(var(--mb-card-w, 120px) * 0.8) !important;
-  height: calc(var(--mb-card-h, 170px) * 0.8) !important;
-}
-.mb-glow-word { color: #fde047; font-weight: 800; }
-.mb-drawn-chip.equip { background: rgba(96, 165, 250, 0.2); color: #bfdbfe; }
-
-/* ---------- Wallet row (portrait) ---------- */
-.mb-wallet { grid-area: wallet; min-width: 0; display: flex; }
-.mb-wait { padding: 10px 12px; }
-.mb-wait .mb-title { font-size: 16px; }
-
-.mb-selected-info {
-  font-size: 13px;
-  line-height: 1.35;
-  color: #e2e8f0;
-  background: rgba(11, 16, 32, 0.55);
-  border-radius: 12px;
-  padding: 8px 10px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.mb-landscape .mb-selected-info { -webkit-line-clamp: 1; padding: 4px 10px; }
-
-/* ---------- Targeting ---------- */
-.mb-target-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
-.mb-target-btn {
-  flex: 1 1 140px;
-  min-height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 14px;
-  border-radius: 12px;
-  border: 2px solid #ef4444;
-  background: rgba(239, 68, 68, 0.18);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-}
-.mb-target-btn:active { background: rgba(239, 68, 68, 0.35); }
-.mb-target-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mb-target-wealth { color: #fca5a5; font-size: 14px; }
-
-/* ---------- Footer / primary action ---------- */
-.mb-footer {
-  grid-area: footer;
-  display: flex;
-  gap: 8px;
-  min-width: 0;
-}
-.mb-primary-btn {
-  flex: 1;
-  min-height: 52px;
-  border-radius: 14px;
-  border: none;
-  font-size: 17px;
-  font-weight: 800;
-  cursor: pointer;
-  font-family: inherit;
-  padding: 0 16px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.mb-landscape .mb-primary-btn { min-height: 46px; font-size: 16px; }
-.mb-primary-btn.gold {
-  background: linear-gradient(180deg, #f4d27b 0%, #dda20c 100%);
-  color: #4b3602;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.4);
-}
-.mb-primary-btn.secondary {
-  background: rgba(255, 255, 255, 0.12);
-  color: #f8fafc;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-}
-.mb-primary-btn:disabled { opacity: 0.55; cursor: not-allowed; }
-.mb-primary-btn:active:not(:disabled) { transform: scale(0.98); }
-
-/* ---------- Overlays (decision + log) ---------- */
-.mb-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding:
-    max(12px, env(safe-area-inset-top))
-    max(12px, env(safe-area-inset-right))
-    max(12px, env(safe-area-inset-bottom))
-    max(12px, env(safe-area-inset-left));
-}
-
-.mb-decision-modal {
-  background: linear-gradient(180deg, #0b2a24, #061a15);
-  border: 1px solid rgba(16, 185, 129, 0.5);
-  color: #f8fafc;
-  border-radius: 20px;
-  width: 100%;
-  max-width: 420px;
-  max-height: 100%;
-  overflow-y: auto;
-  padding: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-}
-.mb-decision-header { text-align: center; margin-bottom: 12px; }
-.mb-decision-header h3 {
-  font-size: 20px;
-  font-weight: 800;
-  margin: 0 0 4px;
-  font-family: var(--font-display);
-}
-.mb-decision-header h3 { color: #34d399; }
-.mb-decision-header p { margin: 0; color: #9ca3af; font-size: 13px; font-weight: 500; }
-.mb-decision-cash { margin-top: 4px; font-size: 12.5px; font-weight: 700; color: #fde68a; }
-
-/* Short landscape screens: options side by side */
-@media (orientation: landscape) and (max-height: 520px) {
-  .mb-decision-modal { max-width: 780px; padding: 10px 12px; }
-  .mb-decision-header { margin-bottom: 6px; }
-  .mb-decision-header h3 { font-size: 17px; margin: 0; }
-  .mb-decision-header p { display: none; }
-  .mb-decision-modal .econ-dopts { flex-direction: row; align-items: stretch; gap: 8px; }
-  .mb-decision-modal .econ-dopt { flex: 1 1 0; min-width: 0; padding: 8px 10px; justify-content: flex-start; }
-  .mb-decision-modal .econ-dopt-top { flex-wrap: wrap; gap: 4px 8px; }
-  .mb-decision-modal .econ-dopt-label { display: none; }
-  .mb-decision-modal .econ-dopt-value { font-size: 17px; }
-}
-
-.mb-log-sheet {
-  position: relative;
-  width: 100%;
-  max-width: 560px;
-  max-height: 100%;
-  overflow-y: auto;
-  border-radius: 20px;
-}
-.mb-log-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 2;
-}
-
-/* Portrait phones: floating dock on the right edge (the status bar is full). */
-.mb-comms-dock {
-  position: fixed;
-  right: max(8px, env(safe-area-inset-right));
-  top: 46%;
-  z-index: 60;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.mb-comms-dock .board-icon-btn { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4); }
+/* Side panel open (card sheet = right panel 392): HUD collapses, hand reflows to the left */
+.mb-landscape.has-panel .mbl-side,
+.mb-landscape.has-panel .table-centre--landscape .turnmsg { display: none; }
+.mb-landscape.has-panel .mbl-main { padding-right: min(392px, 100vw); }
+.mb-landscape.has-panel .mbl-body { padding-left: max(var(--sp-2), env(safe-area-inset-left)); }
+.mb-landscape.has-panel .hand { justify-content: flex-start; }

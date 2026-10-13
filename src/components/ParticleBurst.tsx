@@ -1,51 +1,38 @@
 import { motion } from 'framer-motion'
+import { useReducedEffects } from '../hooks/useReducedEffects'
 
 interface ParticleBurstProps {
-  diff: number;
+  /** Sign decides the colour (gain = save-on-dark, loss = attack-on-dark) */
+  diff: number
+  /** Number of dots (spec §B.7 medium tier: 6) */
+  count?: number
 }
 
-export function ParticleBurst({ diff }: ParticleBurstProps) {
-  const isPositive = diff > 0
-  const color = isPositive ? '#4ade80' : '#f87171' // Green for gain, Red for loss
-  
-  // Generate 16 particles in a circle with slight randomness
-  const particles = Array.from({ length: 16 }).map((_, i) => {
-    const baseAngle = (i / 16) * Math.PI * 2
-    const angle = baseAngle + (Math.random() - 0.5) * 0.2
-    const speed = Math.random() * 50 + 30
-    return {
-      id: i,
-      angle,
-      speed,
-      size: Math.random() * 4 + 4,
-    }
-  })
+const ANGLES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
+/**
+ * Small particle dots that fly out of a point (spec §B.7 feedback tiers). Deterministic
+ * angles (no randomness in render), never rendered with reduced effects.
+ */
+export function ParticleBurst({ diff, count = 6 }: ParticleBurstProps) {
+  const { reduced } = useReducedEffects()
+  if (reduced) return null
+  const tone = diff >= 0 ? 'gain' : 'loss'
   return (
-    <div style={{ position: 'absolute', top: '50%', left: '50%', pointerEvents: 'none', zIndex: 100 }}>
-      {particles.map(p => (
-        <motion.div
-          key={p.id}
-          initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-          animate={{ 
-            x: Math.cos(p.angle) * p.speed, 
-            y: Math.sin(p.angle) * p.speed,
-            opacity: 0,
-            scale: 0
-          }}
-          transition={{ duration: 0.6 + Math.random() * 0.2, ease: 'easeOut' }}
-          style={{
-            position: 'absolute',
-            width: p.size,
-            height: p.size,
-            borderRadius: '50%',
-            background: color,
-            boxShadow: `0 0 10px ${color}`,
-            marginLeft: -p.size / 2, // center
-            marginTop: -p.size / 2, // center
-          }}
-        />
-      ))}
-    </div>
+    <span className={`particles particles--${tone}`} aria-hidden="true">
+      {ANGLES.slice(0, count).map(i => {
+        const angle = (i / count) * Math.PI * 2 - Math.PI / 2
+        const dist = 26 + (i % 2) * 10
+        return (
+          <motion.i
+            key={i}
+            className="particles__dot"
+            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+            animate={{ x: Math.cos(angle) * dist, y: Math.sin(angle) * dist - 12, opacity: 0, scale: 0.4 }}
+            transition={{ duration: 0.7, ease: [0.05, 0.7, 0.1, 1] }}
+          />
+        )
+      })}
+    </span>
   )
 }
