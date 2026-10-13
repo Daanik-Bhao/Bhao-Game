@@ -84,6 +84,8 @@ export function GameBoardDesktop({
   onCancelTargeting,
   activeEmotes,
   onSendEmote,
+  extraControls,
+  voiceBadges,
   onPass,
   onEquip,
   showOpponents,
@@ -302,6 +304,7 @@ export function GameBoardDesktop({
           targeting={uiPhase === 'targeting'}
           onTargetSelect={onTargetSelect}
           activeEmotes={activeEmotes}
+          voiceBadges={voiceBadges}
           highlightPlayerId={highlightPlayerId}
           includeMe={false}
         />
@@ -309,6 +312,7 @@ export function GameBoardDesktop({
 
       {/* BOTTOM RIGHT: Game Log Toggle Button (+ emotes) */}
       <div className="dk-log-btns">
+        {extraControls}
         {onSendEmote && <EmoteButton onSendEmote={onSendEmote} direction="up" />}
         <button
           type="button"

@@ -85,7 +85,7 @@ export function toggleSound() {
   return isSoundEnabled
 }
 
-export function playSound(effect: 'draw' | 'play' | 'attack' | 'defend' | 'win' | 'lose') {
+export function playSound(effect: 'draw' | 'play' | 'attack' | 'defend' | 'win' | 'lose' | 'poke' | 'chat') {
   if (!audioCtx || !isSoundEnabled) return
 
   switch (effect) {
@@ -114,6 +114,13 @@ export function playSound(effect: 'draw' | 'play' | 'attack' | 'defend' | 'win' 
       [300, 250, 200, 150].forEach((f, i) => {
         setTimeout(() => playTone(f, 'sawtooth', 0.4, 0.1), i * 200)
       })
+      break
+    case 'poke':
+      playTone(520, 'square', 0.08, 0.08)
+      setTimeout(() => playTone(780, 'square', 0.12, 0.08), 90)
+      break
+    case 'chat':
+      playTone(880, 'sine', 0.08, 0.04)
       break
   }
 }

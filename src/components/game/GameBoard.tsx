@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import type { GameState, GameCard } from '../../types/game'
 import { GameBoardDesktop } from './GameBoardDesktop'
 import { GameBoardMobile } from './GameBoardMobile'
@@ -25,6 +25,10 @@ export interface GameBoardProps {
   onBuyExtraCard: () => void
   activeEmotes?: Record<string, string>
   onSendEmote?: (emoji: string) => void
+  /** Extra toolbar buttons next to the emote button (multiplayer chat + mic). */
+  extraControls?: ReactNode
+  /** Voice-chat state per player id, shown as a mic badge on the player chips. */
+  voiceBadges?: Record<string, 'on' | 'muted' | 'speaking'>
   onPass?: (cardId: string) => void; onEquip?: (card: GameCard) => void // Phase 3: Pass discards + ends turn; Equip is free (once per turn)
   /**
    * Show the opponents strip on the large (desktop) layout. Defaults to

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { Mic, MicOff } from 'lucide-react'
 import { translateLogEntry } from './GameLog'
 import { PlayerBoard } from './PlayerBoard'
 import type { GameState } from '../../types/game'
@@ -95,6 +96,7 @@ interface PlayersStripProps {
   targeting: boolean
   onTargetSelect: (index: number) => void
   activeEmotes?: Record<string, string>
+  voiceBadges?: Record<string, 'on' | 'muted' | 'speaking'>
   highlightPlayerId?: string
   /** Include the local player (shown first) in the strip. */
   includeMe?: boolean
@@ -104,7 +106,7 @@ interface PlayersStripProps {
 /** Row/column of compact player chips. Tapping an eligible opponent while targeting selects it. */
 export function PlayersStrip({
   gameState, myPlayerId, isMultiplayer, onlinePlayers, targeting, onTargetSelect,
-  activeEmotes, highlightPlayerId, includeMe = true, className = '',
+  activeEmotes, voiceBadges, highlightPlayerId, includeMe = true, className = '',
 }: PlayersStripProps) {
   const { t } = useTranslation()
   const ordered = gameState.players
@@ -139,6 +141,11 @@ export function PlayersStrip({
               onClick={() => onTargetSelect(index)}
               compact
             />
+            {voiceBadges?.[player.id] && (
+              <span className={`chip-voice ${voiceBadges[player.id]}`} aria-label={t(voiceBadges[player.id] === 'muted' ? 'comms.isMuted' : 'comms.isInVoice')}>
+                {voiceBadges[player.id] === 'muted' ? <MicOff size={11} /> : <Mic size={11} />}
+              </span>
+            )}
             <div className="chip-name">{isMe ? t('board.you') : player.name}{player.hasForfeited ? ` ${t('board.left')}` : ''}</div>
             <AnimatePresence>
               {activeEmotes?.[player.id] && (

@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { GameCard, MultiplayerMode } from '../types/game'
 import type { MpActionResponse, MpHandRow, MpPublicState, MpRequestAction } from '../types/multiplayer'
 
@@ -188,9 +189,19 @@ export async function fetchMyHand(roomId: string, playerId: string): Promise<{ h
   return data ? { hand: (data.hand ?? []) as GameCard[], version: data.version ?? 0 } : null
 }
 
+/** Cosmetic broadcast events on the game channel (never part of the game state). */
+export const COMMS_EVENTS = ['chat', 'poke', 'voice'] as const
+export type CommsEvent = typeof COMMS_EVENTS[number]
+
+/** Send a cosmetic broadcast on a subscribed game channel. */
+export function sendComms(channel: RealtimeChannel | null, event: CommsEvent, payload: object) {
+  return channel?.send({ type: 'broadcast', event, payload })
+}
+
 /**
  * Realtime for the game screen: the public room row and the viewer's own hand row
- * (RLS limits `room_player_hands` changes to the owner). Also carries presence and emotes.
+ * (RLS limits `room_player_hands` changes to the owner). Also carries presence, emotes and
+ * the social layer (chat, pokes, voice signalling — see `lib/roomChat.ts` / `lib/voiceChat.ts`).
  */
 export function subscribeToGame(
   roomId: string,
@@ -201,6 +212,7 @@ export function subscribeToGame(
     onPresence: (onlineIds: Set<string>) => void
     onEmote: (playerId: string, emoji: string) => void
     onStatus: (status: 'connected' | 'disconnected') => void
+    onComms?: (event: CommsEvent, payload: unknown) => void
   },
 ) {
   const channel = supabase
@@ -232,6 +244,10 @@ export function subscribeToGame(
       const data = payload.payload as { playerId?: string; emoji?: string }
       if (data?.playerId && data.emoji) handlers.onEmote(data.playerId, data.emoji)
     })
+  COMMS_EVENTS.forEach(event => {
+    channel.on('broadcast', { event }, (payload) => handlers.onComms?.(event, payload.payload))
+  })
+  channel
     .subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
         handlers.onStatus('connected')

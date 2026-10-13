@@ -41,6 +41,8 @@ export function GameBoardMobile({
   onCancelTargeting,
   activeEmotes,
   onSendEmote,
+  extraControls,
+  voiceBadges,
   onPass,
   onEquip,
   highlightPlayerId,
@@ -128,6 +130,7 @@ export function GameBoardMobile({
         targeting={uiPhase === 'targeting'}
         onTargetSelect={onTargetSelect}
         activeEmotes={activeEmotes}
+        voiceBadges={voiceBadges}
         highlightPlayerId={highlightPlayerId}
       />
 
@@ -150,8 +153,11 @@ export function GameBoardMobile({
           <ScrollText size={20} />
         </button>
         <LanguageSwitcher variant="cycle" tone="dark" short />
+        {landscape && extraControls}
         {onSendEmote && <EmoteButton onSendEmote={onSendEmote} direction="down" />}
       </div>
+      {/* Portrait has no room in the status bar: chat / mic float on the right edge */}
+      {!landscape && extraControls && <div className="mb-comms-dock">{extraControls}</div>}
 
       {/* Portrait: wallet summary row */}
       {!landscape && myPlayer && (

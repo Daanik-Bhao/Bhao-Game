@@ -905,5 +905,46 @@
       "epic": "Epic",
       "legendary": "Legendary"
     }
+  },
+  "comms": {
+    "title": "Room chat",
+    "openChat": "Chat kholo",
+    "openChatUnread": "Chat kholo ({{n}} naye)",
+    "voiceJoin": "Voice join karo",
+    "voiceJoining": "Mic chalu ho raha hai…",
+    "voiceLeave": "Voice chhodo",
+    "micMute": "Mic band karo",
+    "micUnmute": "Mic chalu karo",
+    "inVoice": "🎧 {{n}} voice mein",
+    "isInVoice": "Voice mein",
+    "isMuted": "Mic band",
+    "poke": "Poke",
+    "pokeWho": "{{name}} ko poke karo",
+    "mutePlayer": "{{name}} ko mute karo",
+    "unmutePlayer": "{{name}} ko unmute karo",
+    "empty": "Hi bolo 👋 ya kisi ko poke karo!",
+    "quickTitle": "Quick chat",
+    "quick": {
+      "gg": "GG 🤝",
+      "niceMove": "Badhiya chaal! 👏",
+      "hurry": "Jaldi karo ⏰",
+      "scam": "Ye scam hai! 🚨",
+      "invest": "Invest karo! 📈",
+      "oops": "Oops 😅",
+      "thanks": "Thanks 🙏",
+      "bye": "Bye 👋"
+    },
+    "placeholder": "Message likho…",
+    "send": "Bhejo",
+    "slowDown": "Thoda dheere ✋",
+    "safety": "Yahan apna phone number, UPI ID ya OTP kabhi mat daalo. Links aur lambe numbers chhupa diye jaate hain.",
+    "pokeLine": "{{from}} ne {{to}} ko poke kiya {{emoji}}",
+    "pokedYou": "{{name}} ne tumhe poke kiya {{emoji}}",
+    "err": {
+      "unsupported": "Is browser mein voice chat nahi chalti.",
+      "insecure": "Voice ke liye secure (https) page chahiye.",
+      "mic_denied": "Mic ki permission band hai. Browser settings mein mic allow karke phir try karo.",
+      "mic_missing": "Is device mein mic nahi mila."
+    }
   }
 }

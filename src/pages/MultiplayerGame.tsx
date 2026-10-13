@@ -18,6 +18,8 @@ import { useTranslation } from 'react-i18next'
 import { usePreloadImages } from '../hooks/usePreloadImages'
 import { GameReportPanel } from '../components/learning/GameReportPanel'
 import { progressOwnerKey } from '../lib/campaignProgress'
+import { useRoomComms } from '../hooks/useRoomComms'
+import { ChatBubble, ChatPanel, CommsControls, PokeOverlay, voiceBadges } from '../components/game/RoomComms'
 
 function GameClock({ startTime, timeLimit }: { startTime: number; timeLimit: number }) {
   const [now, setNow] = useState(Date.now())
@@ -92,6 +94,20 @@ export function MultiplayerGame() {
   const eventsSeenRef = useRef(0)
   const notifyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const resultHandledRef = useRef(false)
+
+  // Social layer: chat, pokes and voice (cosmetic, never part of the game state).
+  const playerIds = useMemo(() => publicGs?.players.map(p => p.id) ?? [], [publicGs?.players])
+  const comms = useRoomComms({ channelRef, myId: myPlayerId, playerIds, onlineIds: onlinePlayers })
+  const commsRef = useRef(comms)
+  commsRef.current = comms
+  const commsPlayers = useMemo(
+    () => publicGs?.players.map(p => ({ id: p.id, name: p.name, left: p.hasForfeited })) ?? [],
+    [publicGs?.players],
+  )
+  const nameOfPlayer = useCallback(
+    (id: string) => id === myPlayerId ? t('board.you') : (commsPlayers.find(p => p.id === id)?.name ?? '?'),
+    [commsPlayers, myPlayerId, t],
+  )
 
   const notify = useCallback((text: string, error = false) => {
     setNotification({ text, error })
@@ -187,8 +203,12 @@ export function MultiplayerGame() {
       onPublic: applyPublic,
       onHand: applyHand,
       onPresence: setOnlinePlayers,
-      onEmote: showEmote,
-      onStatus: setConnectionStatus,
+      onEmote: (playerId, emoji) => { if (!commsRef.current.silenced.has(playerId)) showEmote(playerId, emoji) },
+      onStatus: (status) => {
+        setConnectionStatus(status)
+        if (status === 'connected') commsRef.current.onConnected()
+      },
+      onComms: (event, payload) => commsRef.current.handleIncoming(event, payload),
     })
     channelRef.current = channel
     return () => {
@@ -593,6 +613,9 @@ export function MultiplayerGame() {
           Sending move…
         </div>
       )}
+      <ChatBubble comms={comms} nameOf={nameOfPlayer} myId={myPlayerId} />
+      <PokeOverlay comms={comms} nameOf={nameOfPlayer} />
+      <ChatPanel comms={comms} players={commsPlayers} myId={myPlayerId} />
       {gameState && (
         <GameBoard
           gameState={gameState}
@@ -611,6 +634,8 @@ export function MultiplayerGame() {
           daanikCoins={0}
           onBuyExtraCard={noop}
           onSendEmote={sendEmote}
+          extraControls={<CommsControls comms={comms} myId={myPlayerId} />}
+          voiceBadges={voiceBadges(comms)}
           onPass={handlePass}
           onEquip={handleEquip}
         />

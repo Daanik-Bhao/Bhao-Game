@@ -905,5 +905,46 @@
       "epic": "Epic",
       "legendary": "Legendary"
     }
+  },
+  "comms": {
+    "title": "Room chat",
+    "openChat": "Open chat",
+    "openChatUnread": "Open chat ({{n}} new)",
+    "voiceJoin": "Join voice",
+    "voiceJoining": "Starting mic…",
+    "voiceLeave": "Leave voice",
+    "micMute": "Mute mic",
+    "micUnmute": "Unmute mic",
+    "inVoice": "🎧 {{n}} in voice",
+    "isInVoice": "In voice",
+    "isMuted": "Mic muted",
+    "poke": "Poke",
+    "pokeWho": "Poke {{name}}",
+    "mutePlayer": "Mute {{name}}",
+    "unmutePlayer": "Unmute {{name}}",
+    "empty": "Say hi 👋 or poke someone!",
+    "quickTitle": "Quick chat",
+    "quick": {
+      "gg": "GG 🤝",
+      "niceMove": "Nice move! 👏",
+      "hurry": "Jaldi karo ⏰",
+      "scam": "That's a scam! 🚨",
+      "invest": "Invest it! 📈",
+      "oops": "Oops 😅",
+      "thanks": "Thanks 🙏",
+      "bye": "Bye 👋"
+    },
+    "placeholder": "Type a message…",
+    "send": "Send",
+    "slowDown": "Slow down a little ✋",
+    "safety": "Never share your phone number, UPI ID or OTP here. Links and long numbers are hidden.",
+    "pokeLine": "{{from}} poked {{to}} {{emoji}}",
+    "pokedYou": "{{name}} poked you {{emoji}}",
+    "err": {
+      "unsupported": "Voice chat doesn't work in this browser.",
+      "insecure": "Voice needs a secure (https) page.",
+      "mic_denied": "Mic permission was blocked. Allow the microphone in your browser settings and try again.",
+      "mic_missing": "No microphone found on this device."
+    }
   }
 }
