@@ -721,7 +721,9 @@
         "h7": "Data rakhna aur delete karna",
         "h8": "Tumhare rights",
         "h9": "Bachche",
-        "h10": "Changes"
+        "h10": "Changes",
+        "chat": "Voice chat, text chat aur pokes",
+        "reports": "Players ko report karna"
       },
       "terms": {
         "h1": "Game",
@@ -731,8 +733,17 @@
         "h5": "Availability",
         "h6": "Liability",
         "h7": "Privacy",
-        "h8": "Changes aur laagu kanoon"
+        "h8": "Changes aur laagu kanoon",
+        "community": "Chat, voice aur reporting"
       }
+    },
+    "keyPoints": {
+      "title": "Short mein",
+      "voice": "Voice chat seedha players ke beech chalti hai aur kabhi record nahi hoti.",
+      "chat": "Chat messages save nahi hote. Report mein sirf us player ke recent messages rakhe jaate hain.",
+      "age": "Khelne ke liye umar kam se kam 13 saal honi chahiye.",
+      "money": "Real money se kuch nahi khareedna. Coins ki koi cash value nahi hai.",
+      "delete": "Apna account kabhi bhi profile se delete kar sakte ho."
     }
   },
   "tutorial": {
@@ -947,6 +958,39 @@
       "insecure": "Voice ke liye secure (https) page chahiye.",
       "mic_denied": "Mic ki permission band hai. Browser settings mein mic allow karke phir try karo.",
       "mic_missing": "Is device mein mic nahi mila."
+    },
+    "report": {
+      "button": "{{name}} ko report karo",
+      "title": "{{name}} ko report karo",
+      "why": "Kya hua?",
+      "reasons": {
+        "abuse": "Gaali ya pareshan karna",
+        "spam": "Spam",
+        "sexual": "Ashleel baatein",
+        "scam": "Scam / paise ya OTP maangna",
+        "personal_info": "Personal info share karna",
+        "other": "Kuch aur"
+      },
+      "details": "Aur kuch batana hai? (optional)",
+      "detailsPlaceholder": "Batao kya hua",
+      "evidenceNote": "Report ke saath unke recent chat messages (max 10) jaate hain, voice nahi. Voice kabhi record nahi hoti.",
+      "muteNote": "Hum unhe tumhare liye mute bhi kar denge.",
+      "submit": "Report bhejo",
+      "sending": "Bhej rahe hain…",
+      "cancel": "Cancel",
+      "thanks": "Batane ke liye thanks. Hum check karenge. {{name}} ab tumhare liye mute hai.",
+      "done": "Done",
+      "reported": "Report ho gaya",
+      "signIn": "Report karne ke liye sign in karo. {{name}} ko abhi mute zaroor kar sakte ho.",
+      "muteNow": "{{name}} ko mute karo",
+      "err": {
+        "not_signed_in": "Report bhejne ke liye dobara sign in karo.",
+        "self": "Khud ko report nahi kar sakte.",
+        "duplicate": "Is room mein is player ko pehle hi report kar chuke ho.",
+        "limited": "Aaj bahut reports bhej diye. Kal phir try karo.",
+        "invalid": "Report mein kuch gadbad thi. Phir se try karo.",
+        "failed": "Report nahi bhej paaye. Internet check karke phir try karo."
+      }
     }
   }
 }

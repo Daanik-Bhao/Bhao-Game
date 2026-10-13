@@ -721,7 +721,9 @@
         "h7": "Keeping and deleting your data",
         "h8": "Your rights",
         "h9": "Children",
-        "h10": "Changes"
+        "h10": "Changes",
+        "chat": "Voice chat, text chat and pokes",
+        "reports": "Reporting players"
       },
       "terms": {
         "h1": "The game",
@@ -731,8 +733,17 @@
         "h5": "Availability",
         "h6": "Liability",
         "h7": "Privacy",
-        "h8": "Changes and governing law"
+        "h8": "Changes and governing law",
+        "community": "Chat, voice and reporting"
       }
+    },
+    "keyPoints": {
+      "title": "In short",
+      "voice": "Voice chat is peer-to-peer and is never recorded.",
+      "chat": "Chat messages are not stored. A report keeps the reported player's recent messages.",
+      "age": "You must be 13 or older to play.",
+      "money": "No real-money purchases. Coins have no cash value.",
+      "delete": "You can delete your account any time from your profile."
     }
   },
   "tutorial": {
@@ -947,6 +958,39 @@
       "insecure": "Voice needs a secure (https) page.",
       "mic_denied": "Mic permission was blocked. Allow the microphone in your browser settings and try again.",
       "mic_missing": "No microphone found on this device."
+    },
+    "report": {
+      "button": "Report {{name}}",
+      "title": "Report {{name}}",
+      "why": "What happened?",
+      "reasons": {
+        "abuse": "Abuse or bullying",
+        "spam": "Spam",
+        "sexual": "Sexual content",
+        "scam": "Scam / asking for money or OTP",
+        "personal_info": "Sharing personal info",
+        "other": "Something else"
+      },
+      "details": "Anything else? (optional)",
+      "detailsPlaceholder": "Tell us what happened",
+      "evidenceNote": "Your report includes their recent chat messages (up to 10), not voice. Voice is never recorded.",
+      "muteNote": "We will also mute them for you.",
+      "submit": "Send report",
+      "sending": "Sending…",
+      "cancel": "Cancel",
+      "thanks": "Thanks for telling us. We will review it. {{name}} is muted for you now.",
+      "done": "Done",
+      "reported": "Reported",
+      "signIn": "Sign in to report players. You can still mute {{name}} right now.",
+      "muteNow": "Mute {{name}}",
+      "err": {
+        "not_signed_in": "Please sign in again to send a report.",
+        "self": "You can't report yourself.",
+        "duplicate": "You've already reported this player in this room.",
+        "limited": "You've sent a lot of reports today. Please try again tomorrow.",
+        "invalid": "Something in the report wasn't right. Please try again.",
+        "failed": "Couldn't send the report. Check your connection and try again."
+      }
     }
   }
 }

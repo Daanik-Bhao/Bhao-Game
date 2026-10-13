@@ -1,10 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { Headphones, MessageCircle, Mic, MicOff, PhoneOff, Send, Volume2, VolumeX, X } from 'lucide-react'
+import { Check, Flag, Headphones, MessageCircle, Mic, MicOff, PhoneOff, Send, Volume2, VolumeX, X } from 'lucide-react'
 import type { RoomComms } from '../../hooks/useRoomComms'
 import { CHAT_MAX_LEN, POKE_EMOJIS, QUICK_CHAT_IDS, type FeedItem } from '../../lib/roomChat'
+import { REPORT_DETAILS_MAX, REPORT_REASONS, ReportError, type ReportErrorCode, type ReportReason } from '../../lib/reports'
 import './RoomComms.css'
+
+/**
+ * Sends a report (the page wires this to `reportPlayer` with the room id and comms feed).
+ * Leave it undefined when the user can't report (not signed in): the sheet then explains
+ * that and still offers mute.
+ */
+export type ReportHandler = (playerId: string, reason: ReportReason, details: string) => Promise<unknown>
 
 export interface CommsPlayer { id: string; name: string; left?: boolean }
 
@@ -56,12 +64,130 @@ function feedText(item: FeedItem, t: (k: string, o?: Record<string, unknown>) =>
   return t('comms.pokeLine', { from: nameOf(item.from), to: nameOf(item.to), emoji: item.emoji })
 }
 
-/** Slide-in chat panel: who's here (poke / mute / voice), messages, quick chat, input. */
-export function ChatPanel({ comms, players, myId }: { comms: RoomComms; players: CommsPlayer[]; myId: string }) {
+/** Bottom sheet inside the chat panel: pick a reason, optional details, send; then auto-mute. */
+function ReportSheet({ player, onReport, silenced, onMute, onReported, onClose }: {
+  player: CommsPlayer
+  onReport?: ReportHandler
+  silenced: boolean
+  onMute: () => void
+  onReported: () => void
+  onClose: () => void
+}) {
+  const { t } = useTranslation()
+  const [reason, setReason] = useState<ReportReason | null>(null)
+  const [details, setDetails] = useState('')
+  const [phase, setPhase] = useState<'form' | 'sending' | 'done'>('form')
+  const [error, setError] = useState<ReportErrorCode | null>(null)
+  const firstRef = useRef<HTMLButtonElement>(null)
+  const titleId = `comms-report-title-${player.id}`
+
+  useEffect(() => { firstRef.current?.focus() }, [phase])
+
+  const submit = async () => {
+    if (!onReport || !reason || phase === 'sending') return
+    setPhase('sending')
+    setError(null)
+    try {
+      await onReport(player.id, reason, details.trim())
+      if (!silenced) onMute()
+      onReported()
+      setPhase('done')
+    } catch (e) {
+      setError(e instanceof ReportError ? e.code : 'failed')
+      setPhase('form')
+    }
+  }
+
+  return (
+    <>
+      <motion.div className="comms-sheet-scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+      <motion.div
+        className="comms-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+        transition={{ type: 'spring', damping: 30, stiffness: 340 }}
+      >
+        <header className="comms-sheet-head">
+          <h3 id={titleId}><Flag size={17} aria-hidden /> {t('comms.report.title', { name: player.name })}</h3>
+          <button type="button" className="comms-icon" aria-label={t('common.close')} onClick={onClose}><X size={20} /></button>
+        </header>
+
+        {phase === 'done' ? (
+          <div className="comms-sheet-done" role="status">
+            <span className="comms-sheet-check" aria-hidden><Check size={26} /></span>
+            <p>{t('comms.report.thanks', { name: player.name })}</p>
+            <button ref={firstRef} type="button" className="comms-sheet-submit" onClick={onClose}>{t('comms.report.done')}</button>
+          </div>
+        ) : !onReport ? (
+          <div className="comms-sheet-body">
+            <p className="comms-sheet-note">{t('comms.report.signIn', { name: player.name })}</p>
+            {!silenced && (
+              <button ref={firstRef} type="button" className="comms-sheet-submit" onClick={() => { onMute(); onClose() }}>
+                <VolumeX size={18} aria-hidden /> {t('comms.report.muteNow', { name: player.name })}
+              </button>
+            )}
+            <button ref={silenced ? firstRef : undefined} type="button" className="comms-sheet-cancel" onClick={onClose}>{t('comms.report.cancel')}</button>
+          </div>
+        ) : (
+          <form className="comms-sheet-body" onSubmit={e => { e.preventDefault(); void submit() }}>
+            <fieldset className="comms-sheet-reasons">
+              <legend>{t('comms.report.why')}</legend>
+              {REPORT_REASONS.map((r, i) => (
+                <button
+                  key={r}
+                  ref={i === 0 ? firstRef : undefined}
+                  type="button"
+                  className={`comms-reason${reason === r ? ' active' : ''}`}
+                  aria-pressed={reason === r}
+                  onClick={() => setReason(r)}
+                >
+                  {t(`comms.report.reasons.${r}`)}
+                </button>
+              ))}
+            </fieldset>
+            <label className="comms-sheet-label">
+              {t('comms.report.details')}
+              <textarea
+                value={details}
+                maxLength={REPORT_DETAILS_MAX}
+                rows={2}
+                placeholder={t('comms.report.detailsPlaceholder')}
+                onChange={e => setDetails(e.target.value)}
+              />
+            </label>
+            <p className="comms-sheet-note">{t('comms.report.evidenceNote')} {!silenced && t('comms.report.muteNote')}</p>
+            {error && <div className="comms-error" role="alert">{t(`comms.report.err.${error}`)}</div>}
+            <div className="comms-sheet-actions">
+              <button type="button" className="comms-sheet-cancel" onClick={onClose}>{t('comms.report.cancel')}</button>
+              <button type="submit" className="comms-sheet-submit danger" disabled={!reason || phase === 'sending'}>
+                {phase === 'sending' ? t('comms.report.sending') : t('comms.report.submit')}
+              </button>
+            </div>
+          </form>
+        )}
+      </motion.div>
+    </>
+  )
+}
+
+/** Slide-in chat panel: who's here (poke / mute / report / voice), messages, quick chat, input. */
+export function ChatPanel({ comms, players, myId, onReport }: {
+  comms: RoomComms
+  players: CommsPlayer[]
+  myId: string
+  /** Omit when the user isn't signed in; the report sheet then offers mute and asks them to sign in. */
+  onReport?: ReportHandler
+}) {
   const { t } = useTranslation()
   const [draft, setDraft] = useState('')
   const [hint, setHint] = useState<string | null>(null)
   const [pokeFor, setPokeFor] = useState<string | null>(null)
+  const [reportFor, setReportFor] = useState<string | null>(null)
+  const [reported, setReported] = useState<Set<string>>(() => new Set())
+  const reportOpenRef = useRef(false)
+  reportOpenRef.current = reportFor !== null
   const listRef = useRef<HTMLDivElement>(null)
   const nameOf = (id: string) => id === myId ? t('board.you') : (players.find(p => p.id === id)?.name ?? '?')
 
@@ -69,6 +195,9 @@ export function ChatPanel({ comms, players, myId }: { comms: RoomComms; players:
     const el = listRef.current
     if (el) el.scrollTop = el.scrollHeight
   }, [comms.feed.length, comms.panelOpen])
+
+  // A closed panel also closes the report sheet (it lives inside the panel).
+  useEffect(() => { if (!comms.panelOpen) setReportFor(null) }, [comms.panelOpen])
 
   useEffect(() => {
     if (!hint) return
@@ -78,7 +207,11 @@ export function ChatPanel({ comms, players, myId }: { comms: RoomComms; players:
 
   useEffect(() => {
     if (!comms.panelOpen) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') comms.setPanelOpen(false) }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (reportOpenRef.current) setReportFor(null)
+      else comms.setPanelOpen(false)
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [comms])
@@ -90,6 +223,7 @@ export function ChatPanel({ comms, players, myId }: { comms: RoomComms; players:
   }
 
   const others = players.filter(p => p.id !== myId)
+  const reportPlayer = reportFor ? others.find(p => p.id === reportFor) ?? null : null
   const { voice } = comms
 
   return (
@@ -179,6 +313,17 @@ export function ChatPanel({ comms, players, myId }: { comms: RoomComms; players:
                     >
                       {silenced ? <VolumeX size={18} /> : <Volume2 size={18} />}
                     </button>
+                    <button
+                      type="button"
+                      className={`comms-icon report${reported.has(p.id) ? ' done' : ''}`}
+                      aria-haspopup="dialog"
+                      aria-label={reported.has(p.id) ? `${t('comms.report.reported')}: ${p.name}` : t('comms.report.button', { name: p.name })}
+                      title={reported.has(p.id) ? t('comms.report.reported') : t('comms.report.button', { name: p.name })}
+                      disabled={reported.has(p.id)}
+                      onClick={() => { setPokeFor(null); setReportFor(p.id) }}
+                    >
+                      {reported.has(p.id) ? <Check size={18} /> : <Flag size={18} />}
+                    </button>
                     {pokeFor === p.id && (
                       <div className="comms-poke-row" role="group" aria-label={t('comms.pokeWho', { name: p.name })}>
                         {POKE_EMOJIS.map(emoji => (
@@ -240,6 +385,20 @@ export function ChatPanel({ comms, players, myId }: { comms: RoomComms; players:
               </button>
             </form>
             <p className="comms-safety">{t('comms.safety')}</p>
+
+            <AnimatePresence>
+              {reportPlayer && (
+                <ReportSheet
+                  key={reportPlayer.id}
+                  player={reportPlayer}
+                  onReport={onReport}
+                  silenced={comms.silenced.has(reportPlayer.id)}
+                  onMute={() => comms.toggleSilenced(reportPlayer.id)}
+                  onReported={() => setReported(prev => new Set(prev).add(reportPlayer.id))}
+                  onClose={() => setReportFor(null)}
+                />
+              )}
+            </AnimatePresence>
           </motion.aside>
         </>
       )}
