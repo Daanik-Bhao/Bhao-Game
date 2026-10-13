@@ -95,7 +95,7 @@ export function ResultModal({ isWinner, finalWealth, onPlayAgain, onDashboard }:
             display: 'flex', gap: 16, justifyContent: 'center'
           }}
         >
-          <Button variant="gold" size="lg" onClick={onPlayAgain}>Play Again</Button>
+          <Button variant="primary" size="l" onClick={onPlayAgain}>Play Again</Button>
           <Button variant="secondary" onClick={onDashboard}>Dashboard</Button>
         </motion.div>
       </div>

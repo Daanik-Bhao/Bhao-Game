@@ -1,44 +1,42 @@
-import type { InputHTMLAttributes } from 'react'
+import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from 'react'
+import './ui.css'
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string
-  error?: string
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  label?: ReactNode
+  /** Helper text under the field */
+  hint?: ReactNode
+  /** Error text: red border + message, aria-invalid */
+  error?: ReactNode
+  /** Room-code style: Baloo 20px, wide tracking, uppercase */
+  code?: boolean
+  /** Extra class on the wrapper */
+  fieldClassName?: string
 }
 
-export function Input({ label, error, id, style, ...props }: InputProps) {
+/** Text input (spec §D.2): 48px, 16px text (no iOS zoom), label above, hint/error below. */
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+  { label, hint, error, code, id, className = '', fieldClassName = '', ...rest },
+  ref,
+) {
+  const autoId = useId()
+  const inputId = id ?? `in-${autoId}`
+  const hintId = `${inputId}-hint`
+  const describedBy = error || hint ? hintId : undefined
+  const codeProps = code ? { autoCapitalize: 'characters', autoCorrect: 'off', spellCheck: false, inputMode: 'text' as const } : {}
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      {label && (
-        <label htmlFor={id} style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-muted)' }}>
-          {label}
-        </label>
-      )}
+    <div className={`field ${fieldClassName}`.trim()}>
+      {label && <label className="field__label" htmlFor={inputId}>{label}</label>}
       <input
-        id={id}
-        style={{
-          background: 'rgba(255, 255, 255, 0.7)',
-          border: `2px solid ${error ? 'var(--orange-primary)' : 'rgba(0,0,0,0.1)'}`,
-          borderRadius: '10px',
-          padding: '12px 14px',
-          color: 'var(--text-dark)',
-          fontSize: '16px',
-          fontWeight: 500,
-          outline: 'none',
-          width: '100%',
-          transition: 'all 0.2s',
-          ...style,
-        }}
-        onFocus={(e) => { 
-          e.target.style.borderColor = 'var(--green-primary)';
-          e.target.style.background = '#ffffff';
-        }}
-        onBlur={(e) => { 
-          e.target.style.borderColor = error ? 'var(--orange-primary)' : 'rgba(0,0,0,0.1)';
-          e.target.style.background = 'rgba(255, 255, 255, 0.7)';
-        }}
-        {...props}
+        ref={ref}
+        id={inputId}
+        className={`field__input${code ? ' field__input--code' : ''} ${className}`.trim()}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy}
+        {...codeProps}
+        {...rest}
       />
-      {error && <span style={{ fontSize: '15px', color: 'var(--orange-primary)' }}>{error}</span>}
+      {error ? <span id={hintId} className="field__hint field__hint--error">{error}</span>
+        : hint ? <span id={hintId} className="field__hint">{hint}</span> : null}
     </div>
   )
-}
+})

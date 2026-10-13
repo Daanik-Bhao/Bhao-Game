@@ -2,7 +2,13 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import React from 'react'
 import { Suspense, lazy } from 'react'
 import { AuthProvider, useAuth } from './hooks/useAuth'
-import { WalletLoader } from './components/WalletLoader'
+import { MotionConfig } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
+import { PageLoader } from './components/ui/misc'
+import { Button } from './components/ui/Button'
+import { ToastProvider } from './components/ui/toast'
+import { Gullu } from './components/mascot/Gullu'
+import { useReducedEffects } from './hooks/useReducedEffects'
 import { useNativeBackNavigation } from './hooks/useBackButton'
 
 // Automatically reload the page if a dynamically imported chunk fails to load 
@@ -43,33 +49,25 @@ const Terms = retryLazy(() => import('./pages/Legal').then(m => ({ default: m.Te
 
 import * as Sentry from '@sentry/react'
 
-// We use Sentry.ErrorBoundary instead of a custom class to capture crashes directly to the dashboard
+// Sentry.ErrorBoundary (not a custom class) so crashes reach the dashboard. Spec §D.12.
 function FallbackComponent() {
-  const buttonStyle: React.CSSProperties = {
-    padding: '12px 22px', borderRadius: 10, fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-  }
+  const { t } = useTranslation()
   return (
-    <div role="alert" style={{ padding: '40px 16px', color: '#0b2b22', background: '#EEEFE0', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 12 }}>
-      <div style={{ fontSize: 48 }} aria-hidden="true">🪙</div>
-      <h1 style={{ margin: 0, fontSize: 26, color: '#004030' }}>Oops, BHAO hit a snag.</h1>
-      <p style={{ margin: 0, maxWidth: 420, color: '#4b5563', lineHeight: 1.5 }}>
-        Something went wrong on this screen. Reloading usually fixes it. If it keeps happening, email support@daanik.com.
-      </p>
-      <div style={{ display: 'flex', gap: 12, marginTop: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-        <button onClick={() => window.location.reload()} style={{ ...buttonStyle, background: '#004030', color: '#fff', border: 'none' }}>
-          Reload
-        </button>
-        <button onClick={() => window.location.assign('/')} style={{ ...buttonStyle, background: 'transparent', color: '#004030', border: '2px solid #004030' }}>
-          Go Home
-        </button>
+    <div role="alert" className="page error-page">
+      <Gullu mood="worried" size={96} />
+      <h1 className="page-title">{t('common.error.title')}</h1>
+      <p className="lede error-page__body">{t('common.error.body')}</p>
+      <div className="error-page__actions">
+        <Button variant="primary" onClick={() => window.location.reload()}>{t('common.error.reload')}</Button>
+        <Button variant="outline" onClick={() => window.location.assign('/')}>{t('common.error.home')}</Button>
       </div>
     </div>
   )
 }
-// Wallet Loading Spinner for Suspense fallback
-function PageLoader() {
-  return <WalletLoader />
-}
+
+// Dev-only component gallery (/__ux): registered and imported only in dev builds, so it is
+// tree-shaken from production. See src/dev/UxGallery.tsx.
+const UxGallery = import.meta.env.DEV ? lazy(() => import('./dev/UxGallery').then(m => ({ default: m.UxGallery }))) : null
 
 /** Requires a real (Supabase) account. Guests/anonymous users get a friendly sign-in prompt. */
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -137,6 +135,7 @@ function AppRoutes() {
         <Route path="/tutorial" element={<PlayableRoute><TutorialGame /></PlayableRoute>} />
         <Route path="/multiplayer" element={<ProtectedRoute><Lobby /></ProtectedRoute>} />
         <Route path="/multiplayer/:roomId" element={<ProtectedRoute><MultiplayerGame /></ProtectedRoute>} />
+        {UxGallery && <Route path="/__ux/*" element={<UxGallery />} />}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
@@ -144,14 +143,19 @@ function AppRoutes() {
 }
 
 export default function App() {
+  const { reduced } = useReducedEffects()
   return (
-    <BrowserRouter>
-      <NativeBackNavigation />
-      <Sentry.ErrorBoundary fallback={<FallbackComponent />}>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </Sentry.ErrorBoundary>
-    </BrowserRouter>
+    <MotionConfig reducedMotion={reduced ? 'always' : 'user'}>
+      <BrowserRouter>
+        <NativeBackNavigation />
+        <Sentry.ErrorBoundary fallback={<FallbackComponent />}>
+          <ToastProvider>
+            <AuthProvider>
+              <AppRoutes />
+            </AuthProvider>
+          </ToastProvider>
+        </Sentry.ErrorBoundary>
+      </BrowserRouter>
+    </MotionConfig>
   )
 }

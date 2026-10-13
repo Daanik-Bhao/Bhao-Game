@@ -300,7 +300,7 @@ export function Auth() {
               </div>
             )}
  
-            <Button type="submit" size="lg" loading={loading} style={{ width: '100%', marginTop: 4, background: '#15803D', color: '#fff', borderRadius: 8, padding: '14px', fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'background 0.2s', boxShadow: '0 4px 12px rgba(21,128,61,0.2)' }}>
+            <Button type="submit" size="l" loading={loading} style={{ width: '100%', marginTop: 4, background: '#15803D', color: '#fff', borderRadius: 8, padding: '14px', fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'background 0.2s', boxShadow: '0 4px 12px rgba(21,128,61,0.2)' }}>
               {mode === 'login' ? t('auth.signIn', 'Sign In') : t('auth.submit')}
             </Button>
           </form>

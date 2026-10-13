@@ -1,0 +1,246 @@
+/* =====================================================================
+   BHAO design tokens — "Chai & Chips" (docs/ux/02-design-spec.md §B).
+   Ported from docs/ux/mockups/tokens.css. This is the ONLY file (with
+   Gullu.tsx and the seat-colour constant) allowed to contain colour literals.
+   Component styles live in src/components/ui/ui.css.
+   ===================================================================== */
+
+:root {
+  /* ---------- Families ---------- */
+  --font-display: 'Baloo 2', 'Noto Sans Devanagari', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Mukta', 'Noto Sans Devanagari', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-num: var(--font-display);
+  --font-emoji: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
+
+  /* ---------- Raw palette ---------- */
+  --cream-50: #FFFCF6;
+  --cream-100: #FFF8EC;   /* paper */
+  --cream-200: #FCEFD9;   /* paper-2 / sunken */
+  --cream-300: #F3E4C8;
+  --sand-400: #EADFCB;    /* hairline */
+  --sand-500: #D6C7AC;    /* strong line */
+  --ink-900: #1E1A14;
+  --ink-700: #5E5548;
+  --ink-500: #7A6F5F;
+  --ink-300: #9A8F7E;     /* disabled text only */
+  --teal-950: #062A22;
+  --teal-900: #0A3329;    /* table panel */
+  --teal-850: #0A3A30;    /* table edge */
+  --teal-800: #0E4D3F;    /* brand / table */
+  --teal-700: #12463A;    /* table raised */
+  --teal-600: #1B6352;
+  --teal-100: #DCEFE8;
+  --haldi-300: #FFD45E;
+  --haldi-400: #FFC530;   /* primary CTA */
+  --haldi-600: #C98A00;   /* CTA press-edge */
+  --haldi-ink: #2A1B00;
+  --white: #FFFFFF;
+  --card-edge: #E7D7B9;   /* game-card face border */
+  --table-glow: #0F5545;  /* table radial highlight */
+  --table-line: #2A5E51;
+  --table-line-strong: #3B7565;
+  --table-text: #F6F1E7;
+  --table-text-muted: #B9CFC6;
+  --table-text-disabled: #6F8F85;
+  --cardback-edge: #2C6A59;
+
+  /* Darker press-edges for the semantic buttons */
+  --danger-edge: #7E180F;
+  --spend-edge: #7A2A10;
+  --save-edge: #0D4F2D;
+  --invest-edge: #1D2F96;
+
+  /* ---------- Semantic: surfaces (light "menu" mode = default) ---------- */
+  --bg: var(--cream-100);
+  --bg-sunken: var(--cream-200);
+  --surface: var(--white);
+  --surface-raised: var(--white);
+  --line: var(--sand-400);
+  --line-strong: var(--sand-500);
+  --text: var(--ink-900);
+  --text-muted: var(--ink-700);
+  --text-subtle: var(--ink-500);
+  --text-disabled: var(--ink-300);
+  --text-on-brand: var(--white);
+  --link: var(--teal-800);
+  --focus-ring: #3D5AFE;
+  --brand: var(--teal-800);
+  --brand-strong: var(--teal-950);
+  --brand-soft: var(--teal-100);
+  --primary: var(--haldi-400);
+  --primary-hover: var(--haldi-300);
+  --primary-edge: var(--haldi-600);
+  --on-primary: var(--haldi-ink);
+
+  /* ---------- Semantic: money meaning (same in both modes; *-fg switches) ---------- */
+  --spend: #E2572B;   --spend-strong: #B83F18;   --spend-soft: #FDE7DE;   --spend-on-dark: #FF9B7A;
+  --save: #1E9E5A;    --save-strong: #157A45;    --save-soft: #E3F4EA;    --save-on-dark: #5EE08F;
+  --invest: #3D5AFE;  --invest-strong: #2E47D1;  --invest-soft: #E6EBFF;  --invest-on-dark: #8FA6FF;
+  --defence: #11A3A3; --defence-strong: #0A6E6E; --defence-soft: #DDF3F3; --defence-on-dark: #4FD1C5;
+  --attack: #D93636;  --attack-strong: #B42318;  --attack-soft: #FDE4E1;  --attack-on-dark: #FF8A80;
+  --risk: #F59E0B;    --risk-strong: #8A5A00;    --risk-soft: #FFF1CC;    --risk-on-dark: #FFC530;
+  --event: #46607A;   --event-soft: #E4EAF1;     --event-on-dark: #A8B9CC;
+  --opportunity: #F2A900; --opportunity-ink: #1E1A14;
+  --gain-light: #157A3E; --loss-light: #B42318;
+  --gain-fg: var(--gain-light); --loss-fg: var(--loss-light);   /* text on light */
+  --success: var(--save-strong); --danger: var(--attack-strong); --warning: var(--risk-strong); --info: var(--invest-strong);
+
+  /* Translucent tints (overlays / tinted chips) */
+  --scrim: rgba(6, 20, 16, .55);
+  --risk-tint-on-dark: rgba(245, 158, 11, .16);
+  --haldi-glow: rgba(255, 197, 48, .25);
+  --haldi-dash: rgba(255, 197, 48, .45);
+  --ink-wash: rgba(0, 0, 0, .05);
+  --table-wash: rgba(0, 0, 0, .14);
+  --white-14: rgba(255, 255, 255, .14);
+  --white-85: rgba(255, 255, 255, .85);
+  --gem-outline: rgba(30, 26, 20, .55);
+  --edge-on-table: rgba(0, 0, 0, .35);
+
+  /* ---------- Tier gems (graphics only, never text) ---------- */
+  --tier-common: #7B8594;
+  --tier-rare: #2F80ED;
+  --tier-epic: #8B5CF6;
+  --tier-legendary: #B8860B;
+  --tier-legendary-hi: #F5C542;
+
+  /* ---------- Type scale (mobile first; desktop overrides below) ---------- */
+  --fs-display-xl: 40px;  --lh-display-xl: 1.05;
+  --fs-display-l: 30px;   --lh-display-l: 1.1;
+  --fs-title: 22px;       --lh-title: 1.15;
+  --fs-subtitle: 18px;    --lh-subtitle: 1.2;
+  --fs-body-l: 17px;      --lh-body-l: 1.5;
+  --fs-body: 16px;        --lh-body: 1.5;
+  --fs-ui: 14px;          --lh-ui: 1.4;
+  --fs-caption: 12px;     --lh-caption: 1.35;
+  --fs-btn-l: 18px; --fs-btn-m: 16px; --fs-btn-s: 14px; --lh-btn: 1;
+  --fs-num-xl: 36px; --fs-num-l: 24px; --fs-num-m: 18px; --fs-num-s: 14px;
+  --lh-num: 1.05;
+  --ls-caps: 0.06em;
+  --tt-caps: uppercase;
+
+  /* ---------- Spacing (4-pt) ---------- */
+  --sp-0: 0; --sp-1: 2px; --sp-2: 4px; --sp-3: 8px; --sp-4: 12px; --sp-5: 16px;
+  --sp-6: 20px; --sp-7: 24px; --sp-8: 32px; --sp-9: 40px; --sp-10: 48px; --sp-11: 64px;
+  --gutter: 16px;
+
+  /* ---------- Radii ---------- */
+  --r-xs: 6px; --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-pill: 999px;
+  --r-card-hand: 10px; --r-card-full: 16px;
+
+  /* ---------- Elevation (no blur filters; shadows only on light) ---------- */
+  --e-0: none;
+  --e-1: 0 1px 2px rgba(60,40,10,.08), 0 1px 1px rgba(60,40,10,.04);
+  --e-2: 0 4px 12px rgba(60,40,10,.10), 0 1px 2px rgba(60,40,10,.06);
+  --e-3: 0 -8px 24px rgba(30,20,5,.18);
+  --e-card-table: 0 4px 0 rgba(0,0,0,.28);
+  --e-card-lift: 0 10px 18px rgba(0,0,0,.35);
+  --btn-edge: 4px;
+
+  /* ---------- Z-index ---------- */
+  --z-base: 0; --z-raised: 10; --z-sticky: 100; --z-tabbar: 110; --z-hud: 200; --z-dock: 300;
+  --z-toast: 400; --z-backdrop: 500; --z-sheet: 510; --z-modal: 600; --z-coach: 700; --z-system: 900;
+
+  /* ---------- Motion ---------- */
+  --dur-press: 80ms; --dur-fast: 150ms; --dur-base: 220ms; --dur-slow: 320ms; --dur-ceremony: 700ms;
+  --ease-standard: cubic-bezier(.2,0,0,1);
+  --ease-enter: cubic-bezier(.05,.7,.1,1);
+  --ease-exit: cubic-bezier(.3,0,.8,.15);
+  --ease-overshoot: cubic-bezier(.34,1.56,.64,1);
+
+  --tap-min: 44px;
+  --appbar-h: 60px;
+  --tabbar-h: 68px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --fs-display-xl: 64px; --lh-display-xl: 1.02;
+    --fs-display-l: 40px;
+    --fs-title: 26px;
+    --fs-subtitle: 20px;
+    --fs-body-l: 18px;
+    --fs-num-xl: 44px; --fs-num-l: 28px;
+    --gutter: 32px;
+  }
+}
+@media (max-height: 499px) {
+  :root { --tabbar-h: 56px; }
+}
+
+/* Dark "table" surface: put .surface-table on the match root (and anything rendered on the board). */
+.surface-table {
+  --bg: var(--teal-800);
+  --bg-sunken: var(--teal-900);
+  --surface: var(--teal-900);
+  --surface-raised: var(--teal-700);
+  --line: var(--table-line);
+  --line-strong: var(--table-line-strong);
+  --text: var(--table-text);
+  --text-muted: var(--table-text-muted);
+  --text-subtle: var(--table-text-muted);
+  --text-disabled: var(--table-text-disabled);
+  --link: var(--haldi-300);
+  --focus-ring: var(--haldi-300);
+  --gain-fg: var(--save-on-dark);
+  --loss-fg: var(--attack-on-dark);
+  color: var(--text);
+  background:
+    radial-gradient(120% 80% at 50% 35%, var(--table-glow) 0%, var(--teal-800) 45%, var(--teal-850) 100%);
+}
+
+/* .paper = light token scope for sheets, banners, modals and cards that sit on the table. */
+.paper {
+  --bg: var(--cream-100);
+  --bg-sunken: var(--cream-200);
+  --surface: var(--white);
+  --surface-raised: var(--white);
+  --line: var(--sand-400);
+  --line-strong: var(--sand-500);
+  --text: var(--ink-900);
+  --text-muted: var(--ink-700);
+  --text-subtle: var(--ink-500);
+  --text-disabled: var(--ink-300);
+  --link: var(--teal-800);
+  --focus-ring: #3D5AFE;
+  --gain-fg: var(--gain-light);
+  --loss-fg: var(--loss-light);
+  color: var(--text);
+}
+
+/* Hindi: html.lang-hi (Hinglish uses Latin, keeps en metrics) */
+html.lang-hi {
+  --lh-body-l: 1.65; --lh-body: 1.65; --lh-ui: 1.55; --lh-caption: 1.5;
+  --lh-display-xl: 1.25; --lh-display-l: 1.3; --lh-title: 1.3; --lh-subtitle: 1.35; --lh-num: 1.15;
+  --lh-btn: 1.2;
+  --fs-caption: 13px; --fs-ui: 15px;
+  --ls-caps: 0; --tt-caps: none;
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: var(--font-body); font-size: var(--fs-body); line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 800; }
+a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+button, input, select, textarea { font-family: inherit; }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums lining-nums; font-weight: 700; line-height: var(--lh-num); }
+.caps { text-transform: var(--tt-caps); letter-spacing: var(--ls-caps); }
+.emoji { font-family: var(--font-emoji); }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- Reduced motion (OS setting or in-app "Reduce effects") ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+}
+html[data-reduce-motion="true"] *, html[data-reduce-motion="true"] *::before, html[data-reduce-motion="true"] *::after {
+  animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important;
+}

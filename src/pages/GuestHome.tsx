@@ -57,7 +57,7 @@ export function GuestHome() {
             {t('guest.signInBody')}
           </p>
           {isOnlineAvailable ? (
-            <Link to="/auth?mode=register"><Button size="sm">{t('guest.createAccount')}</Button></Link>
+            <Link to="/auth?mode=register"><Button size="s">{t('guest.createAccount')}</Button></Link>
           ) : (
             <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>{t('guest.onlineUnavailable')}</p>
           )}

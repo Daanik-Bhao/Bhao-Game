@@ -1,0 +1,242 @@
+{
+  "en": {
+    "common": {
+      "back": "Back",
+      "next": "Next",
+      "ok": "OK",
+      "gotIt": "Got it",
+      "menu": "Menu",
+      "home": "Home",
+      "loading": "Loading…",
+      "coins": "Daanik Coins",
+      "coinsCount": "{{n}} Daanik Coins",
+      "coinsInfo": "Daanik Coins buy an extra card in practice games. They have no cash value and cannot be bought.",
+      "offline": "You're offline. Practice, campaign and the library still work.",
+      "settings": {
+        "title": "Settings",
+        "language": "Language",
+        "sound": "Sound",
+        "reduceEffects": "Reduce effects",
+        "reduceEffectsHint": "Fewer animations and no confetti."
+      },
+      "error": {
+        "title": "Oops, BHAO hit a snag.",
+        "body": "Something went wrong on this screen. Reloading usually fixes it. If it keeps happening, email support@daanik.com.",
+        "reload": "Reload",
+        "home": "Go home"
+      }
+    },
+    "lang": {
+      "en": "English",
+      "hi": "हिंदी",
+      "hinglish": "Hinglish",
+      "code": { "en": "EN", "hi": "हिं", "hinglish": "HG" },
+      "current": "Language: {{lang}}. Change language"
+    },
+    "card": {
+      "type": { "decision": "Decision", "attack": "Attack", "shield": "Shield", "lifeEvent": "Life event" },
+      "aria": "{{name}}, {{type}} card, {{tier}}, {{headline}}.",
+      "locked": "Can't play this now.",
+      "back": "Card back",
+      "headline": {
+        "block": "Block",
+        "skipTurn": "Skip turn",
+        "steal": "Steal {{amount}}",
+        "nextYear": "{{amount}} next yr",
+        "atEnd": "{{amount}} at end",
+        "floor": "Floor {{amount}}",
+        "doubleInvest": "2× invest",
+        "copy": "Copy",
+        "newGoal": "New goal",
+        "hit": "{{pct}} hit"
+      },
+      "spoken": {
+        "choose": "choose spend, save or invest",
+        "youGainPct": "you gain {{n}} percent",
+        "youLosePct": "you lose {{n}} percent",
+        "rivalLosesPct": "a rival loses {{n}} percent",
+        "rivalGainsPct": "a rival gains {{n}} percent",
+        "everyoneLosesPct": "everyone loses {{n}} percent",
+        "everyoneGainsPct": "everyone gains {{n}} percent",
+        "allRivalsLosePct": "every rival loses {{n}} percent",
+        "allRivalsGainPct": "every rival gains {{n}} percent",
+        "rivalInvestLosesPct": "a rival's investments lose {{n}} percent",
+        "stealPct": "take {{n}} percent from a rival",
+        "reduceHit": "attacks on you hurt {{n}} percent less",
+        "youGainAmount": "you gain {{amount}}",
+        "youLoseAmount": "you lose {{amount}}",
+        "rivalLosesAmount": "a rival loses {{amount}}",
+        "everyoneGainsAmount": "everyone gains {{amount}}",
+        "steal": "take {{amount}} from a rival",
+        "skipTurn": "a rival skips a turn",
+        "block": "blocks an attack",
+        "nextYear": "you get {{amount}} next year",
+        "atEnd": "you get {{amount}} at the end of the game",
+        "floor": "your money can't fall below {{amount}}",
+        "doubleInvest": "your next investment counts double",
+        "copy": "copies a card",
+        "newGoal": "sets a new goal"
+      }
+    }
+  },
+  "hi": {
+    "common": {
+      "back": "वापस",
+      "next": "आगे",
+      "ok": "ठीक है",
+      "gotIt": "समझ गए",
+      "menu": "मेनू",
+      "home": "होम",
+      "loading": "लोड हो रहा है…",
+      "coins": "दानिक कॉइन",
+      "coinsCount": "{{n}} दानिक कॉइन",
+      "coinsInfo": "दानिक कॉइन से अभ्यास वाले खेल में एक एक्स्ट्रा कार्ड मिलता है। इनकी कोई नकद कीमत नहीं है और इन्हें खरीदा नहीं जा सकता।",
+      "offline": "आप ऑफ़लाइन हैं। अभ्यास, कैंपेन और लाइब्रेरी अब भी चलेंगे।",
+      "settings": {
+        "title": "सेटिंग्स",
+        "language": "भाषा",
+        "sound": "आवाज़",
+        "reduceEffects": "कम इफ़ेक्ट",
+        "reduceEffectsHint": "कम एनिमेशन, कोई कॉन्फ़ेटी नहीं।"
+      },
+      "error": {
+        "title": "उफ़, BHAO में कुछ गड़बड़ हो गई।",
+        "body": "इस स्क्रीन पर कुछ गलत हो गया। दोबारा लोड करने से अक्सर ठीक हो जाता है। बार-बार हो तो support@daanik.com पर ईमेल करें।",
+        "reload": "दोबारा लोड करें",
+        "home": "होम पर जाएँ"
+      }
+    },
+    "lang": {
+      "en": "English",
+      "hi": "हिंदी",
+      "hinglish": "Hinglish",
+      "code": { "en": "EN", "hi": "हिं", "hinglish": "HG" },
+      "current": "भाषा: {{lang}}। भाषा बदलें"
+    },
+    "card": {
+      "type": { "decision": "फ़ैसला", "attack": "हमला", "shield": "बचाव", "lifeEvent": "ज़िंदगी" },
+      "aria": "{{name}}, {{type}} कार्ड, {{tier}}, {{headline}}।",
+      "locked": "यह कार्ड अभी नहीं खेल सकते।",
+      "back": "कार्ड का पिछला हिस्सा",
+      "headline": {
+        "block": "बचाव",
+        "skipTurn": "बारी छोड़ो",
+        "steal": "{{amount}} छीनो",
+        "nextYear": "{{amount}} अगले साल",
+        "atEnd": "{{amount}} अंत में",
+        "floor": "कम से कम {{amount}}",
+        "doubleInvest": "2× निवेश",
+        "copy": "कॉपी",
+        "newGoal": "नया लक्ष्य",
+        "hit": "{{pct}} चोट"
+      },
+      "spoken": {
+        "choose": "खर्च, बचत या निवेश चुनें",
+        "youGainPct": "आपको {{n}} प्रतिशत फ़ायदा",
+        "youLosePct": "आपको {{n}} प्रतिशत नुकसान",
+        "rivalLosesPct": "एक विरोधी को {{n}} प्रतिशत नुकसान",
+        "rivalGainsPct": "एक विरोधी को {{n}} प्रतिशत फ़ायदा",
+        "everyoneLosesPct": "सबको {{n}} प्रतिशत नुकसान",
+        "everyoneGainsPct": "सबको {{n}} प्रतिशत फ़ायदा",
+        "allRivalsLosePct": "हर विरोधी को {{n}} प्रतिशत नुकसान",
+        "allRivalsGainPct": "हर विरोधी को {{n}} प्रतिशत फ़ायदा",
+        "rivalInvestLosesPct": "एक विरोधी के निवेश {{n}} प्रतिशत गिरते हैं",
+        "stealPct": "एक विरोधी से {{n}} प्रतिशत लो",
+        "reduceHit": "आप पर हमले {{n}} प्रतिशत कम लगते हैं",
+        "youGainAmount": "आपको {{amount}} मिलते हैं",
+        "youLoseAmount": "आपके {{amount}} जाते हैं",
+        "rivalLosesAmount": "एक विरोधी के {{amount}} जाते हैं",
+        "everyoneGainsAmount": "सबको {{amount}} मिलते हैं",
+        "steal": "एक विरोधी से {{amount}} लो",
+        "skipTurn": "एक विरोधी की बारी छूटती है",
+        "block": "एक हमला रोकता है",
+        "nextYear": "अगले साल आपको {{amount}} मिलेंगे",
+        "atEnd": "खेल के अंत में आपको {{amount}} मिलेंगे",
+        "floor": "आपका पैसा {{amount}} से नीचे नहीं जाएगा",
+        "doubleInvest": "आपका अगला निवेश दोगुना गिना जाएगा",
+        "copy": "एक कार्ड की कॉपी करता है",
+        "newGoal": "नया लक्ष्य तय करता है"
+      }
+    }
+  },
+  "hinglish": {
+    "common": {
+      "back": "Back",
+      "next": "Aage",
+      "ok": "OK",
+      "gotIt": "Samajh gaye",
+      "menu": "Menu",
+      "home": "Home",
+      "loading": "Load ho raha hai…",
+      "coins": "Daanik Coins",
+      "coinsCount": "{{n}} Daanik Coins",
+      "coinsInfo": "Daanik Coins se practice games mein ek extra card milta hai. Inki koi cash value nahi hai aur ye khareede nahi ja sakte.",
+      "offline": "Aap offline ho. Practice, campaign aur library ab bhi chalenge.",
+      "settings": {
+        "title": "Settings",
+        "language": "Language",
+        "sound": "Sound",
+        "reduceEffects": "Kam effects",
+        "reduceEffectsHint": "Kam animation, koi confetti nahi."
+      },
+      "error": {
+        "title": "Oops, BHAO mein kuch gadbad ho gayi.",
+        "body": "Is screen par kuch galat ho gaya. Reload karne se aksar theek ho jata hai. Baar-baar ho toh support@daanik.com par email karo.",
+        "reload": "Reload karo",
+        "home": "Home jao"
+      }
+    },
+    "lang": {
+      "en": "English",
+      "hi": "हिंदी",
+      "hinglish": "Hinglish",
+      "code": { "en": "EN", "hi": "हिं", "hinglish": "HG" },
+      "current": "Language: {{lang}}. Language badlo"
+    },
+    "card": {
+      "type": { "decision": "Decision", "attack": "Attack", "shield": "Shield", "lifeEvent": "Life event" },
+      "aria": "{{name}}, {{type}} card, {{tier}}, {{headline}}.",
+      "locked": "Ye card abhi nahi khel sakte.",
+      "back": "Card ka peeche ka hissa",
+      "headline": {
+        "block": "Block",
+        "skipTurn": "Turn skip",
+        "steal": "{{amount}} chheeno",
+        "nextYear": "{{amount}} agle saal",
+        "atEnd": "{{amount}} end mein",
+        "floor": "Floor {{amount}}",
+        "doubleInvest": "2× invest",
+        "copy": "Copy",
+        "newGoal": "Naya goal",
+        "hit": "{{pct}} hit"
+      },
+      "spoken": {
+        "choose": "spend, save ya invest chuno",
+        "youGainPct": "aapko {{n}} percent faayda",
+        "youLosePct": "aapko {{n}} percent nuksaan",
+        "rivalLosesPct": "ek rival ko {{n}} percent nuksaan",
+        "rivalGainsPct": "ek rival ko {{n}} percent faayda",
+        "everyoneLosesPct": "sabko {{n}} percent nuksaan",
+        "everyoneGainsPct": "sabko {{n}} percent faayda",
+        "allRivalsLosePct": "har rival ko {{n}} percent nuksaan",
+        "allRivalsGainPct": "har rival ko {{n}} percent faayda",
+        "rivalInvestLosesPct": "ek rival ke investments {{n}} percent girte hain",
+        "stealPct": "ek rival se {{n}} percent lo",
+        "reduceHit": "aap par attacks {{n}} percent kam lagte hain",
+        "youGainAmount": "aapko {{amount}} milte hain",
+        "youLoseAmount": "aapke {{amount}} jaate hain",
+        "rivalLosesAmount": "ek rival ke {{amount}} jaate hain",
+        "everyoneGainsAmount": "sabko {{amount}} milte hain",
+        "steal": "ek rival se {{amount}} lo",
+        "skipTurn": "ek rival ka turn skip hota hai",
+        "block": "ek attack rokta hai",
+        "nextYear": "agle saal aapko {{amount}} milenge",
+        "atEnd": "game ke end mein aapko {{amount}} milenge",
+        "floor": "aapka paisa {{amount}} se neeche nahi jayega",
+        "doubleInvest": "aapka agla investment double gina jayega",
+        "copy": "ek card copy karta hai",
+        "newGoal": "naya goal set karta hai"
+      }
+    }
+  }
+}

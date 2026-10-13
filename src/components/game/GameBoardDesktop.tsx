@@ -142,7 +142,7 @@ export function GameBoardDesktop({
             selected={selectedCard?.id === card.id}
             isNew={interactive && gameState.drawnCard?.id === card.id}
           >
-            <GameCardComponent card={card} compact onClick={interactive ? () => onCardClick(card) : undefined} disabled={!interactive} />
+            <GameCardComponent card={card} size="full" onClick={interactive ? () => onCardClick(card) : undefined} state={interactive ? 'idle' : 'locked'} />
           </HandCardFrame>
         ))}
       </AnimatePresence>
@@ -243,7 +243,7 @@ export function GameBoardDesktop({
             {uiPhase === 'decision' && pending && (
               <motion.div className="dk-decision" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}>
                 <div className="dk-decision-card">
-                  <GameCardComponent card={pending.card} compact />
+                  <GameCardComponent card={pending.card} size="full" />
                 </div>
                 <div className="dk-decision-panel">
                   <div className="dk-decision-head">

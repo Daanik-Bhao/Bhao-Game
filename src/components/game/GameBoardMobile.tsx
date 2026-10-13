@@ -106,9 +106,8 @@ export function GameBoardMobile({
           >
             <GameCardComponent
               card={card}
-              compact
-              disabled={!interactive}
-              selected={selectedCard?.id === card.id}
+              size="hand"
+              state={selectedCard?.id === card.id ? 'selected' : interactive ? 'idle' : 'locked'}
               onClick={interactive ? () => setSelectedId(prev => (prev === card.id ? null : card.id)) : undefined}
             />
           </HandCardFrame>

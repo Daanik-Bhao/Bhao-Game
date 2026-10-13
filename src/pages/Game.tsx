@@ -1078,10 +1078,10 @@ function ResultScreen({ isWinner, placement, finalWealth, rpChange, players, mod
 
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', position: 'sticky', bottom: 0, padding: '12px 0 max(16px, env(safe-area-inset-bottom))', background: 'linear-gradient(to bottom, rgba(0,16,16,0), var(--green-black) 35%)', zIndex: 20 }}>
           <div className="btn-rebound" style={{ boxShadow: '0 0 20px rgba(244, 210, 123, 0.4)', borderRadius: 12 }}>
-            <Button variant="gold" size="lg" onClick={onPlayAgain} style={{ minWidth: 200 }}>{t('result.playAgain')}</Button>
+            <Button variant="primary" size="l" onClick={onPlayAgain} style={{ minWidth: 200 }}>{t('result.playAgain')}</Button>
           </div>
           <div className="btn-rebound">
-            <Button variant="secondary" size="lg" onClick={onDashboard} style={{ minWidth: 200 }}>{t('result.dashboard')}</Button>
+            <Button variant="secondary" size="l" onClick={onDashboard} style={{ minWidth: 200 }}>{t('result.dashboard')}</Button>
           </div>
         </div>
       </div>

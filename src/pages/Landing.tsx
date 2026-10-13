@@ -52,7 +52,7 @@ export function Landing() {
           <LanguageSwitcher variant="cycle" short />
           <Link to="/auth" style={{ color: 'var(--text-dark)', textDecoration: 'none', fontSize: 18, fontWeight: 500, whiteSpace: 'nowrap' }}>{t('landing.signIn')}</Link>
           <Link to="/auth?mode=register" className="landing-nav-play">
-            <Button size="sm">{t('landing.playNow')}</Button>
+            <Button size="s">{t('landing.playNow')}</Button>
           </Link>
         </div>
       </nav>
@@ -85,10 +85,10 @@ export function Landing() {
 
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to="/auth?mode=register">
-              <Button size="lg" variant="gold">{t('landing.startFree')}</Button>
+              <Button size="l" variant="primary">{t('landing.startFree')}</Button>
             </Link>
             <Link to="/auth">
-              <Button size="lg" variant="secondary">{t('landing.signIn')}</Button>
+              <Button size="l" variant="secondary">{t('landing.signIn')}</Button>
             </Link>
           </div>
           <div style={{ marginTop: 16 }}>
@@ -203,7 +203,7 @@ export function Landing() {
         <h2 style={{ fontSize: 50, fontFamily: 'var(--font-display)', fontWeight: 800, color: 'var(--green-primary)', marginBottom: 16 }}>{t('dashboard.readyToBuild')}</h2>
         <p style={{ color: 'var(--text-muted)', fontSize: 23, marginBottom: 40 }}>{t('landing.ctaSub')}</p>
         <Link to="/auth?mode=register">
-          <Button size="lg" variant="gold">{t('landing.ctaBtn')}</Button>
+          <Button size="l" variant="primary">{t('landing.ctaBtn')}</Button>
         </Link>
       </section>
 
