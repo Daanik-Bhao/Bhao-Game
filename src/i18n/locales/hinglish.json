@@ -1,14 +1,30 @@
 {
   "auth": {
     "title": "BHAO mein aapka swagat hai",
-    "signIn": "Sign In karein",
-    "subtitle": "The Ultimate Wealth Strategy Game",
+    "signIn": "Sign in",
+    "subtitle": "Progress save karo aur dosto ke saath khelo.",
     "usernameLabel": "Username",
-    "usernamePlaceholder": "Ek cool naam daalein",
+    "usernamePlaceholder": "Ek username chuno",
     "loading": "Enter kar rahe hain...",
-    "submit": "Arena mein enter karein",
+    "submit": "Account banao",
     "googleOpening": "Google khul raha hai...",
-    "googleFailed": "Google sign-in nahi ho paaya"
+    "googleFailed": "Google sign-in nahi ho paaya",
+    "playGuest": "Guest ban ke khelo",
+    "google": "Google se continue karo",
+    "guestNote": "Guest tutorial, campaign aur bots ke saath khel sakte hain. Dosto ke saath khelne ke liye account chahiye.",
+    "unavailable": "Online sign-in abhi available nahi hai. Tum guest ban ke khel sakte ho.",
+    "orEmail": "ya email se sign in karo",
+    "modeLabel": "Sign in karo ya account banao",
+    "signInTab": "Sign in",
+    "registerTab": "Account banao",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "passwordNew": "Password banao",
+    "showPassword": "Password dikhao",
+    "hidePassword": "Password chhupao",
+    "agree": "Aage badhkar tum humare in terms se agree karte ho:",
+    "usernameShort": "Username kam se kam 3 letters ka hona chahiye.",
+    "genericError": "Kuch gadbad ho gayi. Dobara try karo."
   },
   "dashboard": {
     "welcome": "Welcome back",
@@ -38,7 +54,7 @@
     "viewRewards": "Rewards dekhein",
     "onlineNow": "Players Online Now",
     "readyToBuild": "Apna empire banane ke liye ready hain?",
-    "signOut": "Sign Out"
+    "signOut": "Sign out"
   },
   "game": {
     "yourTurn": "Aapki Turn",
@@ -47,7 +63,7 @@
     "pickCard": "Khelne ke liye ek card chune:",
     "defenseCards": "Defense Cards",
     "endGame": "End Game",
-    "gameLog": "GAME LOG",
+    "gameLog": "Game log",
     "started": "start ho gaya!",
     "goal": "Goal",
     "waiting": "Baaki players ka wait kar rahe hain...",
@@ -69,8 +85,8 @@
     "equippedDefense": "Defense card equip kiya!",
     "actionTaken": "{{action}}!",
     "loadingGame": "Game load ho raha hai...",
-    "connectionLost": "Connection Lost",
-    "reconnecting": "Game server se reconnect kar rahe hain...",
+    "connectionLost": "Connection toot gaya",
+    "reconnecting": "Game se dobara judne ki koshish ho rahi hai…",
     "victory": "Victory!",
     "place": "{{placement}}{{ordinal}} Place",
     "finalWealth": "Final wealth: {{amount}}",
@@ -84,19 +100,68 @@
     "selectTarget": "{{card}} ke liye target select karein",
     "clickOpponentTarget": "Target karne ke liye kisi opponent ke panel par click karein.",
     "previewCard": "Card Preview",
-    "playCard": "Card Play Karein"
+    "playCard": "Card Play Karein",
+    "menu": "Pause menu",
+    "log": "Game log",
+    "sendingMove": "Move bheja ja raha hai…",
+    "mpTitle": "Friends match",
+    "actionFailed": "Kuch gadbad ho gayi. Phir try karo."
   },
   "profile": {
-    "title": "Player Profile",
+    "title": "Profile",
     "unknownPlayer": "Unknown Player",
-    "editUsername": "Username Edit Karein"
+    "editUsername": "Username Edit Karein",
+    "guestTitle": "Progress save karne ke liye sign in karo",
+    "guestBody": "Tum {{name}} ban ke khel rahe ho. Free account se tumhare stars aur library har phone pe rahenge.",
+    "exitGuestNote": "Tumhari guest progress isi phone pe rahegi.",
+    "changeAvatar": "Avatar badlo",
+    "chooseAvatar": "Apna avatar chuno",
+    "avatarN": "Avatar {{n}}",
+    "statsTitle": "Tumhare stats",
+    "stats": {
+      "coins": "Daanik Coins",
+      "played": "Games khele",
+      "won": "Games jeete",
+      "winRate": "Win rate",
+      "streak": "Win streak",
+      "bestStreak": "Best win streak"
+    },
+    "dangerZone": "Danger zone",
+    "dangerBody": "Account delete karne se tumhari profile, coins, stats aur progress hamesha ke liye hat jayenge.",
+    "rank": {
+      "rookie": "Rookie",
+      "hustler": "Hustler",
+      "grinder": "Grinder",
+      "elite": "Elite",
+      "mogul": "Mogul",
+      "tycoon": "Tycoon",
+      "billionaire": "Billionaire",
+      "daanik_legend": "DAANIK Legend"
+    },
+    "rankPoints": "{{n}} RP",
+    "rankProgress": "Agli rank tak ki progress",
+    "rankTop": "Sabse upar ki rank mil gayi",
+    "rankNext": "Agli rank ke liye {{n}} RP",
+    "delete": {
+      "button": "Account delete karo",
+      "title": "Apna account delete karna hai?",
+      "intro": "Isse hamesha ke liye delete hoga:",
+      "item1": "tumhara BHAO account aur profile",
+      "item2": "tumhare Daanik Coins, stats aur leaderboard entry",
+      "item3": "humare server pe tumhari contract aur campaign progress",
+      "permanent": "Ise wapas nahi kiya ja sakta.",
+      "typeLabel": "Confirm karne ke liye {{word}} type karo",
+      "confirm": "Hamesha ke liye delete",
+      "deleting": "Delete ho raha hai…",
+      "error": "Account delete nahi ho paya. Dobara try karo ya support@daanik.com pe email karo."
+    }
   },
   "common": {
     "save": "Save",
     "saving": "Save ho raha hai...",
     "cancel": "Cancel",
     "refresh": "Refresh",
-    "loading": "Load ho raha hai...",
+    "loading": "Load ho raha hai…",
     "loadMore": "Aur Load Karein",
     "you": "aap",
     "leave": "LEAVE",
@@ -105,7 +170,30 @@
     "forfeitWarning": "Active game chhodne par loss milega aur 25 🪙 ka penalty lagega.",
     "stayInGame": "Game mein rahein",
     "forfeitMatch": "Match Forfeit Karein",
-    "close": "Band karo"
+    "close": "Band karo",
+    "back": "Back",
+    "next": "Aage",
+    "ok": "OK",
+    "gotIt": "Samajh gaye",
+    "menu": "Menu",
+    "home": "Home",
+    "coins": "Daanik Coins",
+    "coinsCount": "{{n}} Daanik Coins",
+    "coinsInfo": "Daanik Coins se practice games mein ek extra card milta hai. Inki koi cash value nahi hai aur ye khareede nahi ja sakte.",
+    "offline": "Aap offline ho. Practice, campaign aur library ab bhi chalenge.",
+    "settings": {
+      "title": "Settings",
+      "language": "Language",
+      "sound": "Sound",
+      "reduceEffects": "Kam effects",
+      "reduceEffectsHint": "Kam animation, koi confetti nahi."
+    },
+    "error": {
+      "title": "Oops, BHAO mein kuch gadbad ho gayi.",
+      "body": "Is screen par kuch galat ho gaya. Reload karne se aksar theek ho jata hai. Baar-baar ho toh support@daanik.com par email karo.",
+      "reload": "Reload karo",
+      "home": "Home jao"
+    }
   },
   "leaderboard": {
     "title": "Leaderboard",
@@ -113,18 +201,35 @@
     "rank": "Rank",
     "player": "Player",
     "wins": "Wins",
-    "bestWealth": "Best Wealth"
+    "bestWealth": "Best Wealth",
+    "emptyBody": "Apna naam yahan laane ke liye ek game poora karo.",
+    "playNow": "Abhi khelo",
+    "sortBy": "Sort by",
+    "you": "Aap",
+    "winsCount_one": "{{count}} jeet",
+    "winsCount_other": "{{count}} jeet",
+    "showAll": "Saare players dekho"
   },
   "contracts": {
-    "title": "Daily Contracts",
+    "title": "Daily contracts",
     "resetsIn": "Resets in",
     "loading": "Active contracts load ho rahe hain...",
-    "empty": "Aaj ke liye koi active contracts nahi hain. Kal wapas check karein!",
-    "startTitle": "Apni journey start karein",
-    "startDesc": "Contract progress earn karne aur rewards unlock karne ke liye game khelein!",
-    "weekly": "WEEKLY",
-    "complete": "COMPLETE",
-    "card": "card"
+    "empty": "Aaj ke liye koi contract nahi hai. Kal phir dekho.",
+    "startTitle": "Apni journey shuru karo",
+    "startDesc": "Contract progress shuru karne ke liye ek game khelo.",
+    "weekly": "Weekly",
+    "complete": "Done",
+    "card": "card",
+    "emptyShort": "Aaj koi contract nahi.",
+    "emptyTitle": "Abhi koi contract nahi",
+    "resetsInTime": "Naye contracts {{h}}h {{m}}m mein",
+    "reward": "+{{n}} Daanik Coins",
+    "cardReward": "+1 {{tier}} card",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    }
   },
   "difficulty": {
     "easy": "EASY",
@@ -152,28 +257,68 @@
     "roomCodeLabel": "Room Code",
     "roomCodePlaceholder": "6-character code enter karein",
     "joinBtn": "Room Join Karein",
-    "waitingRoom": "Waiting Room",
+    "waitingRoom": "Waiting room",
     "shareCode": "Players ko invite karne ke liye code share karein",
     "copied": "✓ Copy ho gaya!",
     "clickToCopy": "Copy karne ke liye click karein",
     "players": "Players",
     "waitingForHost": "Host ke start karne ka wait kar rahe hain...",
-    "startGame": "Game Start Karein"
+    "startGame": "Game Start Karein",
+    "title": "Dosto ke saath khelo",
+    "tabCreate": "Room banao",
+    "tabJoin": "Room join karo",
+    "minutes": "{{n}} min",
+    "goal": "Goal {{goal}}",
+    "playersCount": "{{n}} players",
+    "createBtn2": "Room banao",
+    "codeHint": "Dost se 6-letter code lo",
+    "joinBtn2": "Join karo",
+    "codeAria": "Room code {{code}}",
+    "copy": "Copy",
+    "copied2": "Copy ho gaya",
+    "shareWhatsApp": "WhatsApp par share karo",
+    "shareText": "Mere BHAO game mein judo: code {{code}}",
+    "playersOf": "Players {{n}}/{{max}}",
+    "you": "{{name}} (aap)",
+    "host": "Host",
+    "ready": "Ready",
+    "notReady": "Ready nahi",
+    "waitingSlot": "Wait ho raha hai…",
+    "startGame2": "Game shuru karo",
+    "needReady": "2+ players chahiye, sab ready hon.",
+    "waitingForHost2": "Host ke start karne ka wait",
+    "imReady": "Main ready hoon",
+    "notReadyBtn": "Abhi ready nahi",
+    "leave": "Room chhodo",
+    "noProfile": "Aapki profile nahi mili. Sign out karke phir sign in karo.",
+    "errCreate": "Room nahi ban paya. Phir try karo.",
+    "errJoin": "Room join nahi ho paya. Code check karke phir try karo.",
+    "errReady": "Aapka ready status update nahi hua.",
+    "errStart": "Game shuru nahi ho paya. Phir try karo."
   },
   "lang": {
     "label": "Language",
-    "switchTo": "Language change karo: {{lang}}"
+    "switchTo": "Language change karo: {{lang}}",
+    "en": "English",
+    "hi": "हिंदी",
+    "hinglish": "Hinglish",
+    "code": {
+      "en": "EN",
+      "hi": "हिं",
+      "hinglish": "HG"
+    },
+    "current": "Language: {{lang}}. Language badlo"
   },
   "board": {
     "yourHand": "Tumhare cards",
-    "yourTurn": "Tumhari baari",
-    "isPlaying": "{{name}} khel raha hai",
+    "yourTurn": "Aapki turn",
+    "isPlaying": "{{name}} khel rahe hain…",
     "cardsInHand": "{{n}}/{{max}} cards",
     "planNext": "Tumhare cards — agli chaal socho",
     "planAhead": "Tumhare cards — aage ka socho",
     "drawRefill": "Card lo aur haath mein phir se {{max}} cards karo.",
     "drawStart": "Turn shuru karne ke liye card lo.",
-    "drawCard": "Card lo",
+    "drawCard": "Card uthao",
     "refill": "Haath mein {{max}} cards poore karo",
     "deckLeft": "Deck mein {{n}} cards bache",
     "pickThenAct": "Card chuno — phir Play, Equip ya Pass",
@@ -192,12 +337,136 @@
     "target": "{{name}} pe attack",
     "targetSub": "{{amount}} net worth · {{n}} investments",
     "noTargets": "Attack karne ke liye koi bacha nahi.",
-    "you": "Tum",
-    "left": "(chala gaya)",
-    "sendEmote": "Emoji bhejo",
+    "you": "Aap",
+    "left": "(chale gaye)",
+    "sendEmote": "Emote bhejo",
     "yourPortfolio": "Tumhara portfolio",
-    "yourMoney": "Tumhara paisa",
-    "investmentsCount": "{{n}} investments"
+    "yourMoney": "Aapka paisa",
+    "investmentsCount": "{{n}} investments",
+    "mode": {
+      "practice": "Practice",
+      "ranked": "Ranked",
+      "multiplayer": "Dosto ke saath",
+      "level": "Level {{n}} · {{name}}",
+      "levelSub": "{{years}} saal mein {{goal}} tak pahuncho",
+      "botsSub_one": "{{count}} bot ke saath · {{goal}} tak ki race",
+      "botsSub_other": "{{count}} bots ke saath · {{goal}} tak ki race"
+    },
+    "yearOf": "Saal {{n}} / {{max}}",
+    "yearsLeft_one": "{{count}} saal baaki",
+    "yearsLeft_other": "{{count}} saal baaki",
+    "yearAria": "Saal {{n}} / {{max}}, {{left}} baaki. Saal ka summary kholo",
+    "clockLeft": "{{time}} baaki",
+    "timerAria": "Aapki turn mein {{n}} second baaki",
+    "secondsLeft": "{{n}} sec baaki",
+    "gameLog": "Game log",
+    "newMoves_one": "{{count}} nayi chaal",
+    "newMoves_other": "{{count}} nayi chaalein",
+    "rivals": "Rivals",
+    "rivalAria": "{{name}}, {{amount}}, rank {{rank}}. Details kholo",
+    "targetAria": "{{name}} ko hit karo ({{amount}})",
+    "tapToTarget": "Target karo",
+    "leftGame": "Game chhod diya",
+    "playingNow": "khel rahe hain…",
+    "shieldsCount_one": "{{count}} shield",
+    "shieldsCount_other": "{{count}} shields",
+    "standings": "Standings",
+    "recentMoves": "Haal ki chaalein",
+    "myMoney": "Mera paisa",
+    "deckCount_one": "{{count}} card",
+    "deckCount_other": "{{count}} cards",
+    "deckAria_one": "Deck, {{count}} card baaki",
+    "deckAria_other": "Deck, {{count}} cards baaki",
+    "drawAria_one": "Card uthao ({{count}} baaki)",
+    "drawAria_other": "Card uthao ({{count}} baaki)",
+    "youPlayed": "Aapne khela",
+    "playedBy": "{{name}} ne khela",
+    "inflationChip": "Is saal inflation {{pct}}%",
+    "inflationShort": "Inflation {{pct}}%",
+    "drawLine": "Shuru karne ke liye card uthao.",
+    "playLine": "Ek card chuno. Spend karo, save karo ya invest karo.",
+    "chooseRival": "{{card}} se kisko hit karna hai?",
+    "chooseRivalLine": "Upar kisi rival pe tap karo.",
+    "isPlayingShort": "{{name}} ki turn",
+    "waitLine": "Apni agli chaal socho.",
+    "youSkip": "Aap ye saal skip karoge.",
+    "gameOver": "Game khatam",
+    "hint": "Card pe tap karo: play, equip ya pass",
+    "hintDesktop": "Card pe click karo: play, equip ya pass · 1–5 keys se card chuno",
+    "waitTurn": "Apni turn ka wait karo",
+    "drawFirst": "Pehle card uthao.",
+    "yourHandCount_one": "Aapke haath mein {{count}} card",
+    "yourHandCount_other": "Aapke haath mein {{count}} cards",
+    "hudAria": "Mera paisa: net worth {{amount}}, aap number {{rank}} pe ho. Details kholo",
+    "youAreRank": "Aap #{{rank}} ho",
+    "rankOf": "{{total}} mein #{{rank}}",
+    "thisYear": "{{amount}} is saal",
+    "goalShort": "Goal {{goal}}",
+    "goalPct": "{{goal}} ka {{pct}}%",
+    "goalAria": "Goal tak ki progress",
+    "lifestyle": "Lifestyle",
+    "levelRule": "Level ka rule",
+    "ruleAria": "Level ka rule: {{rule}}. Details kholo",
+    "netWorthNow": "Ab net worth ₹{{amount}}",
+    "cashNote": "Inflation se har saal ~{{pct}}% ghatta hai",
+    "lifestyleNote": "Har Spend se ye badhta hai; saath mein cash pe inflation bhi badhti hai.",
+    "shieldsOf": "Shields {{n}} / {{max}}",
+    "define": "{{term}} kya hai?",
+    "term": {
+      "netWorth": "Net worth",
+      "inflation": "Inflation",
+      "sip": "SIP",
+      "fd": "FD"
+    },
+    "termDef": {
+      "netWorth": "Net worth = aapka cash + aapke investments ki value.",
+      "inflation": "Inflation: har saal daam badhte hain, isliye pada hua cash kam khareedta hai.",
+      "sip": "SIP: har baar ek fixed amount kisi fund mein daalna.",
+      "fd": "FD (fixed deposit): fixed interest wali safe bank saving."
+    },
+    "choicesAria": "Chuno: spend, save ya invest",
+    "choiceTitle": {
+      "spend": "Abhi enjoy karo",
+      "save": "Savings mein rakho",
+      "invest": "Invest karo"
+    },
+    "perYear": "~{{pct}}%/saal",
+    "chooseNow": "Decide karo kya karna hai",
+    "play": "Play",
+    "playTarget": "Play: rival chuno",
+    "equipFree": "Shield lagao (free)",
+    "lifeEventInfo": "Life events saal ki shuruaat mein hote hain. Inhe khela nahi ja sakta.",
+    "passLine": "Pass: ye card chhodo (turn khatam)",
+    "passConfirm": "{{card}} chhodke turn khatam karein?",
+    "keepCard": "Card rakho",
+    "resume": "Resume",
+    "howToPlay": "Kaise khelein",
+    "quitGame": "Game chhodo",
+    "yearSummary": "Saal ka summary",
+    "yearNothing": "Is saal abhi kuch nahi hua.",
+    "marketThisYear": "Is saal market",
+    "youHoldThis": "Ye aapke paas hai",
+    "yourChange": "Aapka paisa",
+    "inflationOnCash": "Aapke cash pe inflation",
+    "investmentsChange": "Aapke investments",
+    "lifeEvent": "Life event: {{card}}",
+    "notYou": "Aap pe nahi",
+    "yearBanner": "Saal {{n}}",
+    "yearBannerInflation": "inflation {{pct}}%",
+    "yearBannerInvest": "aapke investments {{amount}}",
+    "quit": {
+      "title": "Ye game chhodna hai?",
+      "body": "Is game ki aapki progress chali jaayegi.",
+      "bodyRanked": "Ye haar mani jaayegi.",
+      "keep": "Khelte raho",
+      "confirm": "Game chhodo"
+    },
+    "toast": {
+      "timeUp": "Time khatam. Turn skip ho gayi.",
+      "equipped": "{{card}} lag gaya. Ab ek card khelo.",
+      "extraCard": "Ek extra card mila: −{{n}} Daanik Coins",
+      "notEnoughCoins": "Daanik Coins kam hain"
+    }
   },
   "econ": {
     "risk": {
@@ -216,7 +485,7 @@
     },
     "save": {
       "toCash": "{{amount}} cash mein",
-      "streak": "🔥 Saving streak ×{{streak}}: +{{bonus}}% bonus",
+      "streak": "Saving streak ×{{streak}}: +{{bonus}}% bonus",
       "startStreak": "Agli baari phir save karo, streak bonus shuru!",
       "inflation": "Pada hua cash inflation se ~{{pct}}%/saal ghatta hai"
     },
@@ -224,7 +493,7 @@
       "lifestyleMax": "lifestyle already max",
       "lifestyleUp": "lifestyle ↑ (inflation +1%)",
       "details": "{{amount}}, +1 card, {{lifestyle}}",
-      "forcedSale": "⚠️ Cash kam hai: investments penalty pe bikenge",
+      "forcedSale": "Cash kam hai: investments penalty pe bikenge",
       "creep": "Lifestyle badhi toh har saal ka kharcha bhi badhega"
     },
     "invest": {
@@ -336,7 +605,6 @@
       "campaign": "CAMPAIGN"
     },
     "youWin": "TUM JEET GAYE!",
-    "betterLuck": "AGLI BAAR PAKKA!",
     "soClose": "Bas thoda sa reh gaya!",
     "place": "{{n}}{{ordinal}} Place",
     "ordinal": {
@@ -349,8 +617,37 @@
     "showLog": "Game log dikhao",
     "hideLog": "Game log chhupao",
     "highlights": "Match Highlights",
-    "playAgain": "PHIR SE KHELO",
-    "dashboard": "DASHBOARD"
+    "playAgain": "Phir khelo",
+    "dashboard": "DASHBOARD",
+    "caption": "Game over · {{years}} saal khele",
+    "headline": {
+      "won": "Aap jeete! {{nw}}",
+      "grew2x": "Aapka paisa {{x}} badha",
+      "grew": "Aapka paisa {{pct}} badha",
+      "nearMiss": "Bas {{gap}} kam reh gaye!",
+      "shrank": "Tough game. Agli baar ye try karo"
+    },
+    "finished": "Aap {{n}} mein se {{ordinal}} aaye.",
+    "winnerReached": "{{winner}} sabse pehle {{goal}} tak pahunche.",
+    "winnerMost": "{{winner}} ke paas sabse zyada paisa raha.",
+    "youReached": "Aap sabse pehle {{goal}} tak pahunche.",
+    "youMost": "Aapke paas sabse zyada paisa raha.",
+    "ordinalWord": {
+      "1": "1st",
+      "2": "2nd",
+      "3": "3rd",
+      "4": "4th",
+      "5": "5th",
+      "6": "6th"
+    },
+    "start": "Start {{amount}}",
+    "netWorthAria": "Aapki net worth",
+    "standings": "Final standings",
+    "you": "Aap",
+    "nextLevel": "Agla level",
+    "tryAgain": "Phir try karo",
+    "backToLobby": "Lobby mein wapas",
+    "rp": "{{rp}} RP"
   },
   "popup": {
     "invested": "INVEST KIYA!",
@@ -364,10 +661,17 @@
     "aiOpponents": "AI opponents",
     "playingAgainst": "{{n}} AI ke against · total {{total}} players",
     "raceTo": "Target:",
-    "entryReward": "Reward",
-    "winToEarn": "Game jeeto aur pao",
     "startGame": "Game shuru karo",
-    "defaultGoal": "₹50 lakh"
+    "defaultGoal": "₹50 lakh",
+    "title": "Naya practice game",
+    "race": "{{years}} saal mein {{goal}} tak pahuncho.",
+    "opponents": "Opponents",
+    "botsAria_one": "{{count}} bot",
+    "botsAria_other": "{{count}} bots",
+    "summary_one": "Aap + {{count}} bot · lagbhag {{min}} minute · start {{start}} se",
+    "summary_other": "Aap + {{count}} bots · lagbhag {{min}} minute · start {{start}} se",
+    "coinsWin": "Jeetne par {{n}} Daanik Coins",
+    "coinsInfoLabel": "Daanik Coins kya hain?"
   },
   "campaign": {
     "yourTurn": "Tumhari baari",
@@ -400,7 +704,11 @@
       "earnStars": "Stars kamao",
       "start": "Level shuru karo",
       "close": "Band karo",
-      "yourBest": "Tumhara best: {{nw}}"
+      "yourBest": "Tumhara best: {{nw}}",
+      "notNow": "Abhi nahi",
+      "goalShort": "{{years}} saal mein {{target}} tak pahuncho",
+      "rivalsLine_one": "{{count}} rival bot bhi khelega, par sirf aapka goal matter karta hai.",
+      "rivalsLine_other": "{{count}} rival bots bhi khelenge, par sirf aapka goal matter karta hai."
     },
     "stars": {
       "title": "Stars",
@@ -413,7 +721,10 @@
         "lifestyle_creep": "End mein lifestyle salary ke {{pct}}% ya kam rakho",
         "grihastha": "Har family goal poora karo: ghar aur padhai ready money se, parents insured",
         "none": "Smart khelo"
-      }
+      },
+      "met": "Done:",
+      "missed": "Abhi nahi:",
+      "nth": "Star {{n}}"
     },
     "rules": {
       "desire_meter": {
@@ -488,19 +799,61 @@
       "due_soon_parents_health": "{{n}} saal mein parents ki health ka test — health insurance equipped rakho.",
       "boss_insured": "Parents hospital mein: bill {{bill}}, zyada insurance ne bhara — tumne {{paid}} diye.",
       "boss_uninsured": "Parents hospital mein, koi health cover nahi: tumne {{paid}} bhare."
+    },
+    "mapTitle": "Artha Yatra",
+    "headline": "Aapki money life",
+    "lede": "School se family tak, life ke chaar stages. Agla kholne ke liye stars kamao.",
+    "doneOf": "{{total}} mein se {{n}} done",
+    "starsAria": "{{total}} mein se {{n}} stars mile",
+    "lockedAria": "{{name}}, locked",
+    "openAria": "{{name}} kholo",
+    "ageStage": "Age {{age}} · {{stage}}",
+    "unlockNeed_one": "Kholne ke liye Level {{n}} par {{count}} star lao",
+    "unlockNeed_other": "Kholne ke liye Level {{n}} par {{count}} stars lao",
+    "levels": {
+      "level_1": {
+        "name": "Brahmacharya",
+        "age": "13–18",
+        "stage": "Student",
+        "idea": "Apna Desire meter control karo."
+      },
+      "level_2": {
+        "name": "Vidyarthi to Yuva",
+        "age": "18–22",
+        "stage": "College",
+        "idea": "Pehle khud ko pay karo: saving streak banaye rakho."
+      },
+      "level_3": {
+        "name": "Aarambh Grihastha",
+        "age": "22–28",
+        "stage": "Pehli naukri",
+        "idea": "Lifestyle creep ko roko. Apna raise invest karo."
+      },
+      "level_4": {
+        "name": "Grihastha Dharma",
+        "age": "28–38",
+        "stage": "Family",
+        "idea": "Insurance se family ko protect karo."
+      }
+    },
+    "pill": {
+      "desire": "Desire {{pct}}%",
+      "streak": "Streak {{n}}",
+      "lifestyle": "Lifestyle {{pct}}%",
+      "goals": "Goals {{done}}/{{total}}"
     }
   },
   "landing": {
-    "signIn": "Sign In",
+    "signIn": "Sign in",
     "playNow": "Abhi khelo",
-    "badge": "PAISE KE FAISLON KA GAME",
-    "hero1": "Kamao.",
-    "hero2": "Attack karo.",
-    "hero3": "Chha jao.",
-    "heroSub": "Real Indian money decisions wala fast card game. SIP, market crash, tax raid sab jhelo aur sabse pehle ₹50 lakh tak pahuncho.",
-    "startFree": "Free mein khelna shuru karo",
+    "badge": "Free money card game · Made in India",
+    "hero1": "Paisa banao.",
+    "hero2": "Smart bano.",
+    "hero3": "Mazze se khelo.",
+    "heroSub": "Har card ek real money decision hai: Diwali bonus, hospital ka bill, market crash. Spend karo, save karo ya invest karo — aur 15 minute mein 20 saal ki life dekho.",
+    "startFree": "Free khelo, sign-up nahi",
     "toDashboard": "Apne dashboard pe jao",
-    "playGuest": "Guest ban ke khelo — sign-up ki zaroorat nahi",
+    "playGuest": "Free khelo, sign-up nahi",
     "cardType": {
       "decision": "DECISION",
       "action": "ACTION",
@@ -579,7 +932,44 @@
     },
     "ctaSub": "Hazaaron players ke saath ₹50 lakh ki race join karo.",
     "ctaBtn": "Abhi khelo — bilkul free",
-    "footer": "Paise ke faislon ka game — entertainment aur financial literacy ke liye. Financial advice nahi hai."
+    "footer": "Paise ke faislon ka game — entertainment aur financial literacy ke liye. Financial advice nahi hai.",
+    "heroA": "Paisa banao.",
+    "heroB": "Smart bano.",
+    "heroC": "Mazze se khelo.",
+    "toHome": "Home pe jao",
+    "haveAccount": "Mera account hai",
+    "trust1": "SIP, inflation, insurance seekho",
+    "trust2": "English · Hindi · Hinglish",
+    "gulluTitle": "Paisa banao. Smart bano.",
+    "gulluHi": "Hi, main Gullu hoon. Chalo dikhata hoon!",
+    "benefitsLabel": "BHAO kyun khelein",
+    "benefit1": {
+      "title": "Real money ideas",
+      "body": "SIP, FD, inflation, emergency fund aur insurance — har ek, ek line mein."
+    },
+    "benefit2": {
+      "title": "Dost ya bots ke saath",
+      "body": "Bots ke saath quick games, 4 level ka life campaign, aur dosto ke saath rooms."
+    },
+    "benefit3": {
+      "title": "Money report card pao",
+      "body": "Dekho tumhare decisions real life mein 10 saal mein kitna kamate."
+    },
+    "footerAge": "13+ ke liye. Asli paisa use nahi hota.",
+    "show": {
+      "crash": {
+        "name": "Market Crash",
+        "flavor": "Har rival ki invested wealth 20% girti hai."
+      },
+      "diwali": {
+        "name": "Diwali Bonus",
+        "flavor": "Spend karo, save karo ya invest karo."
+      },
+      "health": {
+        "name": "Health Insurance",
+        "flavor": "Poore game mein hospital ke bill rokta hai."
+      }
+    }
   },
   "report": {
     "aria": "Tumhara money report card",
@@ -619,19 +1009,31 @@
       "index": "Index fund SIP",
       "sub": "Har mahine {{monthly}}, {{years}} saal tak (tumne dale {{total}})",
       "putIn": "Tumne kitna dala",
-      "legend": "tumne kitna dala"
+      "legend": "tumne kitna dala",
+      "disclaimer": "Ye long-run averages hain. Asli returns har saal badalte hain aur kabhi guaranteed nahi hote."
     },
     "spark": {
       "label": "{{years}} saal mein net worth: {{start}} se {{end}}, peak {{peak}}",
       "year": "Saal {{n}}: {{amount}}",
       "start": "Start",
       "yearN": "Saal {{n}}"
+    },
+    "moneyStyle": "Aapka money style",
+    "seeWhy": "Har grade ki wajah dekho",
+    "hideWhy": "Wajah chhupao",
+    "areaShort": {
+      "saving": "Saving",
+      "investing": "Investing",
+      "risk": "Risk",
+      "emergency": "Emergency",
+      "protection": "Protection"
     }
   },
   "concept": {
     "example": "Example",
     "tryThis": "Real life mein try karo",
-    "comingSoon": "Iski poori details jaldi aa rahi hain."
+    "comingSoon": "Iski poori details jaldi aa rahi hain.",
+    "inOneLine": "Ek line mein"
   },
   "library": {
     "title": "Gyaan Library",
@@ -674,6 +1076,19 @@
       "cyber_safety": "Kisi fraud attack ka target bano.",
       "real_estate": "Property kharido ya becho.",
       "gold": "Gold kharido."
+    },
+    "emptyTitle2": "Abhi koi money idea nahi",
+    "emptyBody2": "Inhe kholne ke liye apna pehla game khelo.",
+    "playNow": "Abhi khelo",
+    "new": "Naya",
+    "filterAria": "Topics dikhao",
+    "topic": {
+      "all": "Sab",
+      "saving": "Saving",
+      "investing": "Investing",
+      "risk": "Risk",
+      "tax": "Tax",
+      "protection": "Protection"
     }
   },
   "guest": {
@@ -700,7 +1115,14 @@
     "signInOrCreate": "Sign in karo ya account banao",
     "playAsGuest": "Guest ban ke khelo",
     "backGuestHome": "Guest home pe wapas",
-    "goHome": "Home pe jao"
+    "goHome": "Home pe jao",
+    "title": "Dosto ke saath khelo",
+    "benefit1": "Dosto aur real players ke saath rooms",
+    "benefit2": "Leaderboard, ranks aur daily contracts",
+    "benefit3": "Room mein chat aur quick reactions",
+    "signIn": "Sign in",
+    "backHome": "Home pe wapas",
+    "playTitle": "Khelne ke liye ready?"
   },
   "legal": {
     "home": "BHAO home",
@@ -744,7 +1166,9 @@
       "age": "Khelne ke liye umar kam se kam 13 saal honi chahiye.",
       "money": "Real money se kuch nahi khareedna. Coins ki koi cash value nahi hai.",
       "delete": "Apna account kabhi bhi profile se delete kar sakte ho."
-    }
+    },
+    "navLabel": "Legal pages",
+    "draftNote": "Ye document simple language ka draft hai aur abhi kisi lawyer ne check nahi kiya hai. BHAO ke bade launch se pehle ise update kiya jayega."
   },
   "tutorial": {
     "skip": "Tutorial skip karo",
@@ -760,7 +1184,8 @@
       "fine": "Isme {{paidIn}} tumhara apna paisa hai; baaki {{growth}} compounding se aata hai. {{rate}}% Indian index funds ka long-term average hai, guarantee nahi — kuch saal girte hain, kuch saal uchhalte hain.",
       "lead": "Chalo dekhte hain paisa asli mein kaise badhta hai. Rahul ke saath 4 saal ka mini match — bas 5 minute.",
       "start": "Match shuru karo",
-      "rules": "Bas rules dikhao (30 sec)"
+      "rules": "Bas rules dikhao (30 sec)",
+      "showMe": "Dikhao kaise"
     },
     "summary": {
       "kickerSkipped": "BHAO in 4 ideas",
@@ -909,7 +1334,12 @@
         "p2": "Bills cash se bharte hain. Cash nahi hai? Toh investments jaldi mein penalty pe bikte hain. Isliye emergency fund rakhte hain.",
         "p3": "Health Insurance jaise defense cards poori category ki problems block kar dete hain."
       }
-    }
+    },
+    "skipTutorial": "Tutorial skip karo",
+    "exitTitle": "Tutorial chhodna hai?",
+    "exitBody": "Aap ise kabhi bhi Home se phir khel sakte ho.",
+    "keepLearning": "Seekhte raho",
+    "modeTitle": "Kaise khelein"
   },
   "card": {
     "tier": {
@@ -917,6 +1347,54 @@
       "rare": "Rare",
       "epic": "Epic",
       "legendary": "Legendary"
+    },
+    "type": {
+      "decision": "Decision",
+      "attack": "Attack",
+      "shield": "Shield",
+      "lifeEvent": "Life event"
+    },
+    "aria": "{{name}}, {{type}} card, {{tier}}, {{headline}}.",
+    "locked": "Ye card abhi nahi khel sakte.",
+    "back": "Card ka peeche ka hissa",
+    "headline": {
+      "block": "Block",
+      "skipTurn": "Turn skip",
+      "steal": "{{amount}} chheeno",
+      "nextYear": "{{amount}} agle saal",
+      "atEnd": "{{amount}} end mein",
+      "floor": "Floor {{amount}}",
+      "doubleInvest": "2× invest",
+      "copy": "Copy",
+      "newGoal": "Naya goal",
+      "hit": "{{pct}} hit"
+    },
+    "spoken": {
+      "choose": "spend, save ya invest chuno",
+      "youGainPct": "aapko {{n}} percent faayda",
+      "youLosePct": "aapko {{n}} percent nuksaan",
+      "rivalLosesPct": "ek rival ko {{n}} percent nuksaan",
+      "rivalGainsPct": "ek rival ko {{n}} percent faayda",
+      "everyoneLosesPct": "sabko {{n}} percent nuksaan",
+      "everyoneGainsPct": "sabko {{n}} percent faayda",
+      "allRivalsLosePct": "har rival ko {{n}} percent nuksaan",
+      "allRivalsGainPct": "har rival ko {{n}} percent faayda",
+      "rivalInvestLosesPct": "ek rival ke investments {{n}} percent girte hain",
+      "stealPct": "ek rival se {{n}} percent lo",
+      "reduceHit": "aap par attacks {{n}} percent kam lagte hain",
+      "youGainAmount": "aapko {{amount}} milte hain",
+      "youLoseAmount": "aapke {{amount}} jaate hain",
+      "rivalLosesAmount": "ek rival ke {{amount}} jaate hain",
+      "everyoneGainsAmount": "sabko {{amount}} milte hain",
+      "steal": "ek rival se {{amount}} lo",
+      "skipTurn": "ek rival ka turn skip hota hai",
+      "block": "ek attack rokta hai",
+      "nextYear": "agle saal aapko {{amount}} milenge",
+      "atEnd": "game ke end mein aapko {{amount}} milenge",
+      "floor": "aapka paisa {{amount}} se neeche nahi jayega",
+      "doubleInvest": "aapka agla investment double gina jayega",
+      "copy": "ek card copy karta hai",
+      "newGoal": "naya goal set karta hai"
     }
   },
   "comms": {
@@ -928,7 +1406,7 @@
     "voiceLeave": "Voice chhodo",
     "micMute": "Mic band karo",
     "micUnmute": "Mic chalu karo",
-    "inVoice": "🎧 {{n}} voice mein",
+    "inVoice": "{{n}} voice mein",
     "isInVoice": "Voice mein",
     "isMuted": "Mic band",
     "poke": "Poke",
@@ -991,6 +1469,148 @@
         "invalid": "Report mein kuch gadbad thi. Phir se try karo.",
         "failed": "Report nahi bhej paaye. Internet check karke phir try karo."
       }
+    },
+    "voiceOff": "Voice off",
+    "muted": "Muted",
+    "micOn": "Mic on",
+    "chat": "Chat"
+  },
+  "outcome": {
+    "save": "Smart saving!",
+    "invest": "Paisa kaam pe!",
+    "investInto": "{{asset}} mein invest:",
+    "spend": "Thoda treat:",
+    "gain": "Paisa aaya!",
+    "gainCard": "{{card}}:",
+    "loss": "Ouch:",
+    "lossCard": "{{card}}:",
+    "attack": "{{name}} ne {{card}} se hit kiya:",
+    "tipShield": "Shield card aise hits rok sakta hai. Mauka mile toh ek lagao.",
+    "learnMore": "Aur jaano"
+  },
+  "log": {
+    "empty": "Chaalein yahan dikhengi.",
+    "year": "Saal {{n}}",
+    "yearBegan": "Saal {{n}} shuru hua",
+    "started": "Game shuru hua. Goal tak race karo!",
+    "saved": "{{name}} ne {{card}} se save kiya: {{amount}}",
+    "savedPlain": "{{name}} ne {{card}} se save kiya",
+    "spent": "{{name}} ne {{card}} pe spend kiya: {{amount}}",
+    "spentPlain": "{{name}} ne {{card}} pe spend kiya",
+    "invested": "{{name}} ne {{amount}} {{asset}} mein lagaye ({{card}})",
+    "investedPlain": "{{name}} ne invest kiya ({{card}})",
+    "hit": "{{name}} ne {{card}} se {{target}} ko hit kiya: {{amount}}",
+    "playedOn": "{{name}} ne {{target}} pe {{card}} khela",
+    "hitBlocked": "{{name}} ne {{card}} khela, par {{target}} ki shield ne rok liya",
+    "hitAll": "{{name}} ne sab pe {{card}} khela",
+    "passed": "{{name}} ne pass kiya",
+    "passedCard": "{{name}} ne pass kiya aur {{card}} chhoda",
+    "equipped": "{{name}} ne {{card}} lagaya",
+    "blocked": "{{name}} ki {{shield}} ne {{card}} roka",
+    "timeUp": "{{name}} ka time khatam",
+    "skipping": "{{name}} ye saal skip kar rahe hain",
+    "inflation": "Inflation ne {{name}} ke cash se {{amount}} kha liye",
+    "market": "Market: {{moves}}",
+    "wiped": "{{name}} ka {{asset}} doob gaya",
+    "lifeEventFor": "{{name}} ke liye life event: {{card}}",
+    "lifeEventAll": "Sabke liye life event: {{card}}",
+    "change": "{{name}}: {{amount}}",
+    "lure": "{{name}} tip ke jhaanse mein aaye: {{amount}} {{asset}} mein gaye",
+    "streak": "Saving streak ×{{n}}",
+    "freeCard": "Ek free card mila",
+    "reshuffled": "Deck phir se shuffle hua",
+    "won": "{{name}} goal tak pahunche aur jeet gaye!"
+  },
+  "nav": {
+    "main": "Main",
+    "home": "Home",
+    "campaign": "Campaign",
+    "library": "Library",
+    "profile": "Profile",
+    "profileOf": "Profile: {{name}}",
+    "profileGuest": "Profile: {{name}} (guest)"
+  },
+  "home": {
+    "greeting": "Namaste, {{name}}!",
+    "guestSaved": "Guest · progress isi phone mein save hai",
+    "streak_one": "{{count}} din ki streak",
+    "streak_other": "{{count}} din ki streak",
+    "quickPlay": "Quick play",
+    "signIn": "Sign in",
+    "keepSafe": "Apni progress safe rakho",
+    "keepSafeBody": "Free account: dosto ke saath khelo, stars har phone pe rakho.",
+    "yourRank": "Tumhari rank",
+    "notRanked": "Board pe aane ke liye ek game khelo.",
+    "seeAll": "Sab dekho",
+    "seeAllOf": "Sab dekho: {{what}}",
+    "contractsDone": "{{done}}/{{total}} done",
+    "libraryAria": "{{total}} mein se {{n}} money ideas unlock",
+    "tile": {
+      "practice": {
+        "title": "Bots ke saath practice",
+        "body": "15 minute ka quick game."
+      },
+      "library": {
+        "title": "Gyaan Library",
+        "body": "Tumhare unlock kiye money ideas."
+      },
+      "tutorial": {
+        "title": "Kaise khelein",
+        "body": "3 minute ka tutorial."
+      },
+      "friends": {
+        "title": "Dosto ke saath",
+        "body": "Free account chahiye.",
+        "bodySignedIn": "Room banao ya join karo."
+      }
+    },
+    "art": {
+      "desire": "Desire",
+      "pocket": "Pocket money"
+    },
+    "hero": {
+      "levelCaption": "Campaign · Level {{n}} of {{total}}",
+      "levelBody": "Age {{age}}. Ek baat: {{idea}}",
+      "levelCta": "Level {{n}} khelo",
+      "starsAria": "3 mein se {{n}} stars",
+      "tutorialCaption": "Yahan se shuru karo · 3 min",
+      "tutorialTitle": "Kaise khelein",
+      "tutorialBody": "3 minute mein cards samjho, phir apni money life shuru karo.",
+      "tutorialCta": "Tutorial shuru karo",
+      "practiceCaption": "Campaign complete",
+      "practiceTitle": "Bots ke saath practice",
+      "practiceBody": "Chaaron levels pe 3 stars. Ek quick game mein naya plan try karo.",
+      "practiceCta": "Practice khelo"
+    },
+    "level": {
+      "level_1": {
+        "name": "Brahmacharya",
+        "idea": "Desire meter ko control karo, isse pehle ki wo tumhe control kare."
+      },
+      "level_2": {
+        "name": "Vidyarthi to Yuva",
+        "idea": "har saal sabse pehle apne liye bachao."
+      },
+      "level_3": {
+        "name": "Arambh Grihastha",
+        "idea": "salary badhe to kharche saath mein mat badhao."
+      },
+      "level_4": {
+        "name": "Grihastha Dharma",
+        "idea": "goals ka paisa ready rakho, bade jhatke insurance pe chhodo."
+      }
     }
+  },
+  "daily": {
+    "title": "Daily streak bonus",
+    "body": "Streak badhane ke liye roz aao.",
+    "collect": "Collect karo",
+    "retry": "Dobara try karo",
+    "day": "Din {{n}}",
+    "daysLabel": "7 din ki streak",
+    "collected": "Collect ho gaya",
+    "already": "Aaj ka bonus tum le chuke ho.",
+    "error": "Abhi collect nahi ho paya. Internet check karke dobara try karo.",
+    "collectedNote": "Tumhare Daanik Coins mein jud gaya."
   }
 }

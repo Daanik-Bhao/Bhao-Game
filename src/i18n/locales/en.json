@@ -1,14 +1,30 @@
 {
   "auth": {
     "title": "Welcome to BHAO",
-    "signIn": "Sign In",
-    "subtitle": "The Ultimate Wealth Strategy Game",
+    "signIn": "Sign in",
+    "subtitle": "Save progress and play with friends.",
     "usernameLabel": "Username",
-    "usernamePlaceholder": "Enter a cool name",
+    "usernamePlaceholder": "Choose a username",
     "loading": "Entering...",
-    "submit": "Enter the Arena",
+    "submit": "Create account",
     "googleOpening": "Opening Google...",
-    "googleFailed": "Google sign-in failed"
+    "googleFailed": "Google sign-in failed",
+    "playGuest": "Play as guest",
+    "google": "Continue with Google",
+    "guestNote": "Guests can play the tutorial, campaign and bots. Playing friends needs an account.",
+    "unavailable": "Online sign-in is unavailable right now. You can still play as a guest.",
+    "orEmail": "or sign in with email",
+    "modeLabel": "Sign in or create an account",
+    "signInTab": "Sign in",
+    "registerTab": "Create account",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "passwordNew": "Create a password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "agree": "By continuing you agree to our",
+    "usernameShort": "Username must be at least 3 characters.",
+    "genericError": "Something went wrong. Please try again."
   },
   "dashboard": {
     "welcome": "Welcome back",
@@ -38,7 +54,7 @@
     "viewRewards": "View Rewards",
     "onlineNow": "Players Online Now",
     "readyToBuild": "Ready to build your empire?",
-    "signOut": "Sign Out"
+    "signOut": "Sign out"
   },
   "game": {
     "yourTurn": "Your Turn",
@@ -47,7 +63,7 @@
     "pickCard": "pick a card to play:",
     "defenseCards": "Defense Cards",
     "endGame": "End Game",
-    "gameLog": "GAME LOG",
+    "gameLog": "Game log",
     "started": "started!",
     "goal": "Goal",
     "waiting": "Waiting for other players...",
@@ -69,8 +85,8 @@
     "equippedDefense": "Equipped defense card!",
     "actionTaken": "{{action}}!",
     "loadingGame": "Loading game...",
-    "connectionLost": "Connection Lost",
-    "reconnecting": "Attempting to reconnect to game server...",
+    "connectionLost": "Connection lost",
+    "reconnecting": "Trying to reconnect to the game…",
     "victory": "Victory!",
     "place": "{{placement}}{{ordinal}} Place",
     "finalWealth": "Final wealth: {{amount}}",
@@ -84,19 +100,68 @@
     "selectTarget": "Select a target for {{card}}",
     "clickOpponentTarget": "Click on an opponent's panel above to target them.",
     "previewCard": "Preview Card",
-    "playCard": "Play Card"
+    "playCard": "Play Card",
+    "menu": "Pause menu",
+    "log": "Game log",
+    "sendingMove": "Sending move…",
+    "mpTitle": "Friends match",
+    "actionFailed": "Something went wrong. Please try again."
   },
   "profile": {
-    "title": "Player Profile",
+    "title": "Profile",
     "unknownPlayer": "Unknown Player",
-    "editUsername": "Edit Username"
+    "editUsername": "Edit Username",
+    "guestTitle": "Sign in to save progress",
+    "guestBody": "You are playing as {{name}}. A free account keeps your stars and library on every phone.",
+    "exitGuestNote": "Your guest progress stays on this phone.",
+    "changeAvatar": "Change avatar",
+    "chooseAvatar": "Choose your avatar",
+    "avatarN": "Avatar {{n}}",
+    "statsTitle": "Your stats",
+    "stats": {
+      "coins": "Daanik Coins",
+      "played": "Games played",
+      "won": "Games won",
+      "winRate": "Win rate",
+      "streak": "Win streak",
+      "bestStreak": "Best win streak"
+    },
+    "dangerZone": "Danger zone",
+    "dangerBody": "Deleting your account removes your profile, coins, stats and progress for good.",
+    "rank": {
+      "rookie": "Rookie",
+      "hustler": "Hustler",
+      "grinder": "Grinder",
+      "elite": "Elite",
+      "mogul": "Mogul",
+      "tycoon": "Tycoon",
+      "billionaire": "Billionaire",
+      "daanik_legend": "DAANIK Legend"
+    },
+    "rankPoints": "{{n}} RP",
+    "rankProgress": "Progress to the next rank",
+    "rankTop": "Top rank reached",
+    "rankNext": "{{n}} RP to the next rank",
+    "delete": {
+      "button": "Delete account",
+      "title": "Delete your account?",
+      "intro": "This permanently deletes:",
+      "item1": "your BHAO account and profile",
+      "item2": "your Daanik Coins, stats and leaderboard entry",
+      "item3": "your contract and campaign progress on our servers",
+      "permanent": "This cannot be undone.",
+      "typeLabel": "Type {{word}} to confirm",
+      "confirm": "Delete forever",
+      "deleting": "Deleting…",
+      "error": "Could not delete your account. Please try again or email support@daanik.com."
+    }
   },
   "common": {
     "save": "Save",
     "saving": "Saving...",
     "cancel": "Cancel",
     "refresh": "Refresh",
-    "loading": "Loading...",
+    "loading": "Loading…",
     "loadMore": "Load More",
     "you": "you",
     "leave": "LEAVE",
@@ -105,7 +170,30 @@
     "forfeitWarning": "Leaving an active game will result in a loss and a 25 🪙 penalty.",
     "stayInGame": "Stay in Game",
     "forfeitMatch": "Forfeit Match",
-    "close": "Close"
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "ok": "OK",
+    "gotIt": "Got it",
+    "menu": "Menu",
+    "home": "Home",
+    "coins": "Daanik Coins",
+    "coinsCount": "{{n}} Daanik Coins",
+    "coinsInfo": "Daanik Coins buy an extra card in practice games. They have no cash value and cannot be bought.",
+    "offline": "You're offline. Practice, campaign and the library still work.",
+    "settings": {
+      "title": "Settings",
+      "language": "Language",
+      "sound": "Sound",
+      "reduceEffects": "Reduce effects",
+      "reduceEffectsHint": "Fewer animations and no confetti."
+    },
+    "error": {
+      "title": "Oops, BHAO hit a snag.",
+      "body": "Something went wrong on this screen. Reloading usually fixes it. If it keeps happening, email support@daanik.com.",
+      "reload": "Reload",
+      "home": "Go home"
+    }
   },
   "leaderboard": {
     "title": "Leaderboard",
@@ -113,18 +201,35 @@
     "rank": "Rank",
     "player": "Player",
     "wins": "Wins",
-    "bestWealth": "Best Wealth"
+    "bestWealth": "Best Wealth",
+    "emptyBody": "Finish a game to put your name here.",
+    "playNow": "Play now",
+    "sortBy": "Sort by",
+    "you": "You",
+    "winsCount_one": "{{count}} win",
+    "winsCount_other": "{{count}} wins",
+    "showAll": "Show all players"
   },
   "contracts": {
-    "title": "Daily Contracts",
+    "title": "Daily contracts",
     "resetsIn": "Resets in",
     "loading": "Loading active contracts...",
-    "empty": "No active contracts for today. Check back tomorrow!",
-    "startTitle": "Start Your Journey",
-    "startDesc": "Play a game to start earning contract progress and unlock rewards!",
-    "weekly": "WEEKLY",
-    "complete": "COMPLETE",
-    "card": "card"
+    "empty": "No active contracts for today. Check back tomorrow.",
+    "startTitle": "Start your journey",
+    "startDesc": "Play a game to start earning contract progress.",
+    "weekly": "Weekly",
+    "complete": "Done",
+    "card": "card",
+    "emptyShort": "No contracts today.",
+    "emptyTitle": "No contracts right now",
+    "resetsInTime": "New contracts in {{h}}h {{m}}m",
+    "reward": "+{{n}} Daanik Coins",
+    "cardReward": "+1 {{tier}} card",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    }
   },
   "difficulty": {
     "easy": "EASY",
@@ -152,28 +257,68 @@
     "roomCodeLabel": "Room Code",
     "roomCodePlaceholder": "Enter 6-character code",
     "joinBtn": "Join Room",
-    "waitingRoom": "Waiting Room",
+    "waitingRoom": "Waiting room",
     "shareCode": "Share this code to invite players",
     "copied": "✓ Copied!",
     "clickToCopy": "Click to copy",
     "players": "Players",
     "waitingForHost": "Waiting for host to start...",
-    "startGame": "Start Game"
+    "startGame": "Start Game",
+    "title": "Play with friends",
+    "tabCreate": "Create room",
+    "tabJoin": "Join room",
+    "minutes": "{{n}} min",
+    "goal": "Goal {{goal}}",
+    "playersCount": "{{n}} players",
+    "createBtn2": "Create room",
+    "codeHint": "Ask your friend for the 6-letter code",
+    "joinBtn2": "Join",
+    "codeAria": "Room code {{code}}",
+    "copy": "Copy",
+    "copied2": "Copied",
+    "shareWhatsApp": "Share on WhatsApp",
+    "shareText": "Join my BHAO game: code {{code}}",
+    "playersOf": "Players {{n}}/{{max}}",
+    "you": "{{name}} (you)",
+    "host": "Host",
+    "ready": "Ready",
+    "notReady": "Not ready",
+    "waitingSlot": "Waiting…",
+    "startGame2": "Start game",
+    "needReady": "Needs 2+ players, everyone ready.",
+    "waitingForHost2": "Waiting for the host to start",
+    "imReady": "I'm ready",
+    "notReadyBtn": "Not ready yet",
+    "leave": "Leave room",
+    "noProfile": "We couldn't find your profile. Try signing out and in again.",
+    "errCreate": "Could not create the room. Try again.",
+    "errJoin": "Could not join the room. Check the code and try again.",
+    "errReady": "Could not update your ready status.",
+    "errStart": "Could not start the game. Try again."
   },
   "lang": {
     "label": "Language",
-    "switchTo": "Switch language to {{lang}}"
+    "switchTo": "Switch language to {{lang}}",
+    "en": "English",
+    "hi": "हिंदी",
+    "hinglish": "Hinglish",
+    "code": {
+      "en": "EN",
+      "hi": "हिं",
+      "hinglish": "HG"
+    },
+    "current": "Language: {{lang}}. Change language"
   },
   "board": {
     "yourHand": "Your hand",
     "yourTurn": "Your turn",
-    "isPlaying": "{{name}} is playing",
+    "isPlaying": "{{name}} is playing…",
     "cardsInHand": "{{n}}/{{max}} cards",
     "planNext": "Your hand — plan your next move",
     "planAhead": "Your hand — plan ahead",
     "drawRefill": "Draw to refill your hand to {{max}} cards.",
     "drawStart": "Draw to start your turn.",
-    "drawCard": "Draw Card",
+    "drawCard": "Draw a card",
     "refill": "Refill your hand to {{max}} cards",
     "deckLeft": "{{n}} cards left in deck",
     "pickThenAct": "Pick a card — then Play, Equip or Pass",
@@ -197,7 +342,131 @@
     "sendEmote": "Send emote",
     "yourPortfolio": "Your portfolio",
     "yourMoney": "Your money",
-    "investmentsCount": "{{n}} investments"
+    "investmentsCount": "{{n}} investments",
+    "mode": {
+      "practice": "Practice",
+      "ranked": "Ranked",
+      "multiplayer": "Friends match",
+      "level": "Level {{n}} · {{name}}",
+      "levelSub": "Reach {{goal}} in {{years}} years",
+      "botsSub_one": "vs {{count}} bot · race to {{goal}}",
+      "botsSub_other": "vs {{count}} bots · race to {{goal}}"
+    },
+    "yearOf": "Year {{n}} of {{max}}",
+    "yearsLeft_one": "{{count}} year left",
+    "yearsLeft_other": "{{count}} years left",
+    "yearAria": "Year {{n}} of {{max}}, {{left}} left. Open the year summary",
+    "clockLeft": "{{time}} left",
+    "timerAria": "{{n}} seconds left in your turn",
+    "secondsLeft": "{{n}} s left",
+    "gameLog": "Game log",
+    "newMoves_one": "{{count}} new move",
+    "newMoves_other": "{{count}} new moves",
+    "rivals": "Rivals",
+    "rivalAria": "{{name}}, {{amount}}, rank {{rank}}. Open details",
+    "targetAria": "Hit {{name}} ({{amount}})",
+    "tapToTarget": "Tap to target",
+    "leftGame": "Left the game",
+    "playingNow": "playing…",
+    "shieldsCount_one": "{{count}} shield",
+    "shieldsCount_other": "{{count}} shields",
+    "standings": "Standings",
+    "recentMoves": "Recent moves",
+    "myMoney": "My money",
+    "deckCount_one": "{{count}} card",
+    "deckCount_other": "{{count}} cards",
+    "deckAria_one": "Deck, {{count}} card left",
+    "deckAria_other": "Deck, {{count}} cards left",
+    "drawAria_one": "Draw a card ({{count}} left)",
+    "drawAria_other": "Draw a card ({{count}} left)",
+    "youPlayed": "You played",
+    "playedBy": "{{name}} played",
+    "inflationChip": "Inflation {{pct}}% this year",
+    "inflationShort": "Inflation {{pct}}%",
+    "drawLine": "Draw a card to start.",
+    "playLine": "Pick a card. Spend it, save it or invest it.",
+    "chooseRival": "Choose a rival to hit with {{card}}",
+    "chooseRivalLine": "Tap a rival above.",
+    "isPlayingShort": "{{name}}'s turn",
+    "waitLine": "Plan your next move.",
+    "youSkip": "You skip this year.",
+    "gameOver": "Game over",
+    "hint": "Tap a card to play, equip or pass",
+    "hintDesktop": "Click a card to play, equip or pass · keys 1–5 select a card",
+    "waitTurn": "Wait for your turn",
+    "drawFirst": "Draw a card first.",
+    "yourHandCount_one": "Your hand, {{count}} card",
+    "yourHandCount_other": "Your hand, {{count}} cards",
+    "hudAria": "My money: net worth {{amount}}, you are number {{rank}}. Open details",
+    "youAreRank": "You are #{{rank}}",
+    "rankOf": "#{{rank}} of {{total}}",
+    "thisYear": "{{amount}} this year",
+    "goalShort": "Goal {{goal}}",
+    "goalPct": "{{pct}}% of {{goal}}",
+    "goalAria": "Progress to your goal",
+    "lifestyle": "Lifestyle",
+    "levelRule": "Level rule",
+    "ruleAria": "Level rule: {{rule}}. Open details",
+    "netWorthNow": "Net worth now ₹{{amount}}",
+    "cashNote": "Loses ~{{pct}}%/yr to inflation",
+    "lifestyleNote": "Each Spend raises it; inflation on your cash rises with it.",
+    "shieldsOf": "Shields {{n}} / {{max}}",
+    "define": "What is {{term}}?",
+    "term": {
+      "netWorth": "net worth",
+      "inflation": "inflation",
+      "sip": "a SIP",
+      "fd": "an FD"
+    },
+    "termDef": {
+      "netWorth": "Net worth = your cash + the value of your investments.",
+      "inflation": "Inflation: prices rise every year, so idle cash buys less.",
+      "sip": "SIP: putting a fixed amount into a fund again and again.",
+      "fd": "FD (fixed deposit): safe bank savings with a fixed interest rate."
+    },
+    "choicesAria": "Choose: spend, save or invest",
+    "choiceTitle": {
+      "spend": "Enjoy it now",
+      "save": "Keep it as savings",
+      "invest": "Invest it"
+    },
+    "perYear": "~{{pct}}%/yr",
+    "chooseNow": "Choose what to do",
+    "play": "Play",
+    "playTarget": "Play: choose a rival",
+    "equipFree": "Equip shield (free)",
+    "lifeEventInfo": "Life events happen to you at the start of a year. You can't play them.",
+    "passLine": "Pass: discard this card (ends turn)",
+    "passConfirm": "Discard {{card}} and end your turn?",
+    "keepCard": "Keep card",
+    "resume": "Resume",
+    "howToPlay": "How to play",
+    "quitGame": "Quit game",
+    "yearSummary": "Year summary",
+    "yearNothing": "Nothing has happened yet this year.",
+    "marketThisYear": "Market this year",
+    "youHoldThis": "You hold this",
+    "yourChange": "Your money",
+    "inflationOnCash": "Inflation on your cash",
+    "investmentsChange": "Your investments",
+    "lifeEvent": "Life event: {{card}}",
+    "notYou": "Not you",
+    "yearBanner": "Year {{n}}",
+    "yearBannerInflation": "inflation {{pct}}%",
+    "yearBannerInvest": "your investments {{amount}}",
+    "quit": {
+      "title": "Quit this game?",
+      "body": "Your progress in this game will be lost.",
+      "bodyRanked": "This counts as a loss.",
+      "keep": "Keep playing",
+      "confirm": "Quit game"
+    },
+    "toast": {
+      "timeUp": "Time ran out. Turn skipped.",
+      "equipped": "{{card}} equipped. Now play a card.",
+      "extraCard": "Extra card drawn: −{{n}} Daanik Coins",
+      "notEnoughCoins": "Not enough Daanik Coins"
+    }
   },
   "econ": {
     "risk": {
@@ -216,7 +485,7 @@
     },
     "save": {
       "toCash": "{{amount}} to cash",
-      "streak": "🔥 Save streak ×{{streak}}: +{{bonus}}% bonus",
+      "streak": "Save streak ×{{streak}}: +{{bonus}}% bonus",
       "startStreak": "Save again next turn to start a streak bonus",
       "inflation": "Idle cash loses ~{{pct}}%/yr to inflation"
     },
@@ -224,7 +493,7 @@
       "lifestyleMax": "lifestyle maxed",
       "lifestyleUp": "lifestyle ↑ (inflation +1%)",
       "details": "{{amount}}, +1 card, {{lifestyle}}",
-      "forcedSale": "⚠️ Not enough cash: investments get sold at a penalty",
+      "forcedSale": "Not enough cash: investments get sold at a penalty",
       "creep": "Lifestyle creep makes every future year cost more"
     },
     "invest": {
@@ -336,7 +605,6 @@
       "campaign": "CAMPAIGN"
     },
     "youWin": "YOU WIN",
-    "betterLuck": "BETTER LUCK NEXT TIME",
     "soClose": "So Close!",
     "place": "{{n}}{{ordinal}} Place",
     "ordinal": {
@@ -349,8 +617,37 @@
     "showLog": "Show game log",
     "hideLog": "Hide game log",
     "highlights": "Match Highlights",
-    "playAgain": "PLAY AGAIN",
-    "dashboard": "DASHBOARD"
+    "playAgain": "Play again",
+    "dashboard": "DASHBOARD",
+    "caption": "Game over · {{years}} years played",
+    "headline": {
+      "won": "You won! {{nw}}",
+      "grew2x": "Your money grew {{x}}",
+      "grew": "Your money grew {{pct}}",
+      "nearMiss": "So close! Only {{gap}} short",
+      "shrank": "Tough game. Here's what to try next"
+    },
+    "finished": "You finished {{ordinal}} of {{n}}.",
+    "winnerReached": "{{winner}} reached {{goal}} first.",
+    "winnerMost": "{{winner}} ended with the most money.",
+    "youReached": "You reached {{goal}} first.",
+    "youMost": "You ended with the most money.",
+    "ordinalWord": {
+      "1": "1st",
+      "2": "2nd",
+      "3": "3rd",
+      "4": "4th",
+      "5": "5th",
+      "6": "6th"
+    },
+    "start": "Start {{amount}}",
+    "netWorthAria": "Your net worth",
+    "standings": "Final standings",
+    "you": "You",
+    "nextLevel": "Next level",
+    "tryAgain": "Try again",
+    "backToLobby": "Back to lobby",
+    "rp": "{{rp}} RP"
   },
   "popup": {
     "invested": "INVESTED",
@@ -364,10 +661,17 @@
     "aiOpponents": "AI Opponents",
     "playingAgainst": "Playing against {{n}} AI · {{total}} players total",
     "raceTo": "Race to",
-    "entryReward": "Entry Reward",
-    "winToEarn": "Win the game to earn",
-    "startGame": "Start Game",
-    "defaultGoal": "₹50 Lakhs"
+    "startGame": "Start game",
+    "defaultGoal": "₹50 Lakhs",
+    "title": "New practice game",
+    "race": "Race to {{goal}} in {{years}} years.",
+    "opponents": "Opponents",
+    "botsAria_one": "{{count}} bot",
+    "botsAria_other": "{{count}} bots",
+    "summary_one": "You + {{count}} bot · about {{min}} minutes · start with {{start}}",
+    "summary_other": "You + {{count}} bots · about {{min}} minutes · start with {{start}}",
+    "coinsWin": "Win to earn {{n}} Daanik Coins",
+    "coinsInfoLabel": "What are Daanik Coins?"
   },
   "campaign": {
     "yourTurn": "It's your turn",
@@ -400,7 +704,11 @@
       "earnStars": "Earn stars",
       "start": "Start level",
       "close": "Close",
-      "yourBest": "Your best: {{nw}}"
+      "yourBest": "Your best: {{nw}}",
+      "notNow": "Not now",
+      "goalShort": "Reach {{target}} in {{years}} years",
+      "rivalsLine_one": "{{count}} rival bot plays too, but only your goal matters.",
+      "rivalsLine_other": "{{count}} rival bots play too, but only your goal matters."
     },
     "stars": {
       "title": "Stars",
@@ -413,7 +721,10 @@
         "lifestyle_creep": "Finish with lifestyle at or below {{pct}}% of salary",
         "grihastha": "Meet every family goal: home and education from ready money, parents insured",
         "none": "Play smart"
-      }
+      },
+      "met": "Done:",
+      "missed": "Not yet:",
+      "nth": "Star {{n}}"
     },
     "rules": {
       "desire_meter": {
@@ -488,19 +799,61 @@
       "due_soon_parents_health": "Parents' health check-up in {{n}} year(s) — keep health insurance equipped.",
       "boss_insured": "Parents in hospital: bill {{bill}}, insurance paid most — you paid {{paid}}.",
       "boss_uninsured": "Parents in hospital with no health cover: you paid {{paid}}."
+    },
+    "mapTitle": "Artha Yatra",
+    "headline": "Your money life",
+    "lede": "Four life stages, from school to family. Earn stars to unlock the next.",
+    "doneOf": "{{n}} of {{total}} done",
+    "starsAria": "{{n}} of {{total}} stars earned",
+    "lockedAria": "{{name}}, locked",
+    "openAria": "Open {{name}}",
+    "ageStage": "Age {{age}} · {{stage}}",
+    "unlockNeed_one": "Get {{count}} star on Level {{n}} to unlock",
+    "unlockNeed_other": "Get {{count}} stars on Level {{n}} to unlock",
+    "levels": {
+      "level_1": {
+        "name": "Brahmacharya",
+        "age": "13–18",
+        "stage": "Student",
+        "idea": "Control your Desire meter."
+      },
+      "level_2": {
+        "name": "Vidyarthi to Yuva",
+        "age": "18–22",
+        "stage": "College",
+        "idea": "Pay yourself first: keep a saving streak."
+      },
+      "level_3": {
+        "name": "Aarambh Grihastha",
+        "age": "22–28",
+        "stage": "First job",
+        "idea": "Beat lifestyle creep. Invest your raise."
+      },
+      "level_4": {
+        "name": "Grihastha Dharma",
+        "age": "28–38",
+        "stage": "Family",
+        "idea": "Protect the family with insurance."
+      }
+    },
+    "pill": {
+      "desire": "Desire {{pct}}%",
+      "streak": "Streak {{n}}",
+      "lifestyle": "Lifestyle {{pct}}%",
+      "goals": "Goals {{done}}/{{total}}"
     }
   },
   "landing": {
-    "signIn": "Sign In",
+    "signIn": "Sign in",
     "playNow": "Play Now",
-    "badge": "THE MONEY DECISION GAME",
-    "hero1": "Earn.",
-    "hero2": "Attack.",
-    "hero3": "Dominate.",
-    "heroSub": "A fast-paced financial card game with real Indian money decisions. Race to ₹50 Lakhs through SIPs, Market Crashes, Tax Raids, and more.",
-    "startFree": "Start Playing Free",
+    "badge": "Free money card game · Made in India",
+    "hero1": "Make smart",
+    "hero2": "money moves.",
+    "hero3": "Have fun doing it.",
+    "heroSub": "Every card is a real-life money choice: Diwali bonus, a medical bill, a market crash. Spend, save or invest, and watch 20 years of your life play out in 15 minutes.",
+    "startFree": "Play free, no sign-up",
     "toDashboard": "Go to your dashboard",
-    "playGuest": "Play as Guest — no sign-up needed",
+    "playGuest": "Play free, no sign-up",
     "cardType": {
       "decision": "DECISION",
       "action": "ACTION",
@@ -579,7 +932,44 @@
     },
     "ctaSub": "Join thousands of players racing to ₹50 Lakhs.",
     "ctaBtn": "Play Now — It's Free",
-    "footer": "The Money Decision Game — For entertainment & financial literacy purposes. Not financial advice."
+    "footer": "The Money Decision Game — For entertainment & financial literacy purposes. Not financial advice.",
+    "heroA": "Make smart",
+    "heroB": "money moves.",
+    "heroC": "Have fun doing it.",
+    "toHome": "Go to home",
+    "haveAccount": "I have an account",
+    "trust1": "Learn SIP, inflation, insurance",
+    "trust2": "English · Hindi · Hinglish",
+    "gulluTitle": "Paisa banao. Smart bano.",
+    "gulluHi": "Hi, I am Gullu. Let me show you!",
+    "benefitsLabel": "Why play BHAO",
+    "benefit1": {
+      "title": "Real money ideas",
+      "body": "SIPs, FDs, inflation, emergency funds and insurance, explained in one line each."
+    },
+    "benefit2": {
+      "title": "Play friends or bots",
+      "body": "Quick games against bots, a 4-level life campaign, and rooms with friends."
+    },
+    "benefit3": {
+      "title": "Get a money report card",
+      "body": "See what your choices would earn in real life over 10 years."
+    },
+    "footerAge": "For ages 13+. No real money is used.",
+    "show": {
+      "crash": {
+        "name": "Market Crash",
+        "flavor": "Every rival loses 20% of invested wealth."
+      },
+      "diwali": {
+        "name": "Diwali Bonus",
+        "flavor": "Spend it, save it or invest it."
+      },
+      "health": {
+        "name": "Health Insurance",
+        "flavor": "Blocks medical bills for the whole game."
+      }
+    }
   },
   "report": {
     "aria": "Your money report card",
@@ -619,19 +1009,31 @@
       "index": "Index fund SIP",
       "sub": "{{monthly}} a month for {{years}} years (you put in {{total}})",
       "putIn": "Amount you put in",
-      "legend": "what you put in"
+      "legend": "what you put in",
+      "disclaimer": "Long-run averages. Real returns change every year and are never guaranteed."
     },
     "spark": {
       "label": "Net worth over {{years}} years: from {{start}} to {{end}}, peak {{peak}}",
       "year": "Year {{n}}: {{amount}}",
       "start": "Start",
       "yearN": "Year {{n}}"
+    },
+    "moneyStyle": "Your money style",
+    "seeWhy": "See why for each grade",
+    "hideWhy": "Hide the reasons",
+    "areaShort": {
+      "saving": "Saving",
+      "investing": "Investing",
+      "risk": "Risk",
+      "emergency": "Emergency",
+      "protection": "Protection"
     }
   },
   "concept": {
     "example": "Example",
-    "tryThis": "Try this in real life",
-    "comingSoon": "The full write-up for this idea is coming soon."
+    "tryThis": "Try in real life",
+    "comingSoon": "The full write-up for this idea is coming soon.",
+    "inOneLine": "In one line"
   },
   "library": {
     "title": "Gyaan Library",
@@ -674,6 +1076,19 @@
       "cyber_safety": "Get targeted by a fraud attack.",
       "real_estate": "Buy or sell property.",
       "gold": "Buy gold."
+    },
+    "emptyTitle2": "No money ideas yet",
+    "emptyBody2": "Play your first game to unlock them.",
+    "playNow": "Play now",
+    "new": "New",
+    "filterAria": "Show topics",
+    "topic": {
+      "all": "All",
+      "saving": "Saving",
+      "investing": "Investing",
+      "risk": "Risk",
+      "tax": "Tax",
+      "protection": "Protection"
     }
   },
   "guest": {
@@ -700,7 +1115,14 @@
     "signInOrCreate": "Sign in or create account",
     "playAsGuest": "Play as Guest",
     "backGuestHome": "Back to guest home",
-    "goHome": "Go home"
+    "goHome": "Go home",
+    "title": "Play with friends",
+    "benefit1": "Rooms with friends and real players",
+    "benefit2": "Leaderboard, ranks and daily contracts",
+    "benefit3": "Chat and quick reactions in the room",
+    "signIn": "Sign in",
+    "backHome": "Back to home",
+    "playTitle": "Ready to play?"
   },
   "legal": {
     "home": "BHAO home",
@@ -744,7 +1166,9 @@
       "age": "You must be 13 or older to play.",
       "money": "No real-money purchases. Coins have no cash value.",
       "delete": "You can delete your account any time from your profile."
-    }
+    },
+    "navLabel": "Legal pages",
+    "draftNote": "This document is a plain-language template and has not yet been reviewed by a lawyer. It will be updated before BHAO's wider public launch."
   },
   "tutorial": {
     "skip": "Skip tutorial",
@@ -760,7 +1184,8 @@
       "fine": "You put in {{paidIn}} of your own money; compounding adds the other {{growth}}. {{rate}}% is a long-run average for Indian equity index funds, not a promise — some years fall, some jump.",
       "lead": "Let’s see how money really grows. A 4-year mini match against Rahul — about 5 minutes.",
       "start": "Start the match",
-      "rules": "Just show me the rules (30 sec)"
+      "rules": "Just show me the rules (30 sec)",
+      "showMe": "Show me how"
     },
     "summary": {
       "kickerSkipped": "BHAO in 4 ideas",
@@ -909,7 +1334,12 @@
         "p2": "Bills are paid from cash. No cash? Your investments get sold in a hurry, at a penalty. That’s why you keep an emergency fund.",
         "p3": "Defense cards like Health Insurance block whole kinds of trouble."
       }
-    }
+    },
+    "skipTutorial": "Skip tutorial",
+    "exitTitle": "Leave the tutorial?",
+    "exitBody": "You can play it again any time from Home.",
+    "keepLearning": "Keep learning",
+    "modeTitle": "How to play"
   },
   "card": {
     "tier": {
@@ -917,6 +1347,54 @@
       "rare": "Rare",
       "epic": "Epic",
       "legendary": "Legendary"
+    },
+    "type": {
+      "decision": "Decision",
+      "attack": "Attack",
+      "shield": "Shield",
+      "lifeEvent": "Life event"
+    },
+    "aria": "{{name}}, {{type}} card, {{tier}}, {{headline}}.",
+    "locked": "Can't play this now.",
+    "back": "Card back",
+    "headline": {
+      "block": "Block",
+      "skipTurn": "Skip turn",
+      "steal": "Steal {{amount}}",
+      "nextYear": "{{amount}} next yr",
+      "atEnd": "{{amount}} at end",
+      "floor": "Floor {{amount}}",
+      "doubleInvest": "2× invest",
+      "copy": "Copy",
+      "newGoal": "New goal",
+      "hit": "{{pct}} hit"
+    },
+    "spoken": {
+      "choose": "choose spend, save or invest",
+      "youGainPct": "you gain {{n}} percent",
+      "youLosePct": "you lose {{n}} percent",
+      "rivalLosesPct": "a rival loses {{n}} percent",
+      "rivalGainsPct": "a rival gains {{n}} percent",
+      "everyoneLosesPct": "everyone loses {{n}} percent",
+      "everyoneGainsPct": "everyone gains {{n}} percent",
+      "allRivalsLosePct": "every rival loses {{n}} percent",
+      "allRivalsGainPct": "every rival gains {{n}} percent",
+      "rivalInvestLosesPct": "a rival's investments lose {{n}} percent",
+      "stealPct": "take {{n}} percent from a rival",
+      "reduceHit": "attacks on you hurt {{n}} percent less",
+      "youGainAmount": "you gain {{amount}}",
+      "youLoseAmount": "you lose {{amount}}",
+      "rivalLosesAmount": "a rival loses {{amount}}",
+      "everyoneGainsAmount": "everyone gains {{amount}}",
+      "steal": "take {{amount}} from a rival",
+      "skipTurn": "a rival skips a turn",
+      "block": "blocks an attack",
+      "nextYear": "you get {{amount}} next year",
+      "atEnd": "you get {{amount}} at the end of the game",
+      "floor": "your money can't fall below {{amount}}",
+      "doubleInvest": "your next investment counts double",
+      "copy": "copies a card",
+      "newGoal": "sets a new goal"
     }
   },
   "comms": {
@@ -928,7 +1406,7 @@
     "voiceLeave": "Leave voice",
     "micMute": "Mute mic",
     "micUnmute": "Unmute mic",
-    "inVoice": "🎧 {{n}} in voice",
+    "inVoice": "{{n}} in voice",
     "isInVoice": "In voice",
     "isMuted": "Mic muted",
     "poke": "Poke",
@@ -991,6 +1469,148 @@
         "invalid": "Something in the report wasn't right. Please try again.",
         "failed": "Couldn't send the report. Check your connection and try again."
       }
+    },
+    "voiceOff": "Voice off",
+    "muted": "Muted",
+    "micOn": "Mic on",
+    "chat": "Chat"
+  },
+  "outcome": {
+    "save": "Smart save!",
+    "invest": "Money at work!",
+    "investInto": "Invested in {{asset}}:",
+    "spend": "Treat yourself:",
+    "gain": "Money in!",
+    "gainCard": "{{card}}:",
+    "loss": "Ouch:",
+    "lossCard": "{{card}}:",
+    "attack": "{{name}} hit you with {{card}}:",
+    "tipShield": "A shield card can block hits like this. Equip one when you can.",
+    "learnMore": "Learn more"
+  },
+  "log": {
+    "empty": "Moves will appear here.",
+    "year": "Year {{n}}",
+    "yearBegan": "Year {{n}} began",
+    "started": "The game started. Race to the goal!",
+    "saved": "{{name}} saved with {{card}}: {{amount}}",
+    "savedPlain": "{{name}} saved with {{card}}",
+    "spent": "{{name}} spent on {{card}}: {{amount}}",
+    "spentPlain": "{{name}} spent on {{card}}",
+    "invested": "{{name}} put {{amount}} into {{asset}} ({{card}})",
+    "investedPlain": "{{name}} invested ({{card}})",
+    "hit": "{{name}} hit {{target}} with {{card}}: {{amount}}",
+    "playedOn": "{{name}} played {{card}} on {{target}}",
+    "hitBlocked": "{{name}} played {{card}}, but {{target}}'s shield blocked it",
+    "hitAll": "{{name}} played {{card}} on everyone",
+    "passed": "{{name}} passed",
+    "passedCard": "{{name}} passed and discarded {{card}}",
+    "equipped": "{{name}} equipped {{card}}",
+    "blocked": "{{name}}'s {{shield}} blocked {{card}}",
+    "timeUp": "{{name}} ran out of time",
+    "skipping": "{{name}} skips this year",
+    "inflation": "Inflation ate {{amount}} of {{name}}'s cash",
+    "market": "Market: {{moves}}",
+    "wiped": "{{name}}'s {{asset}} was wiped out",
+    "lifeEventFor": "Life event for {{name}}: {{card}}",
+    "lifeEventAll": "Life event for everyone: {{card}}",
+    "change": "{{name}}: {{amount}}",
+    "lure": "{{name}} fell for a tip: {{amount}} went into {{asset}}",
+    "streak": "Save streak ×{{n}}",
+    "freeCard": "Drew a free card",
+    "reshuffled": "The deck was reshuffled",
+    "won": "{{name}} reached the goal and won!"
+  },
+  "nav": {
+    "main": "Main",
+    "home": "Home",
+    "campaign": "Campaign",
+    "library": "Library",
+    "profile": "Profile",
+    "profileOf": "Profile: {{name}}",
+    "profileGuest": "Profile: {{name}} (guest)"
+  },
+  "home": {
+    "greeting": "Namaste, {{name}}!",
+    "guestSaved": "Guest · progress is saved on this phone",
+    "streak_one": "{{count}}-day streak",
+    "streak_other": "{{count}}-day streak",
+    "quickPlay": "Quick play",
+    "signIn": "Sign in",
+    "keepSafe": "Keep your progress safe",
+    "keepSafeBody": "Free account: play friends, keep stars on every phone.",
+    "yourRank": "Your rank",
+    "notRanked": "Play a game to get on the board.",
+    "seeAll": "See all",
+    "seeAllOf": "See all: {{what}}",
+    "contractsDone": "{{done}}/{{total}} done",
+    "libraryAria": "{{n}} of {{total}} money ideas unlocked",
+    "tile": {
+      "practice": {
+        "title": "Practice vs bots",
+        "body": "A quick 15-minute game."
+      },
+      "library": {
+        "title": "Gyaan Library",
+        "body": "Money ideas you unlocked."
+      },
+      "tutorial": {
+        "title": "How to play",
+        "body": "3-minute tutorial."
+      },
+      "friends": {
+        "title": "Play friends",
+        "body": "Needs a free account.",
+        "bodySignedIn": "Create or join a room."
+      }
+    },
+    "art": {
+      "desire": "Desire",
+      "pocket": "Pocket money"
+    },
+    "hero": {
+      "levelCaption": "Campaign · Level {{n}} of {{total}}",
+      "levelBody": "Age {{age}}. The one idea: {{idea}}",
+      "levelCta": "Play level {{n}}",
+      "starsAria": "{{n}} of 3 stars",
+      "tutorialCaption": "Start here · 3 min",
+      "tutorialTitle": "How to play",
+      "tutorialBody": "Learn the cards in 3 minutes, then start your money life.",
+      "tutorialCta": "Start tutorial",
+      "practiceCaption": "Campaign complete",
+      "practiceTitle": "Practice vs bots",
+      "practiceBody": "All four levels have 3 stars. Try a new plan in a quick game.",
+      "practiceCta": "Play practice"
+    },
+    "level": {
+      "level_1": {
+        "name": "Brahmacharya",
+        "idea": "control your Desire meter before it controls you."
+      },
+      "level_2": {
+        "name": "Vidyarthi to Yuva",
+        "idea": "pay yourself first, every single year."
+      },
+      "level_3": {
+        "name": "Arambh Grihastha",
+        "idea": "when your salary grows, don't let your lifestyle grow with it."
+      },
+      "level_4": {
+        "name": "Grihastha Dharma",
+        "idea": "keep goal money ready and let insurance carry big shocks."
+      }
     }
+  },
+  "daily": {
+    "title": "Daily streak bonus",
+    "body": "Come back every day to grow your streak.",
+    "collect": "Collect",
+    "retry": "Try again",
+    "day": "Day {{n}}",
+    "daysLabel": "7-day streak",
+    "collected": "Collected",
+    "already": "You already collected today's bonus.",
+    "error": "Couldn't collect right now. Check your connection and try again.",
+    "collectedNote": "Added to your Daanik Coins."
   }
 }

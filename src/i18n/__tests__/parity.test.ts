@@ -47,8 +47,7 @@ describe('i18n parity (main locale files + parts)', () => {
 
   it('no banned casino / gambling copy in any language (spec §A.3, §H)', () => {
     const banned = /\b(jackpot|better luck|dominate|entry reward|entry fee)\b/i
-    // TODO(Phase 3): these legacy keys are deleted when their screens are migrated; then this list must be empty.
-    const pendingRemoval = new Set(['result.betterLuck', 'setup.entryReward', 'landing.hero3'])
+    const pendingRemoval = new Set<string>()
     const hits = [...en, ...hi, ...hinglish].filter(([k, v]) => banned.test(v) && !pendingRemoval.has(k)).map(([k]) => k)
     expect(hits).toEqual([])
   })
