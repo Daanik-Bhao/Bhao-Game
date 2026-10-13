@@ -11,6 +11,64 @@
       "coinsWin": "Win to earn {{n}} Daanik Coins",
       "coinsInfoLabel": "What are Daanik Coins?",
       "startGame": "Start game"
+    },
+    "result": {
+      "caption": "Game over · {{years}} years played",
+      "headline": {
+        "won": "You won! {{nw}}",
+        "grew2x": "Your money grew {{x}}",
+        "grew": "Your money grew {{pct}}",
+        "nearMiss": "So close! Only {{gap}} short",
+        "shrank": "Tough game. Here's what to try next"
+      },
+      "finished": "You finished {{ordinal}} of {{n}}.",
+      "winnerReached": "{{winner}} reached {{goal}} first.",
+      "winnerMost": "{{winner}} ended with the most money.",
+      "youReached": "You reached {{goal}} first.",
+      "youMost": "You ended with the most money.",
+      "ordinalWord": {
+        "1": "1st",
+        "2": "2nd",
+        "3": "3rd",
+        "4": "4th",
+        "5": "5th",
+        "6": "6th"
+      },
+      "start": "Start {{amount}}",
+      "netWorthAria": "Your net worth",
+      "standings": "Final standings",
+      "you": "You",
+      "playAgain": "Play again",
+      "nextLevel": "Next level",
+      "tryAgain": "Try again",
+      "backToLobby": "Back to lobby",
+      "rp": "{{rp}} RP"
+    },
+    "report": {
+      "moneyStyle": "Your money style",
+      "seeWhy": "See why for each grade",
+      "hideWhy": "Hide the reasons",
+      "proj": {
+        "disclaimer": "Long-run averages. Real returns change every year and are never guaranteed."
+      },
+      "areaShort": {
+        "saving": "Saving",
+        "investing": "Investing",
+        "risk": "Risk",
+        "emergency": "Emergency",
+        "protection": "Protection"
+      }
+    },
+    "concept": {
+      "inOneLine": "In one line",
+      "tryThis": "Try in real life"
+    },
+    "campaign": {
+      "stars": {
+        "met": "Done:",
+        "missed": "Not yet:",
+        "nth": "Star {{n}}"
+      }
     }
   },
   "hi": {
@@ -25,6 +83,64 @@
       "coinsWin": "जीतने पर {{n}} दानिक कॉइन",
       "coinsInfoLabel": "दानिक कॉइन क्या हैं?",
       "startGame": "खेल शुरू करें"
+    },
+    "result": {
+      "caption": "खेल खत्म · {{years}} साल खेले",
+      "headline": {
+        "won": "आप जीते! {{nw}}",
+        "grew2x": "आपका पैसा {{x}} गुना बढ़ा",
+        "grew": "आपका पैसा {{pct}} बढ़ा",
+        "nearMiss": "बस {{gap}} कम रह गए!",
+        "shrank": "मुश्किल खेल। अगली बार ये आज़माएँ"
+      },
+      "finished": "आप {{n}} में से {{ordinal}} स्थान पर रहे।",
+      "winnerReached": "{{winner}} सबसे पहले {{goal}} तक पहुँचे।",
+      "winnerMost": "{{winner}} के पास सबसे ज़्यादा पैसा रहा।",
+      "youReached": "आप सबसे पहले {{goal}} तक पहुँचे।",
+      "youMost": "आपके पास सबसे ज़्यादा पैसा रहा।",
+      "ordinalWord": {
+        "1": "पहले",
+        "2": "दूसरे",
+        "3": "तीसरे",
+        "4": "चौथे",
+        "5": "पाँचवें",
+        "6": "छठे"
+      },
+      "start": "शुरुआत {{amount}}",
+      "netWorthAria": "आपकी नेट वर्थ",
+      "standings": "आख़िरी रैंकिंग",
+      "you": "आप",
+      "playAgain": "फिर खेलें",
+      "nextLevel": "अगला लेवल",
+      "tryAgain": "फिर कोशिश करें",
+      "backToLobby": "लॉबी में वापस",
+      "rp": "{{rp}} RP"
+    },
+    "report": {
+      "moneyStyle": "आपका पैसों का अंदाज़",
+      "seeWhy": "हर ग्रेड की वजह देखें",
+      "hideWhy": "वजहें छिपाएँ",
+      "proj": {
+        "disclaimer": "ये लंबे समय के औसत हैं। असली रिटर्न हर साल बदलते हैं और कभी पक्के नहीं होते।"
+      },
+      "areaShort": {
+        "saving": "बचत",
+        "investing": "निवेश",
+        "risk": "जोखिम",
+        "emergency": "आपात",
+        "protection": "सुरक्षा"
+      }
+    },
+    "concept": {
+      "inOneLine": "एक लाइन में",
+      "tryThis": "असल ज़िंदगी में आज़माएँ"
+    },
+    "campaign": {
+      "stars": {
+        "met": "पूरा:",
+        "missed": "अभी नहीं:",
+        "nth": "स्टार {{n}}"
+      }
     }
   },
   "hinglish": {
@@ -39,6 +155,64 @@
       "coinsWin": "Jeetne par {{n}} Daanik Coins",
       "coinsInfoLabel": "Daanik Coins kya hain?",
       "startGame": "Game shuru karo"
+    },
+    "result": {
+      "caption": "Game over · {{years}} saal khele",
+      "headline": {
+        "won": "Aap jeete! {{nw}}",
+        "grew2x": "Aapka paisa {{x}} badha",
+        "grew": "Aapka paisa {{pct}} badha",
+        "nearMiss": "Bas {{gap}} kam reh gaye!",
+        "shrank": "Tough game. Agli baar ye try karo"
+      },
+      "finished": "Aap {{n}} mein se {{ordinal}} aaye.",
+      "winnerReached": "{{winner}} sabse pehle {{goal}} tak pahunche.",
+      "winnerMost": "{{winner}} ke paas sabse zyada paisa raha.",
+      "youReached": "Aap sabse pehle {{goal}} tak pahunche.",
+      "youMost": "Aapke paas sabse zyada paisa raha.",
+      "ordinalWord": {
+        "1": "1st",
+        "2": "2nd",
+        "3": "3rd",
+        "4": "4th",
+        "5": "5th",
+        "6": "6th"
+      },
+      "start": "Start {{amount}}",
+      "netWorthAria": "Aapki net worth",
+      "standings": "Final standings",
+      "you": "Aap",
+      "playAgain": "Phir khelo",
+      "nextLevel": "Agla level",
+      "tryAgain": "Phir try karo",
+      "backToLobby": "Lobby mein wapas",
+      "rp": "{{rp}} RP"
+    },
+    "report": {
+      "moneyStyle": "Aapka money style",
+      "seeWhy": "Har grade ki wajah dekho",
+      "hideWhy": "Wajah chhupao",
+      "proj": {
+        "disclaimer": "Ye long-run averages hain. Asli returns har saal badalte hain aur kabhi guaranteed nahi hote."
+      },
+      "areaShort": {
+        "saving": "Saving",
+        "investing": "Investing",
+        "risk": "Risk",
+        "emergency": "Emergency",
+        "protection": "Protection"
+      }
+    },
+    "concept": {
+      "inOneLine": "Ek line mein",
+      "tryThis": "Real life mein try karo"
+    },
+    "campaign": {
+      "stars": {
+        "met": "Done:",
+        "missed": "Abhi nahi:",
+        "nth": "Star {{n}}"
+      }
     }
   }
 }

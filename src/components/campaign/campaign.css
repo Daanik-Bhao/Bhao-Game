@@ -1,0 +1,17 @@
+/* Campaign: stars, level intro, level rule HUD (spec §E.5–E.7). Tokens only. */
+
+/* ---------- Stars ---------- */
+.lvl-stars { display: flex; flex-direction: column; gap: var(--sp-3); }
+.lvl-stars__row { display: flex; gap: var(--sp-2); justify-content: center; }
+.lvl-stars--start .lvl-stars__row { justify-content: flex-start; }
+.lvl-star { display: inline-grid; color: var(--sand-500); }
+.lvl-star svg { fill: transparent; }
+.lvl-star.is-on { color: var(--haldi-600); }
+.lvl-star.is-on svg { fill: var(--haldi-400); }
+.lvl-criteria { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-3); }
+.lvl-criterion { display: flex; gap: var(--sp-3); align-items: flex-start; font: 400 var(--fs-ui)/var(--lh-ui) var(--font-body); color: var(--text); }
+.lvl-criterion__mark { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--bg-sunken); color: var(--text-muted); }
+.lvl-criterion.is-met .lvl-criterion__mark { background: var(--save-soft); color: var(--save-strong); }
+.lvl-criterion.is-missed .lvl-criterion__mark { background: var(--attack-soft); color: var(--attack-strong); }
+.lvl-criterion__text { flex: 1; min-width: 0; padding-top: 3px; }
+.lvl-criterion__n { font-weight: 600; margin-right: 6px; color: var(--text-muted); }
