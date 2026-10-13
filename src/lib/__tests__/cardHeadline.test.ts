@@ -12,11 +12,12 @@ function card(type: GameCard['type'], effect?: CardEffect, extra: Partial<GameCa
 describe('softHyphenate (long card-name words)', () => {
   it('adds soft hyphens only inside long Latin words', async () => {
     const { softHyphenate } = await import('../../components/GameCard')
-    expect(softHyphenate('Performance Bonus')).toBe('Per­for­mance Bonus')
+    const SHY = String.fromCharCode(0xad)
+    expect(softHyphenate('Performance Bonus')).toBe(`Per${SHY}for${SHY}mance Bonus`)
     expect(softHyphenate('Kuber')).toBe('Kuber')
-    expect(softHyphenate('Compound')).toBe('Com00ADpound')
+    expect(softHyphenate('Compound')).toBe(`Com${SHY}pound`)
     expect(softHyphenate('दिवाली बोनस')).toBe('दिवाली बोनस')
-    expect(softHyphenate('Performance').replace(/­/g, '')).toBe('Performance')
+    expect(softHyphenate('Performance').split(SHY).join('')).toBe('Performance')
   })
 })
 
