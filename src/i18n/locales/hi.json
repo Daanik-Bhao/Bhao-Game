@@ -6,7 +6,9 @@
     "usernameLabel": "अपना नाम",
     "usernamePlaceholder": "एक शानदार नाम डालें",
     "loading": "प्रवेश कर रहे हैं...",
-    "submit": "एरिना में प्रवेश करें"
+    "submit": "एरिना में प्रवेश करें",
+    "googleOpening": "Google खुल रहा है...",
+    "googleFailed": "Google साइन-इन नहीं हो पाया"
   },
   "dashboard": {
     "welcome": "वापस स्वागत है",

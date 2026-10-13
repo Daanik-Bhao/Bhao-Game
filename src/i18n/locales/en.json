@@ -6,7 +6,9 @@
     "usernameLabel": "Username",
     "usernamePlaceholder": "Enter a cool name",
     "loading": "Entering...",
-    "submit": "Enter the Arena"
+    "submit": "Enter the Arena",
+    "googleOpening": "Opening Google...",
+    "googleFailed": "Google sign-in failed"
   },
   "dashboard": {
     "welcome": "Welcome back",

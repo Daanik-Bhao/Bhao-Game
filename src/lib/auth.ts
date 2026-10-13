@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured, SUPABASE_NOT_CONFIGURED_MESSAGE } from './supabase'
+import { isNativeApp, startNativeGoogleSignIn, type NativeSignInOutcome } from './nativeAuth'
 import type { Profile, DailyRewardResult, MatchResultSummary } from '../types/database'
 
 function requireSupabase(): void {
@@ -26,8 +27,15 @@ export async function signIn(email: string, password: string): Promise<void> {
   if (error) throw error
 }
 
-export async function signInWithGoogle(): Promise<void> {
+/**
+ * Google sign-in. In a browser this redirects the page to Google, which comes
+ * back to /dashboard (the promise resolves before the page unloads). In the
+ * Android app it opens a Custom Tab and resolves once the user has signed in or
+ * closed the tab (see nativeAuth.ts).
+ */
+export async function signInWithGoogle(): Promise<NativeSignInOutcome | void> {
   requireSupabase()
+  if (isNativeApp()) return startNativeGoogleSignIn()
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
