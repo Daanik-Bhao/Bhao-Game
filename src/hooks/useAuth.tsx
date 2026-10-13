@@ -1,7 +1,9 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { useNavigate } from 'react-router-dom'
 import { getProfile, signIn, signOut, signUp, signInWithGoogle, deleteOwnAccount } from '../lib/auth'
+import { initNativeAuth, type NativeSignInOutcome } from '../lib/nativeAuth'
 import type { Profile } from '../types/database'
 
 /**
@@ -77,7 +79,11 @@ interface AuthContextValue extends AuthState {
   /** False when Supabase env vars are missing; online features are unavailable. */
   isOnlineAvailable: boolean
   login: (email: string, password: string) => Promise<void>
-  loginWithGoogle: () => Promise<void>
+  /**
+   * Web: redirects to Google (resolves before the page unloads).
+   * Android app: resolves 'signed-in' or 'cancelled' when the Custom Tab flow ends.
+   */
+  loginWithGoogle: () => Promise<NativeSignInOutcome | void>
   register: (email: string, password: string, username: string) => Promise<void>
   logout: () => Promise<void>
   refreshProfile: () => Promise<void>
@@ -150,6 +156,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe()
   }, [loadProfile])
 
+  // Android app only (no-op in browsers): listen for the Google sign-in deep link,
+  // including a cold start launched by it, and land on /dashboard afterwards just
+  // like the web redirect (redirectTo .../dashboard) does.
+  // Navigation waits until the profile has loaded so /dashboard doesn't bounce to /auth.
+  const navigate = useNavigate()
+  const [nativeSignInDone, setNativeSignInDone] = useState(false)
+  useEffect(() => initNativeAuth(() => setNativeSignInDone(true)), [])
+  useEffect(() => {
+    if (nativeSignInDone && state.user && !state.loading) {
+      setNativeSignInDone(false)
+      navigate('/dashboard', { replace: true })
+    }
+  }, [nativeSignInDone, state.user, state.loading, navigate])
+
   // A real account always wins over guest mode.
   // TODO: offer to merge guest campaign progress into the account on first sign-in.
   useEffect(() => {
@@ -163,9 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signIn(email, password)
   }
 
-  const loginWithGoogle = async () => {
-    await signInWithGoogle()
-  }
+  const loginWithGoogle = () => signInWithGoogle()
 
   const register = async (email: string, password: string, username: string) => {
     await signUp(email, password, username)

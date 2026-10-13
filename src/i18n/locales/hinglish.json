@@ -6,7 +6,9 @@
     "usernameLabel": "Username",
     "usernamePlaceholder": "Ek cool naam daalein",
     "loading": "Enter kar rahe hain...",
-    "submit": "Arena mein enter karein"
+    "submit": "Arena mein enter karein",
+    "googleOpening": "Google khul raha hai...",
+    "googleFailed": "Google sign-in nahi ho paaya"
   },
   "dashboard": {
     "welcome": "Welcome back",
