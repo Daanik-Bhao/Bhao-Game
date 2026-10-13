@@ -19,8 +19,9 @@ export interface SheetProps {
   /** Sticky footer slot (CTA) */
   footer?: ReactNode
   children?: ReactNode
-  /** 'auto' = bottom sheet on phone portrait, right side panel on phone landscape / desktop */
-  placement?: 'auto' | 'bottom' | 'side'
+  /** 'auto' = bottom sheet on phone portrait, right side panel on phone landscape / desktop;
+   *  'auto-center' = bottom sheet on phone portrait, centred dialog (max 520) elsewhere (level intro) */
+  placement?: 'auto' | 'bottom' | 'side' | 'center' | 'auto-center'
   className?: string
   bodyClassName?: string
   /** Accessible name when no visible title is given */
@@ -47,7 +48,9 @@ export function Sheet(props: SheetProps) {
 function SheetInner({ onClose, title, titleHidden, header, footer, children, placement = 'auto', className = '', bodyClassName = '', ariaLabel, hideClose }: SheetProps) {
   const { t } = useTranslation()
   const sidePref = useMediaQuery(SIDE_PANEL_QUERY)
-  const side = placement === 'side' || (placement === 'auto' && sidePref)
+  const mode: 'side' | 'bottom' | 'center' = placement === 'side' || (placement === 'auto' && sidePref) ? 'side'
+    : placement === 'center' || (placement === 'auto-center' && sidePref) ? 'center' : 'bottom'
+  const side = mode === 'side'
   const ref = useRef<HTMLDivElement>(null)
   const titleId = useId()
   const drag = useDragControls()
@@ -63,6 +66,8 @@ function SheetInner({ onClose, title, titleHidden, header, footer, children, pla
 
   const motionProps = side
     ? { initial: { x: '100%' }, animate: { x: 0 }, exit: { x: '100%', transition: { duration: 0.15 } } }
+    : mode === 'center'
+    ? { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, transition: { duration: 0.15 } } }
     : { initial: { y: '100%' }, animate: { y: 0 }, exit: { y: '100%', transition: { duration: 0.15 } } }
 
   return (
@@ -82,9 +87,9 @@ function SheetInner({ onClose, title, titleHidden, header, footer, children, pla
         aria-labelledby={title ? titleId : undefined}
         aria-label={title ? undefined : ariaLabel}
         tabIndex={-1}
-        className={`sheet paper ${side ? 'sheet--side' : 'sheet--bottom'} ${className}`.trim()}
+        className={`sheet paper sheet--${mode} ${className}`.trim()}
         transition={SPRING}
-        drag={side ? false : 'y'}
+        drag={mode === 'bottom' ? 'y' : false}
         dragListener={false}
         dragControls={drag}
         dragConstraints={{ top: 0, bottom: 0 }}
@@ -92,7 +97,7 @@ function SheetInner({ onClose, title, titleHidden, header, footer, children, pla
         onDragEnd={onDragEnd}
         {...motionProps}
       >
-        <div className="sheet__grab-zone" onPointerDown={e => { if (!side && !(e.target as HTMLElement).closest('button, a, input')) drag.start(e) }}>
+        <div className="sheet__grab-zone" onPointerDown={e => { if (mode === 'bottom' && !(e.target as HTMLElement).closest('button, a, input')) drag.start(e) }}>
           <div className="sheet__grab" aria-hidden="true" />
           <div className="sheet__head">
             {header ?? null}

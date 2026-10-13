@@ -1,34 +1,41 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
+import { Flame, Gift, GraduationCap, House, HeartPulse, Briefcase, ShieldCheck, ShieldAlert, Zap, Target } from 'lucide-react'
 import type { GameState } from '../../types/game'
-import { formatWealth } from '../../types/game'
 import { ASSETS } from '../../data/assets'
 import { activeRule, hasHealthCover, ruleHumanIndex, slotsUsed } from '../../lib/levelRules'
-import { RULE_ICONS } from './LevelIntro'
+import { formatMoney } from '../../lib/format'
+import { useLang } from '../../i18n/lang'
+import { assetName } from '../game/economyUi'
+import { Chip, Progress } from '../ui'
+import './campaign.css'
 
-const rupees = (n: number) => `₹${formatWealth(Math.max(0, Math.round(n)))}`
-
-function Bar({ pct, color, marker }: { pct: number; color: string; marker?: number }) {
-  return (
-    <div style={{ position: 'relative', height: 8, background: '#e5e7eb', borderRadius: 999, overflow: 'hidden' }}>
-      <div style={{ width: `${Math.max(0, Math.min(100, pct))}%`, height: '100%', background: color, borderRadius: 999, transition: 'width 0.5s' }} />
-      {marker !== undefined && (
-        <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${marker}%`, width: 2, background: '#111827', opacity: 0.35 }} />
-      )}
-    </div>
-  )
-}
-
-const chip: CSSProperties = {
-  fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: 'rgba(0,0,0,0.06)', whiteSpace: 'nowrap',
+/**
+ * Short text for the level-rule pill on the table (spec §E.7), e.g. "Desire 62%", "Streak 3",
+ * "Lifestyle 45%", "Goals 1/3". null outside campaign levels.
+ */
+export function levelRulePillText(state: GameState, t: TFunction): string | null {
+  const rule = activeRule(state)
+  const ls = state.levelState
+  if (!rule || !ls) return null
+  if (rule === 'desire_meter' && ls.desire) return t('campaign.pill.desire', { pct: Math.round((ls.desire.value / ls.desire.max) * 100) })
+  if (rule === 'saving_streak' && ls.streak) return t('campaign.pill.streak', { n: ls.streak.current })
+  if (rule === 'lifestyle_creep' && ls.creep) return t('campaign.pill.lifestyle', { pct: ls.creep.lifestylePct })
+  if (rule === 'grihastha' && ls.family) {
+    const done = ls.family.goals.filter(g => g.status === 'met').length
+    return t('campaign.pill.goals', { done, total: ls.family.goals.length })
+  }
+  return t(`campaign.rules.${rule}.name`)
 }
 
 /**
- * Compact in-game panel for the level's signature rule (campaign only; renders nothing
- * otherwise). Drop-in replacement for the empty `LevelHUD` in the game board.
+ * The level's signature rule (campaign only; renders nothing otherwise). Shown in a paper
+ * popover / sheet from the rule pill on the table. Meters are D.9 progress bars with labels.
  */
 export function LevelRuleHUD({ state, compact = false }: { state: GameState; compact?: boolean }) {
   const { t } = useTranslation()
+  const lang = useLang()
   const rule = activeRule(state)
   const ls = state.levelState
   const idx = ruleHumanIndex(state)
@@ -37,22 +44,27 @@ export function LevelRuleHUD({ state, compact = false }: { state: GameState; com
   const round = state.round ?? 1
   const latest = ls.ruleEvents?.[0]
   const showLatest = !compact && latest && latest.round >= round - 1
+  const money = (n: number) => formatMoney(Math.max(0, n), { compact: true, lang })
 
   let body: ReactNode = null
   if (rule === 'desire_meter' && ls.desire) {
     const d = ls.desire
-    const pct = (d.value / d.max) * 100
-    const color = d.value >= d.max - d.yearlyRise ? '#dc2626' : d.value >= d.plannedThreshold ? '#f59e0b' : '#10b981'
+    const hot = d.value >= d.max - d.yearlyRise
+    const treat = d.value >= d.plannedThreshold
     body = (
       <>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700 }}>
-          <span>{t('campaign.hud.desire')} {d.value}/{d.max}</span>
-          {d.value >= d.plannedThreshold && <span style={{ color: '#b45309' }}>🎁 {t('campaign.hud.plannedZone')}</span>}
-        </div>
-        <Bar pct={pct} color={color} marker={(d.plannedThreshold / d.max) * 100} />
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <span style={chip}>🎁 {t('campaign.hud.treats', { n: d.plannedTreats })}</span>
-          <span style={{ ...chip, color: d.impulseSplurges ? '#b91c1c' : undefined }}>🌕 {t('campaign.hud.splurges', { n: d.impulseSplurges })}</span>
+        <Progress
+          value={d.value}
+          max={d.max}
+          tone={hot ? 'haldi' : 'save'}
+          ariaLabel={t('campaign.hud.desire')}
+          label={`${t('campaign.hud.desire')} ${d.value}/${d.max}`}
+          className={hot ? 'rule-meter is-hot' : 'rule-meter'}
+        />
+        <div className="rule-chips">
+          {treat && <Chip tone="risk" icon={<Gift size={14} aria-hidden="true" />}>{t('campaign.hud.plannedZone')}</Chip>}
+          <Chip icon={<Gift size={14} aria-hidden="true" />}>{t('campaign.hud.treats', { n: d.plannedTreats })}</Chip>
+          <Chip tone={d.impulseSplurges ? 'attack' : 'neutral'} icon={<Zap size={14} aria-hidden="true" />}>{t('campaign.hud.splurges', { n: d.impulseSplurges })}</Chip>
         </div>
       </>
     )
@@ -61,16 +73,16 @@ export function LevelRuleHUD({ state, compact = false }: { state: GameState; com
     const sip = Math.min(s.current, s.cap) * s.sipStep
     body = (
       <>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 18 }} aria-label={t('campaign.hud.streak', { n: s.current })}>
+        <div className="rule-flames" role="img" aria-label={t('campaign.hud.streak', { n: s.current })}>
           {Array.from({ length: s.cap }, (_, i) => (
-            <span key={i} style={{ opacity: i < s.current ? 1 : 0.2 }}>🔥</span>
+            <Flame key={i} size={22} aria-hidden="true" className={i < s.current ? 'is-on' : ''} />
           ))}
-          {s.current > s.cap && <span style={{ fontSize: 12, fontWeight: 800 }}>+{s.current - s.cap}</span>}
+          {s.current > s.cap && <b className="num">+{s.current - s.cap}</b>}
         </div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <span style={chip}>{t('campaign.hud.streak', { n: s.current })}</span>
-          <span style={chip}>{t('campaign.hud.bestStreak', { n: s.best })}</span>
-          {sip > 0 && <span style={{ ...chip, color: '#047857' }}>🔁 {t('campaign.hud.nextSip', { amount: rupees(sip) })}</span>}
+        <div className="rule-chips">
+          <Chip>{t('campaign.hud.streak', { n: s.current })}</Chip>
+          <Chip>{t('campaign.hud.bestStreak', { n: s.best })}</Chip>
+          {sip > 0 && <Chip tone="save">{t('campaign.hud.nextSip', { amount: money(sip) })}</Chip>}
         </div>
       </>
     )
@@ -79,20 +91,18 @@ export function LevelRuleHUD({ state, compact = false }: { state: GameState; com
     const used = slotsUsed(player)
     body = (
       <>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, gap: 8 }}>
-          <span>💼 {t('campaign.hud.salary', { amount: rupees(c.salary) })}</span>
-          <span style={{ color: c.lifestylePct > 60 ? '#b91c1c' : '#374151' }}>{t('campaign.hud.lifestyle', { pct: c.lifestylePct })}</span>
-        </div>
-        <Bar pct={c.lifestylePct} color={c.lifestylePct > 80 ? '#dc2626' : c.lifestylePct > 60 ? '#f59e0b' : '#10b981'} marker={60} />
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={chip}>{t('campaign.hud.slots', { used: used.length, total: c.slots })}</span>
+        <p className="rule-line"><Briefcase size={16} aria-hidden="true" /> {t('campaign.hud.salary', { amount: money(c.salary) })}</p>
+        <Progress
+          value={c.lifestylePct}
+          max={100}
+          tone={c.lifestylePct > 60 ? 'haldi' : 'save'}
+          ariaLabel={t('campaign.hud.lifestyle', { pct: c.lifestylePct })}
+          label={t('campaign.hud.lifestyle', { pct: c.lifestylePct })}
+        />
+        <div className="rule-chips">
+          <Chip>{t('campaign.hud.slots', { used: used.length, total: c.slots })}</Chip>
           {Array.from({ length: c.slots }, (_, i) => (
-            <span key={i} title={used[i] ? ASSETS[used[i]].name : ''} style={{
-              width: 26, height: 26, borderRadius: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              border: used[i] ? '1px solid #a7f3d0' : '1px dashed #9ca3af', background: used[i] ? '#ecfdf5' : 'transparent', fontSize: 14,
-            }}>
-              {used[i] ? ASSETS[used[i]].emoji : ''}
-            </span>
+            <span key={i} className={`rule-slot${used[i] ? ' is-used' : ''}`}>{used[i] ? assetName(ASSETS[used[i]]) : '—'}</span>
           ))}
         </div>
       </>
@@ -101,40 +111,31 @@ export function LevelRuleHUD({ state, compact = false }: { state: GameState; com
     const insured = hasHealthCover(player)
     body = (
       <>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <ul className="rule-goals">
           {ls.family.goals.map(g => {
-            const icon = g.id === 'home' ? '🏡' : g.id === 'education' ? '🎓' : '🏥'
-            const color = g.status === 'met' ? '#047857' : g.status === 'pending' ? (g.dueRound - round <= 2 ? '#b45309' : '#374151') : '#b91c1c'
+            const Icon = g.id === 'home' ? House : g.id === 'education' ? GraduationCap : HeartPulse
+            const tone = g.status === 'met' ? 'is-met' : g.status === 'pending' ? (g.dueRound - round <= 2 ? 'is-soon' : '') : 'is-missed'
             return (
-              <div key={g.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, gap: 8 }}>
-                <span>{icon} {t(`campaign.goals.${g.id}`)}{g.id !== 'parents_health' && g.status === 'pending' ? ` · ${rupees(g.amount)}` : ''}</span>
-                <span style={{ fontWeight: 700, color, whiteSpace: 'nowrap' }}>{t(`campaign.goals.status.${g.status}`, { year: g.dueRound })}</span>
-              </div>
+              <li key={g.id} className="rule-goal">
+                <span><Icon size={16} aria-hidden="true" /> {t(`campaign.goals.${g.id}`)}{g.id !== 'parents_health' && g.status === 'pending' ? ` · ${money(g.amount)}` : ''}</span>
+                <b className={tone}>{t(`campaign.goals.status.${g.status}`, { year: g.dueRound })}</b>
+              </li>
             )
           })}
-        </div>
-        <span style={{ ...chip, alignSelf: 'flex-start', color: insured ? '#047857' : '#b91c1c' }}>
-          {insured ? '🛡️ ' + t('campaign.hud.insured') : '⚠️ ' + t('campaign.hud.notInsured')}
-        </span>
+        </ul>
+        <Chip tone={insured ? 'defence' : 'attack'} icon={insured ? <ShieldCheck size={14} aria-hidden="true" /> : <ShieldAlert size={14} aria-hidden="true" />}>
+          {insured ? t('campaign.hud.insured') : t('campaign.hud.notInsured')}
+        </Chip>
       </>
     )
   }
   if (!body) return null
 
   return (
-    <div style={{
-      background: 'rgba(255,255,255,0.92)', border: '1px solid #e5e7eb', borderRadius: 12, padding: compact ? 8 : 10,
-      display: 'flex', flexDirection: 'column', gap: 6, color: '#1f2937', fontFamily: '"Inter", system-ui, sans-serif',
-    }}>
-      <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.4, color: '#92400e' }}>
-        {RULE_ICONS[rule]} {t(`campaign.rules.${rule}.name`)}
-      </div>
+    <div className={`rule-hud paper${compact ? ' is-compact' : ''}`}>
+      <p className="rule-hud__title"><Target size={16} aria-hidden="true" /> {t(`campaign.rules.${rule}.name`)}</p>
       {body}
-      {showLatest && latest && (
-        <div style={{ fontSize: 12, color: '#4b5563', borderTop: '1px solid #f3f4f6', paddingTop: 6 }}>
-          {t(latest.key, { ...(latest.params ?? {}), defaultValue: latest.text })}
-        </div>
-      )}
+      {showLatest && latest && <p className="rule-hud__latest">{t(latest.key, { ...(latest.params ?? {}), defaultValue: latest.text })}</p>}
     </div>
   )
 }

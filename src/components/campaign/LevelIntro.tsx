@@ -1,17 +1,23 @@
-import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Briefcase, GraduationCap, House, Play, Sprout, Target, type LucideIcon } from 'lucide-react'
 import type { LevelConfig } from '../../types/level'
 import { getLevelRule, levelStarCriteria } from '../../lib/levelRules'
 import type { LevelResult } from '../../lib/campaignProgress'
-import { formatWealth } from '../../types/game'
+import { formatMoney } from '../../lib/format'
+import { useLang } from '../../i18n/lang'
+import { Button, Sheet } from '../ui'
+import { Gullu } from '../mascot/Gullu'
 import { LevelStars } from './LevelStars'
+import './campaign.css'
 
-export const RULE_ICONS: Record<string, string> = {
-  desire_meter: '🌙',
-  saving_streak: '🔥',
-  lifestyle_creep: '📈',
-  grihastha: '🏡',
+/** Node icon per level (spec §E.5): sprout, graduation-cap, briefcase, house. */
+export const LEVEL_ICONS: LucideIcon[] = [Sprout, GraduationCap, Briefcase, House]
+export function levelIcon(index: number): LucideIcon {
+  return LEVEL_ICONS[index] ?? Target
 }
+
+/** @deprecated emoji icons were replaced by lucide (LEVEL_ICONS); kept for old imports. */
+export const RULE_ICONS: Record<string, string> = {}
 
 export interface LevelIntroProps {
   level: LevelConfig
@@ -21,126 +27,90 @@ export interface LevelIntroProps {
   best?: LevelResult | null
   onStart: () => void
   onClose: () => void
+  /** Controlled visibility (default true: mount = open) */
+  open?: boolean
+}
+
+/** Level name / age / stage / idea from i18n (campaign.levels.level_N.*), falling back to the level data. */
+export function useLevelText(level: LevelConfig) {
+  const { t } = useTranslation()
+  return {
+    name: t(`campaign.levels.${level.id}.name`, { defaultValue: level.name }),
+    age: t(`campaign.levels.${level.id}.age`, { defaultValue: level.ageRange }),
+    stage: t(`campaign.levels.${level.id}.stage`, { defaultValue: level.lifeStage }),
+    idea: t(`campaign.levels.${level.id}.idea`, { defaultValue: level.mainLearning }),
+  }
 }
 
 /**
- * Shown before a level starts: the one idea this level teaches, its rule in three lines,
- * the target and how to earn each star. Bottom sheet on phones, centred card on desktop.
+ * Level intro (spec §E.6): bottom sheet on phone portrait, centred dialog elsewhere.
+ * Caption, title, "the one idea" callout with Gullu, goal, rule card, stars checklist,
+ * sticky footer with Start (primary L) + Not now.
  */
-export function LevelIntro({ level, levelNumber, best, onStart, onClose }: LevelIntroProps) {
+export function LevelIntro({ level, levelNumber, best, onStart, onClose, open = true }: LevelIntroProps) {
   const { t } = useTranslation()
+  const lang = useLang()
+  const text = useLevelText(level)
   const rule = getLevelRule(level)
   const criteria = levelStarCriteria(level)
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
   const ruleText = (k: string, fallback: string) => (rule ? t(`campaign.rules.${rule}.${k}`, { defaultValue: fallback }) : fallback)
+  const Icon = levelIcon(levelNumber - 1)
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="level-intro-title"
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(15, 23, 42, 0.55)',
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 0,
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 480, maxHeight: '92vh', overflowY: 'auto',
-          background: '#ffffff', borderRadius: '20px 20px 0 0', padding: '18px 16px calc(16px + env(safe-area-inset-bottom))',
-          boxShadow: '0 -8px 30px rgba(0,0,0,0.25)', fontFamily: '"Inter", system-ui, sans-serif',
-          display: 'flex', flexDirection: 'column', gap: 14,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 52, height: 52, borderRadius: 14, flexShrink: 0, fontSize: 28,
-            background: 'linear-gradient(135deg, #fef3c7, #fde68a)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            {rule ? RULE_ICONS[rule] : '🎯'}
+    <Sheet
+      open={open}
+      onClose={onClose}
+      placement="auto-center"
+      title={text.name}
+      className="level-intro"
+      header={
+        <div className="level-intro__head">
+          <span className="level-intro__icon" aria-hidden="true"><Icon size={28} strokeWidth={2.25} /></span>
+          <div className="level-intro__titles">
+            <p className="caption">{t('campaign.intro.levelOf', { n: levelNumber, age: text.age })}</p>
+            <p className="level-intro__title" aria-hidden="true">{text.name}</p>
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#047857' }}>
-              {t('campaign.intro.levelOf', { n: levelNumber, age: level.ageRange })}
-            </p>
-            <h2 id="level-intro-title" style={{ margin: '2px 0 0', fontSize: 20, fontWeight: 800, color: '#064e3b' }}>{level.name}</h2>
-          </div>
-          <button
-            onClick={onClose}
-            aria-label={t('campaign.intro.close')}
-            style={{ background: '#f3f4f6', border: 'none', borderRadius: 999, width: 36, height: 36, fontSize: 18, cursor: 'pointer', flexShrink: 0 }}
-          >
-            ✕
-          </button>
         </div>
-
-        <section style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 14, padding: 12 }}>
-          <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase', color: '#047857' }}>
-            💡 {t('campaign.intro.oneIdea')}
-          </p>
-          <p style={{ margin: '6px 0 0', fontSize: 15, fontWeight: 600, color: '#064e3b', lineHeight: 1.4 }}>
-            {ruleText('idea', level.mechanicDescription)}
-          </p>
+      }
+      footer={
+        <>
+          <Button size="l" block icon={<Play size={20} aria-hidden="true" />} onClick={onStart} data-autofocus>{t('campaign.intro.start')}</Button>
+          <Button variant="ghost" block onClick={onClose}>{t('campaign.intro.notNow')}</Button>
+        </>
+      }
+    >
+      <div className="level-intro__body">
+        <section className="level-intro__idea">
+          <Gullu mood="think" size={56} />
+          <div>
+            <h3 className="caption level-intro__idea-label">{t('campaign.intro.oneIdea')}</h3>
+            <p className="level-intro__idea-text">{ruleText('idea', level.mechanicDescription)}</p>
+          </div>
         </section>
 
-        <section>
-          <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase', color: '#92400e' }}>
-            {t('campaign.intro.rule')}: {ruleText('name', level.mechanicName)}
-          </p>
-          <ol style={{ margin: '8px 0 0', paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <p className="level-intro__goal">
+          <Target size={20} aria-hidden="true" />
+          <span>{t('campaign.intro.goalShort', { target: formatMoney(level.targetCorpus, { compact: true, lang }), years: level.turnLimit })}</span>
+        </p>
+        <p className="level-intro__rivals">{t('campaign.intro.rivalsLine', { count: level.botCount })}</p>
+
+        <section className="panel level-intro__rule">
+          <h3 className="section-title">{ruleText('name', level.mechanicName)}</h3>
+          <ol className="level-intro__how">
             {rule
-              ? (['how1', 'how2', 'how3'] as const).map(k => (
-                  <li key={k} style={{ fontSize: 14, color: '#374151', lineHeight: 1.4 }}>{t(`campaign.rules.${rule}.${k}`)}</li>
-                ))
-              : <li style={{ fontSize: 14, color: '#374151' }}>{level.mechanicDescription}</li>}
+              ? (['how1', 'how2', 'how3'] as const).map(k => <li key={k}>{t(`campaign.rules.${rule}.${k}`)}</li>)
+              : <li>{level.mechanicDescription}</li>}
           </ol>
         </section>
 
-        <section style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 14, padding: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#7c2d12' }}>
-            🎯 {t('campaign.intro.goal', { target: `₹${formatWealth(level.targetCorpus)}`, years: level.turnLimit })}
-          </p>
-          <p style={{ margin: 0, fontSize: 12, color: '#9a3412' }}>
-            {t('campaign.intro.rivals', { n: level.botCount })}
-          </p>
-        </section>
-
         <section>
-          <p style={{ margin: '0 0 8px', fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase', color: '#92400e' }}>
-            ⭐ {t('campaign.intro.earnStars')}
-          </p>
-          <LevelStars
-            stars={best?.stars ?? 0}
-            size={24}
-            criteria={criteria}
-          />
+          <h3 className="section-title level-intro__stars-title">{t('campaign.intro.earnStars')}</h3>
+          <LevelStars stars={best?.stars ?? 0} size={24} criteria={criteria} align="start" />
           {best && best.bestNetWorth > 0 && (
-            <p style={{ margin: '8px 0 0', fontSize: 12, color: '#6b7280', textAlign: 'center' }}>
-              {t('campaign.intro.yourBest', { nw: `₹${formatWealth(best.bestNetWorth)}` })}
-            </p>
+            <p className="level-intro__best">{t('campaign.intro.yourBest', { nw: formatMoney(best.bestNetWorth, { compact: true, lang }) })}</p>
           )}
         </section>
-
-        <button
-          onClick={onStart}
-          autoFocus
-          style={{
-            height: 50, borderRadius: 25, border: 'none', cursor: 'pointer',
-            background: 'linear-gradient(to right, #f97316, #f59e0b)', color: '#fff', fontWeight: 800, fontSize: 16,
-            boxShadow: '0 6px 14px rgba(249, 115, 22, 0.35)',
-          }}
-        >
-          ▶ {t('campaign.intro.start')}
-        </button>
       </div>
-    </div>
+    </Sheet>
   )
 }

@@ -158,6 +158,9 @@ textarea.field__input { padding: 12px 14px; min-height: 96px; resize: vertical; 
 @media (max-height: 499px) { .sheet--side { width: min(392px, 100vw); } }
 .sheet__grab-zone { flex: none; touch-action: none; }
 .sheet--side .sheet__grab-zone { touch-action: auto; }
+.sheet--center { left: 50%; top: 50%; translate: -50% -50%; width: min(520px, calc(100vw - 32px)); max-height: min(90dvh, 720px); border-radius: var(--r-xl); box-shadow: var(--e-2); }
+.sheet--center .sheet__grab { display: none; }
+.sheet--center .sheet__grab-zone { touch-action: auto; }
 .sheet__grab { width: 40px; height: 5px; border-radius: 3px; background: var(--sand-500); margin: 8px auto 0; flex: none; }
 .sheet--side .sheet__grab { display: none; }
 .sheet__head { display: flex; align-items: flex-start; gap: var(--sp-3); padding: var(--sp-3) var(--gutter) var(--sp-2); flex: none; }

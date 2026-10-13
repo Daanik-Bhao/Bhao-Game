@@ -1,5 +1,5 @@
 export { LevelStars } from './LevelStars'
 export type { LevelStarsProps } from './LevelStars'
-export { LevelIntro, RULE_ICONS } from './LevelIntro'
+export { LevelIntro, RULE_ICONS, LEVEL_ICONS, levelIcon, useLevelText } from './LevelIntro'
 export type { LevelIntroProps } from './LevelIntro'
-export { LevelRuleHUD } from './LevelRuleHUD'
+export { LevelRuleHUD, levelRulePillText } from './LevelRuleHUD'

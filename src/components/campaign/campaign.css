@@ -15,3 +15,68 @@
 .lvl-criterion.is-missed .lvl-criterion__mark { background: var(--attack-soft); color: var(--attack-strong); }
 .lvl-criterion__text { flex: 1; min-width: 0; padding-top: 3px; }
 .lvl-criterion__n { font-weight: 600; margin-right: 6px; color: var(--text-muted); }
+
+/* ---------- Campaign map (E.5) ---------- */
+.campaign__stars-chip { min-height: 32px; font-size: 14px; }
+.campaign__lede { margin: 4px 0 var(--sp-3); }
+.campaign__progress { margin-bottom: var(--sp-5); }
+.trail { position: relative; padding-top: var(--sp-3); }
+.trail__line { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; overflow: visible; }
+.trail__line path { fill: none; stroke: var(--sand-500); stroke-width: 4px; stroke-dasharray: 2 8; stroke-linecap: round; }
+.trail__stops { position: relative; z-index: 1; list-style: none; margin: 0; padding: 0; }
+.stop { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 14px; align-items: center; margin: 0 0 22px; }
+.stop--right { grid-template-columns: minmax(0, 1fr) 84px; }
+.stop--right .stop__node { order: 2; }
+.stop__node { position: relative; width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; border: 4px solid var(--white); box-shadow: 0 5px 0 var(--line-strong); padding: 0; cursor: pointer; background: var(--bg-sunken); color: var(--text-subtle); }
+.stop__node:disabled { cursor: default; }
+.stop__n { position: absolute; top: -6px; left: -6px; width: 30px; height: 30px; border-radius: 50%; background: var(--ink-900); color: var(--white); font: 800 15px/30px var(--font-display); text-align: center; }
+.stop--done .stop__node, .stop--open .stop__node { background: var(--save-soft); color: var(--save-strong); }
+.stop--current .stop__node { background: var(--primary); color: var(--on-primary); box-shadow: 0 5px 0 var(--primary-edge), 0 0 0 8px var(--haldi-glow); }
+.stop__gullu { position: absolute; top: -48px; left: 2px; }
+.stop__card { padding: 12px 14px; min-width: 0; }
+.stop__card.is-tappable { cursor: pointer; }
+.stop--current .stop__card { border: 2px solid var(--primary); }
+.stop__name { font: 800 20px/1.15 var(--font-display); margin: 4px 0 2px; color: var(--text); overflow-wrap: break-word; }
+html.lang-hi .stop__name { line-height: 1.35; }
+.stop__idea { font: 400 var(--fs-ui)/var(--lh-ui) var(--font-body); color: var(--text-muted); }
+.stop__lock { display: flex; gap: 6px; align-items: flex-start; margin-top: var(--sp-3); font: 600 13px/1.35 var(--font-body); color: var(--text-muted); }
+.stop__lock svg { flex: none; margin-top: 2px; }
+.stop__stars { display: flex; gap: 2px; margin-top: 6px; color: var(--sand-500); }
+.stop__stars svg { fill: transparent; }
+.stop__stars svg.is-on { color: var(--haldi-600); fill: var(--haldi-400); }
+.stop__play { margin-top: 10px; }
+
+/* ---------- Level intro (E.6) ---------- */
+.level-intro__head { display: flex; align-items: center; gap: var(--sp-4); flex: 1; min-width: 0; padding-top: 4px; }
+.level-intro__icon { flex: none; width: 52px; height: 52px; border-radius: var(--r-md); display: grid; place-items: center; background: var(--primary); color: var(--on-primary); }
+.level-intro__titles { min-width: 0; }
+.level-intro__title { font: 800 var(--fs-title)/var(--lh-title) var(--font-display); color: var(--text); }
+.level-intro__body { display: flex; flex-direction: column; gap: var(--sp-5); }
+.level-intro__idea { display: flex; gap: var(--sp-3); align-items: flex-start; background: var(--save-soft); border-radius: var(--r-md); padding: var(--sp-4); }
+.level-intro__idea-label { color: var(--save-strong); margin-bottom: 2px; }
+.level-intro__idea-text { font: 600 var(--fs-body)/var(--lh-body) var(--font-body); color: var(--text); }
+.level-intro__goal { display: flex; gap: var(--sp-3); align-items: center; font: 700 var(--fs-subtitle)/var(--lh-subtitle) var(--font-display); color: var(--text); }
+.level-intro__goal svg { flex: none; color: var(--brand); }
+.level-intro__rivals { margin-top: calc(var(--sp-4) * -1); font: 400 var(--fs-ui)/var(--lh-ui) var(--font-body); color: var(--text-muted); }
+.level-intro__rule { padding: var(--sp-4); }
+.level-intro__how { margin: var(--sp-3) 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font: 400 var(--fs-ui)/var(--lh-ui) var(--font-body); color: var(--text); }
+.level-intro__stars-title { margin-bottom: var(--sp-3); }
+.level-intro__best { margin-top: var(--sp-3); font: 600 var(--fs-ui)/1.3 var(--font-body); color: var(--text-muted); }
+
+/* ---------- Level rule HUD (E.7) ---------- */
+.rule-hud { display: flex; flex-direction: column; gap: var(--sp-3); color: var(--text); }
+.rule-hud__title { display: flex; align-items: center; gap: 6px; font: 700 var(--fs-subtitle)/var(--lh-subtitle) var(--font-display); }
+.rule-hud__latest { font: 400 var(--fs-ui)/var(--lh-ui) var(--font-body); color: var(--text-muted); border-top: 1px solid var(--line); padding-top: var(--sp-3); }
+.rule-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.rule-line { display: flex; align-items: center; gap: 6px; font: 600 var(--fs-ui)/1.3 var(--font-body); }
+.rule-flames { display: flex; align-items: center; gap: 4px; color: var(--sand-500); }
+.rule-flames .is-on { color: var(--spend); }
+.rule-slot { display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: var(--r-sm); border: 1px dashed var(--line-strong); font: 600 12px/1.2 var(--font-body); color: var(--text-muted); }
+.rule-slot.is-used { border-style: solid; border-color: transparent; background: var(--save-soft); color: var(--save-strong); }
+.rule-goals { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.rule-goal { display: flex; justify-content: space-between; gap: var(--sp-3); font: 400 var(--fs-ui)/1.3 var(--font-body); }
+.rule-goal span { display: inline-flex; align-items: center; gap: 6px; }
+.rule-goal b { white-space: nowrap; color: var(--text-muted); }
+.rule-goal b.is-met { color: var(--save-strong); }
+.rule-goal b.is-soon { color: var(--risk-strong); }
+.rule-goal b.is-missed { color: var(--attack-strong); }

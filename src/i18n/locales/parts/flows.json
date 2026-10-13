@@ -68,6 +68,55 @@
         "met": "Done:",
         "missed": "Not yet:",
         "nth": "Star {{n}}"
+      },
+      "mapTitle": "Artha Yatra",
+      "headline": "Your money life",
+      "lede": "Four life stages, from school to family. Earn stars to unlock the next.",
+      "doneOf": "{{n}} of {{total}} done",
+      "starsAria": "{{n}} of {{total}} stars earned",
+      "lockedAria": "{{name}}, locked",
+      "openAria": "Open {{name}}",
+      "ageStage": "Age {{age}} · {{stage}}",
+      "unlockNeed_one": "Get {{count}} star on Level {{n}} to unlock",
+      "unlockNeed_other": "Get {{count}} stars on Level {{n}} to unlock",
+      "play": "Play",
+      "levels": {
+        "level_1": {
+          "name": "Brahmacharya",
+          "age": "13–18",
+          "stage": "Student",
+          "idea": "Control your Desire meter."
+        },
+        "level_2": {
+          "name": "Vidyarthi to Yuva",
+          "age": "18–22",
+          "stage": "College",
+          "idea": "Pay yourself first: keep a saving streak."
+        },
+        "level_3": {
+          "name": "Aarambh Grihastha",
+          "age": "22–28",
+          "stage": "First job",
+          "idea": "Beat lifestyle creep. Invest your raise."
+        },
+        "level_4": {
+          "name": "Grihastha Dharma",
+          "age": "28–38",
+          "stage": "Family",
+          "idea": "Protect the family with insurance."
+        }
+      },
+      "intro": {
+        "notNow": "Not now",
+        "goalShort": "Reach {{target}} in {{years}} years",
+        "rivalsLine_one": "{{count}} rival bot plays too, but only your goal matters.",
+        "rivalsLine_other": "{{count}} rival bots play too, but only your goal matters."
+      },
+      "pill": {
+        "desire": "Desire {{pct}}%",
+        "streak": "Streak {{n}}",
+        "lifestyle": "Lifestyle {{pct}}%",
+        "goals": "Goals {{done}}/{{total}}"
       }
     }
   },
@@ -140,6 +189,55 @@
         "met": "पूरा:",
         "missed": "अभी नहीं:",
         "nth": "स्टार {{n}}"
+      },
+      "mapTitle": "अर्थ यात्रा",
+      "headline": "आपकी पैसों की ज़िंदगी",
+      "lede": "स्कूल से परिवार तक, ज़िंदगी के चार पड़ाव। अगला खोलने के लिए सितारे कमाएँ।",
+      "doneOf": "{{total}} में से {{n}} पूरे",
+      "starsAria": "{{total}} में से {{n}} सितारे मिले",
+      "lockedAria": "{{name}}, बंद",
+      "openAria": "{{name}} खोलें",
+      "ageStage": "उम्र {{age}} · {{stage}}",
+      "unlockNeed_one": "खोलने के लिए लेवल {{n}} पर {{count}} सितारा पाएँ",
+      "unlockNeed_other": "खोलने के लिए लेवल {{n}} पर {{count}} सितारे पाएँ",
+      "play": "खेलें",
+      "levels": {
+        "level_1": {
+          "name": "ब्रह्मचर्य",
+          "age": "13–18",
+          "stage": "छात्र",
+          "idea": "अपनी इच्छा मीटर पर काबू रखें।"
+        },
+        "level_2": {
+          "name": "विद्यार्थी से युवा",
+          "age": "18–22",
+          "stage": "कॉलेज",
+          "idea": "पहले खुद को भुगतान करें: बचत की लय बनाए रखें।"
+        },
+        "level_3": {
+          "name": "आरंभ गृहस्थ",
+          "age": "22–28",
+          "stage": "पहली नौकरी",
+          "idea": "बढ़ते खर्चों को रोकें। अपनी बढ़ोतरी निवेश करें।"
+        },
+        "level_4": {
+          "name": "गृहस्थ धर्म",
+          "age": "28–38",
+          "stage": "परिवार",
+          "idea": "बीमा से परिवार को सुरक्षित रखें।"
+        }
+      },
+      "intro": {
+        "notNow": "अभी नहीं",
+        "goalShort": "{{years}} साल में {{target}} तक पहुँचें",
+        "rivalsLine_one": "{{count}} विरोधी बॉट भी खेलेगा, पर सिर्फ़ आपका लक्ष्य मायने रखता है।",
+        "rivalsLine_other": "{{count}} विरोधी बॉट भी खेलेंगे, पर सिर्फ़ आपका लक्ष्य मायने रखता है।"
+      },
+      "pill": {
+        "desire": "इच्छा {{pct}}%",
+        "streak": "लय {{n}}",
+        "lifestyle": "लाइफ़स्टाइल {{pct}}%",
+        "goals": "लक्ष्य {{done}}/{{total}}"
       }
     }
   },
@@ -212,6 +310,55 @@
         "met": "Done:",
         "missed": "Abhi nahi:",
         "nth": "Star {{n}}"
+      },
+      "mapTitle": "Artha Yatra",
+      "headline": "Aapki money life",
+      "lede": "School se family tak, life ke chaar stages. Agla kholne ke liye stars kamao.",
+      "doneOf": "{{total}} mein se {{n}} done",
+      "starsAria": "{{total}} mein se {{n}} stars mile",
+      "lockedAria": "{{name}}, locked",
+      "openAria": "{{name}} kholo",
+      "ageStage": "Age {{age}} · {{stage}}",
+      "unlockNeed_one": "Kholne ke liye Level {{n}} par {{count}} star lao",
+      "unlockNeed_other": "Kholne ke liye Level {{n}} par {{count}} stars lao",
+      "play": "Khelo",
+      "levels": {
+        "level_1": {
+          "name": "Brahmacharya",
+          "age": "13–18",
+          "stage": "Student",
+          "idea": "Apna Desire meter control karo."
+        },
+        "level_2": {
+          "name": "Vidyarthi to Yuva",
+          "age": "18–22",
+          "stage": "College",
+          "idea": "Pehle khud ko pay karo: saving streak banaye rakho."
+        },
+        "level_3": {
+          "name": "Aarambh Grihastha",
+          "age": "22–28",
+          "stage": "Pehli naukri",
+          "idea": "Lifestyle creep ko roko. Apna raise invest karo."
+        },
+        "level_4": {
+          "name": "Grihastha Dharma",
+          "age": "28–38",
+          "stage": "Family",
+          "idea": "Insurance se family ko protect karo."
+        }
+      },
+      "intro": {
+        "notNow": "Abhi nahi",
+        "goalShort": "{{years}} saal mein {{target}} tak pahuncho",
+        "rivalsLine_one": "{{count}} rival bot bhi khelega, par sirf aapka goal matter karta hai.",
+        "rivalsLine_other": "{{count}} rival bots bhi khelenge, par sirf aapka goal matter karta hai."
+      },
+      "pill": {
+        "desire": "Desire {{pct}}%",
+        "streak": "Streak {{n}}",
+        "lifestyle": "Lifestyle {{pct}}%",
+        "goals": "Goals {{done}}/{{total}}"
       }
     }
   }
