@@ -245,6 +245,8 @@ export function TutorialGame() {
         onBuyExtraCard={() => {}}
         onPass={handlePass}
         onEquip={handleEquip}
+        modeTitle={t('tutorial.modeTitle')}
+        onQuit={() => setConfirmExit(true)}
       />
       <CoachMark
         stepKey={step.id}

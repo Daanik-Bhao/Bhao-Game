@@ -141,7 +141,8 @@
       "skipTutorial": "Skip tutorial",
       "exitTitle": "Leave the tutorial?",
       "exitBody": "You can play it again any time from Home.",
-      "keepLearning": "Keep learning"
+      "keepLearning": "Keep learning",
+      "modeTitle": "How to play"
     },
     "lobby": {
       "title": "Play with friends",
@@ -339,7 +340,8 @@
       "skipTutorial": "ट्यूटोरियल छोड़ें",
       "exitTitle": "ट्यूटोरियल छोड़ना है?",
       "exitBody": "आप इसे कभी भी होम से फिर खेल सकते हैं।",
-      "keepLearning": "सीखते रहें"
+      "keepLearning": "सीखते रहें",
+      "modeTitle": "कैसे खेलें"
     },
     "lobby": {
       "title": "दोस्तों के साथ खेलें",
@@ -537,7 +539,8 @@
       "skipTutorial": "Tutorial skip karo",
       "exitTitle": "Tutorial chhodna hai?",
       "exitBody": "Aap ise kabhi bhi Home se phir khel sakte ho.",
-      "keepLearning": "Seekhte raho"
+      "keepLearning": "Seekhte raho",
+      "modeTitle": "Kaise khelein"
     },
     "lobby": {
       "title": "Dosto ke saath khelo",
