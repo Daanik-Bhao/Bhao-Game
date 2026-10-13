@@ -33,6 +33,8 @@ export interface ResultScreenProps {
   /** Multiplayer: back to the lobby (primary action) */
   onBackToLobby?: () => void
   onOpenLibrary: () => void
+  /** Final order of player ids (multiplayer: the server placements); default = by net worth */
+  order?: string[]
 }
 
 /** Rolls a number up to `target` in 700 ms (instant with reduced effects). */
@@ -60,7 +62,7 @@ function useRollUp(target: number, from: number, reduced: boolean) {
  * sticky bottom bar (Home + one primary).
  */
 export function ResultScreen({
-  gameState, humanIndex, mode, levelStars, rpChange, ownerKey, onPlayAgain, onHome, onNextLevel, onBackToLobby, onOpenLibrary,
+  gameState, humanIndex, mode, levelStars, rpChange, ownerKey, onPlayAgain, onHome, onNextLevel, onBackToLobby, onOpenLibrary, order,
 }: ResultScreenProps) {
   const { t } = useTranslation()
   const lang = useLang()
@@ -80,7 +82,7 @@ export function ResultScreen({
 
   const standings = useMemo(() => gameState.players
     .map((p, seat) => ({ p, seat, nw: getNetWorth(p) }))
-    .sort((a, b) => b.nw - a.nw), [gameState.players])
+    .sort((a, b) => (order ? order.indexOf(a.p.id) - order.indexOf(b.p.id) : b.nw - a.nw)), [gameState.players, order])
   const place = standings.findIndex(s => s.p.id === human.id) + 1
   const winner = gameState.winner ?? standings[0]?.p
   const winnerReachedGoal = !!winner && getNetWorth(winner) >= gameState.wealthGoal

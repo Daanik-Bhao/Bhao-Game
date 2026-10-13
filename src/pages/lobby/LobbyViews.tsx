@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Check, Copy, LogOut, Play, Plus, Share2, Timer, Users } from 'lucide-react'
 import type { MultiplayerMode } from '../../types/game'
-import { Avatar, Button, Chip, Input, Panel, Segmented } from '../../components/ui'
+import { Avatar, Button, Chip, Input, OfflineBanner, Panel, Segmented } from '../../components/ui'
 import { formatMoney } from '../../lib/format'
 import { useLang } from '../../i18n/lang'
 import './lobby.css'
@@ -38,6 +38,7 @@ export function LobbyMenuView(p: LobbyMenuViewProps) {
   const lang = useLang()
   return (
     <div className="page lobby">
+      <OfflineBanner />
       <header className="screen-bar">
         <Button variant="ghost" icon={<ArrowLeft size={22} />} aria-label={t('common.back')} onClick={p.onBack} className="screen-bar__back" />
         <h1 className="screen-bar__title">{t('lobby.title')}</h1>
@@ -144,6 +145,7 @@ export function WaitingRoomView(p: WaitingRoomViewProps) {
 
   return (
     <div className="page lobby">
+      <OfflineBanner />
       <header className="screen-bar">
         <h1 className="screen-bar__title lobby__wait-title">{t('lobby.waitingRoom')}</h1>
       </header>
