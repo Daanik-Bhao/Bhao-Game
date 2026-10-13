@@ -36,3 +36,8 @@ supabase/.temp
 
 # Claude agent worktrees
 .claude/worktrees
+
+# Android release signing (never commit keys or passwords)
+keystore.properties
+*.jks
+*.keystore

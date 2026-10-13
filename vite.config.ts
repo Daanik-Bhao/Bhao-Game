@@ -1,9 +1,45 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 const THEME_COLOR = '#004030'
 const BACKGROUND_COLOR = '#EEEFE0'
+
+// Service-worker registration, emitted as /registerSW.js instead of vite-plugin-pwa's
+// own (injectRegister: false below). Same behaviour on the web, but it never registers
+// inside the Capacitor Android app: there the files ship in the APK, and a service
+// worker would keep serving an old cached build after an app update. Capacitor's
+// native bridge defines window.Capacitor before any page script runs; the app is
+// served from https://localhost (no port), which no web deployment uses.
+const REGISTER_SW_JS = `(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var cap = window.Capacitor;
+  var isNative = (cap && typeof cap.isNativePlatform === 'function' && cap.isNativePlatform()) ||
+    location.origin === 'https://localhost';
+  if (isNative) {
+    navigator.serviceWorker.getRegistrations().then(function (regs) {
+      regs.forEach(function (r) { r.unregister(); });
+    }).catch(function () {});
+    return;
+  }
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' });
+  });
+})();
+`
+
+function registerServiceWorker(): Plugin {
+  return {
+    name: 'bhao:register-sw',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'registerSW.js', source: REGISTER_SW_JS })
+    },
+    transformIndexHtml() {
+      return [{ tag: 'script', attrs: { id: 'bhao-register-sw', src: '/registerSW.js' }, injectTo: 'head' }]
+    },
+  }
+}
 
 export default defineConfig({
   server: {
@@ -12,9 +48,11 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    registerServiceWorker(),
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      // Registration is done by registerServiceWorker() above (skipped in the native app).
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'robots.txt', 'icons/apple-touch-icon.png'],
       manifest: {
         id: '/',

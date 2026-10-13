@@ -3,6 +3,7 @@
 // The ₹ is drawn with paths rather than text so the output doesn't depend on installed fonts.
 import fs from 'fs'
 import path from 'path'
+import { pathToFileURL } from 'url'
 import sharp from 'sharp'
 
 const OUT_DIR = path.resolve('./public/icons')
@@ -10,7 +11,7 @@ const THEME = '#004030' // --green-primary
 const BACKGROUND = '#EEEFE0'
 
 /** Coin centred in a `size` box; `scale` is the coin diameter as a fraction of the box. */
-function coinSvg(size, { scale = 0.94, background = null } = {}) {
+export function coinSvg(size, { scale = 0.94, background = null } = {}) {
   const r = (size * scale) / 2
   const c = size / 2
   const k = (r * 2) / 100 // glyph is designed in a 100x100 box
@@ -79,7 +80,10 @@ async function main() {
   console.log('wrote public/og-image.png')
 }
 
-main().catch(err => {
-  console.error(err)
-  process.exit(1)
-})
+// Only run when executed directly (scripts/generate-android-assets.mjs imports coinSvg).
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch(err => {
+    console.error(err)
+    process.exit(1)
+  })
+}

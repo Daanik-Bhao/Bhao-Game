@@ -13,10 +13,19 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- Shown in the strips behind the status bar and the navigation/gesture bar
+             (see MainActivity) and before the WebView paints. -->
+        <item name="android:windowBackground">@color/bhao_dark</item>
+        <!-- Bar colours before Android 15; light icons on the dark bars. -->
+        <item name="android:statusBarColor">@color/bhao_dark</item>
+        <item name="android:navigationBarColor">@color/bhao_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <!-- Android 12+ system splash: launcher icon on the app's dark green. -->
+        <item name="windowSplashScreenBackground">@color/bhao_dark</item>
     </style>
 </resources>

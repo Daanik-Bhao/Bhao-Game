@@ -12,7 +12,11 @@
     "icons": "node scripts/generate-icons.js",
     "check:migrations": "node scripts/check-migrations.mjs",
     "build:functions": "node scripts/build-functions.mjs",
-    "check:functions": "node scripts/build-functions.mjs --check"
+    "check:functions": "node scripts/build-functions.mjs --check",
+    "android:assets": "node scripts/generate-android-assets.mjs",
+    "android:sync": "npm run build && npx cap sync android",
+    "android:apk": "npm run android:sync && node scripts/android-gradle.mjs apk",
+    "android:bundle": "npm run android:sync && node scripts/android-gradle.mjs bundle"
   },
   "dependencies": {
     "@capacitor-community/keep-awake": "8.0.1",

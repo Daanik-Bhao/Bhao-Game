@@ -1,0 +1,4 @@
+# Keep Windows batch files CRLF and the POSIX wrapper LF regardless of core.autocrlf.
+*.bat text eol=crlf
+gradlew text eol=lf
+*.jar binary
