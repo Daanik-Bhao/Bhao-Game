@@ -133,6 +133,15 @@
         "tax": "Tax",
         "protection": "Protection"
       }
+    },
+    "tutorial": {
+      "hook": {
+        "showMe": "Show me how"
+      },
+      "skipTutorial": "Skip tutorial",
+      "exitTitle": "Leave the tutorial?",
+      "exitBody": "You can play it again any time from Home.",
+      "keepLearning": "Keep learning"
     }
   },
   "hi": {
@@ -269,6 +278,15 @@
         "tax": "टैक्स",
         "protection": "सुरक्षा"
       }
+    },
+    "tutorial": {
+      "hook": {
+        "showMe": "दिखाओ कैसे"
+      },
+      "skipTutorial": "ट्यूटोरियल छोड़ें",
+      "exitTitle": "ट्यूटोरियल छोड़ना है?",
+      "exitBody": "आप इसे कभी भी होम से फिर खेल सकते हैं।",
+      "keepLearning": "सीखते रहें"
     }
   },
   "hinglish": {
@@ -405,6 +423,15 @@
         "tax": "Tax",
         "protection": "Protection"
       }
+    },
+    "tutorial": {
+      "hook": {
+        "showMe": "Dikhao kaise"
+      },
+      "skipTutorial": "Tutorial skip karo",
+      "exitTitle": "Tutorial chhodna hai?",
+      "exitBody": "Aap ise kabhi bhi Home se phir khel sakte ho.",
+      "keepLearning": "Seekhte raho"
     }
   }
 }

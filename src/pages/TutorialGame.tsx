@@ -6,6 +6,7 @@ import { CoachMark } from '../components/tutorial/CoachMark'
 import { TutorialHook, TutorialSummary } from '../components/tutorial/TutorialScreens'
 import { LESSON_COUNT, STEPS, StepCtx, tutorialCardTitle } from '../components/tutorial/steps'
 import { TutorialModal } from '../components/TutorialModal'
+import { Button, Modal } from '../components/ui'
 import { useBackButton, useKeepAwake } from '../hooks/useBackButton'
 import {
   advanceTurn, canEquip, doBotTurn, equipDefense, getNetWorth, passTurn, previewDecision, processDecision,
@@ -259,26 +260,17 @@ export function TutorialGame() {
         onNext={onNext}
         onSkip={() => finish(true)}
       />
-      {confirmExit && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={t('common.confirmForfeit')}
-          onClick={() => setConfirmExit(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,10,6,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{ background: '#fffdf3', color: '#12261d', borderRadius: 16, border: '2px solid #ffd050', padding: 20, width: '100%', maxWidth: 380, boxShadow: '0 18px 40px rgba(0,0,0,0.45)', fontFamily: 'Inter, system-ui, sans-serif' }}
-          >
-            <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 16 }}>{t('common.confirmForfeit')}</div>
-            <div className="tut-btn-row">
-              <button type="button" className="tut-btn tut-btn-primary" autoFocus onClick={() => setConfirmExit(false)}>{t('common.stayInGame')}</button>
-              <button type="button" className="tut-btn tut-btn-ghost" onClick={() => finish(true)}>{t('tutorial.skip')}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={confirmExit}
+        onClose={() => setConfirmExit(false)}
+        gullu="worried"
+        title={t('tutorial.exitTitle')}
+        body={t('tutorial.exitBody')}
+        actions={<>
+          <Button onClick={() => setConfirmExit(false)}>{t('tutorial.keepLearning')}</Button>
+          <Button variant="outline" onClick={() => finish(true)}>{t('tutorial.skipTutorial')}</Button>
+        </>}
+      />
     </div>
   )
 }
