@@ -30,6 +30,16 @@
 .tut-lessons__icon { flex: none; width: 40px; height: 40px; border-radius: var(--r-sm); display: grid; place-items: center; background: var(--save-soft); color: var(--save-strong); }
 .tut-summary__more { display: flex; flex-wrap: wrap; gap: var(--sp-3); justify-content: center; margin-top: var(--sp-6); }
 
+/* ---------- Rules sheet (TutorialModal) ---------- */
+.rules { display: flex; flex-direction: column; gap: var(--sp-3); }
+.rules__icon { width: 52px; height: 52px; border-radius: var(--r-md); display: grid; place-items: center; background: var(--brand-soft); color: var(--brand); }
+.rules__title { font: 700 var(--fs-title)/var(--lh-title) var(--font-display); color: var(--text); }
+.rules__points { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-3); }
+.rules__points li { font: 400 var(--fs-body)/var(--lh-body) var(--font-body); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 12px; color: var(--text); }
+.rules__nav { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; }
+.rules__nav .tut-steps { min-width: 120px; }
+.rules__btns { display: flex; gap: var(--sp-3); margin-left: auto; }
+
 /* ---------- Step counter "2 / 9" + mini bar ---------- */
 .tut-steps { display: inline-flex; align-items: center; gap: var(--sp-3); min-width: 0; }
 .tut-steps__text { font-size: 14px; font-weight: 700; color: var(--text-muted); white-space: nowrap; }
