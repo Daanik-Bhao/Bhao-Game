@@ -7,7 +7,7 @@ import type { LevelStarsResult } from '../../lib/levelRules'
 import { LevelStars } from '../../components/campaign'
 import { GameReportPanel } from '../../components/learning/GameReportPanel'
 import { NetWorthSparkline } from '../../components/learning/NetWorthSparkline'
-import { Avatar, Button, Chip, Panel, useToastPlacement } from '../../components/ui'
+import { Avatar, Button, Chip, Panel, useToast, useToastPlacement } from '../../components/ui'
 import { Gullu } from '../../components/mascot/Gullu'
 import { formatMoney, formatPct } from '../../lib/format'
 import { resultHeadline } from '../../lib/resultHeadline'
@@ -68,6 +68,9 @@ export function ResultScreen({
   const lang = useLang()
   const { reduced } = useReducedEffects()
   useToastPlacement('bottom-plain')
+  // In-match toasts (bot moves) must not spill over the result page.
+  const toast = useToast()
+  useEffect(() => { toast.clear() }, [toast])
 
   const human = gameState.players[humanIndex]
   const stats = human.stats
