@@ -93,7 +93,24 @@ function CardName({ title, className, fit }: { title: string; className: string;
     document.fonts?.ready.then(() => requestAnimationFrame(check)).catch(() => {})
     return () => cancelAnimationFrame(raf)
   }, [title, fit])
-  return <span ref={ref} className={`${className}${small ? ' is-fit' : ''}`} aria-hidden="true">{title}</span>
+  return <span ref={ref} className={`${className}${small ? ' is-fit' : ''}`} aria-hidden="true">{softHyphenate(title)}</span>
+}
+
+/**
+ * Long Latin words get soft hyphens (U+00AD) every 3 letters (keeping 3+ letters on each side),
+ * so a word that can't fit a narrow card breaks as "Perfor-mance" instead of "Performanc e".
+ * Chrome on Windows/Android has no hyphenation dictionary for hyphens:auto. Exported for tests.
+ */
+export function softHyphenate(text: string): string {
+  return text.split(' ').map(w => {
+    if (w.length < 8 || !/^[A-Za-z]+$/.test(w)) return w
+    let out = ''
+    for (let i = 0; i < w.length; i++) {
+      if (i >= 3 && w.length - i >= 3 && i % 3 === 0) out += String.fromCharCode(0xad)
+      out += w[i]
+    }
+    return out
+  }).join(' ')
 }
 
 const LIFT = { type: 'spring' as const, stiffness: 500, damping: 32 }
