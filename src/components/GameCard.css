@@ -7,6 +7,9 @@
   /* cards are light objects even on the dark table */
   --gain-fg: var(--gain-light); --loss-fg: var(--loss-light);
   position: relative; flex: none; display: flex; flex-direction: column;
+  /* <button> cards get align-items: flex-start from the UA sheet, which shrank the band to
+     the icon and let long names ("Joining/Signing") overflow the card. */
+  align-items: stretch;
   width: var(--card-w, 70px); height: var(--card-h, 104px);
   border-radius: var(--r-card-hand);
   background: var(--cream-100); color: var(--ink-900);
@@ -45,12 +48,15 @@ button.gcard { cursor: pointer; appearance: none; }
 .gem--epic { background: var(--tier-epic); }
 .gem--legendary { background: linear-gradient(135deg, var(--tier-legendary-hi), var(--tier-legendary)); }
 
-.gcard__lock { position: absolute; top: 31px; right: 5px; color: var(--ink-700); }
+/* Lock sits in the band (left; icon is centred, gem right), so it never covers the card name. */
+.gcard__lock { position: absolute; top: 7px; left: 5px; color: var(--_bandfg); }
 
 /* Name: never ellipsis; hand max 3 lines (12px when a word is ≥ 9 characters) */
 .gcard__name { flex: 1 1 auto; min-height: 0; overflow: hidden; font: 700 13px/1.05 var(--font-display); padding: 4px 5px 0; overflow-wrap: break-word; word-break: normal; hyphens: auto; color: var(--ink-900); }
 .gcard__name.is-long { font-size: 12px; }
-html.lang-hi .gcard__name { line-height: 1.18; }
+/* Android Chrome ships a Hindi hyphenation dictionary and split short words ("सु-धार");
+   Hindi isn't hyphenated in print, and over-long words still wrap via overflow-wrap. */
+html.lang-hi .gcard__name { line-height: 1.18; hyphens: manual; }
 .gcard__name.is-fit { font-size: 12px; }
 .gcard--sheet .gcard__name, .gcard--mini .gcard__name { font-size: 14px; padding: 6px 7px 0; }
 .gcard--full .gcard__name { flex: none; font-size: 18px; line-height: 1.1; padding: 8px 10px 0; }
