@@ -55,7 +55,7 @@
 .tut-wait .tut-spot { box-shadow: 0 0 0 4px var(--haldi-400); }
 
 .tut-bubble { position: absolute; pointer-events: auto; display: flex; flex-direction: column; background: var(--cream-100); color: var(--ink-900); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--e-2); }
-.tut-bubble__scroll { overflow-y: auto; overscroll-behavior: contain; border-radius: inherit; }
+.tut-bubble__scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; border-radius: inherit; }
 .tut-bubble__inner { display: flex; gap: var(--sp-3); padding: var(--sp-4); }
 .tut-bubble__gullu { flex: none; }
 .tut-bubble__content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
@@ -68,7 +68,14 @@
 .tut-todo svg { flex: none; margin-top: 2px; }
 .tut-wait { display: flex; align-items: center; gap: 8px; font: 600 var(--fs-ui)/var(--lh-ui) var(--font-body); color: var(--ink-700); }
 .tut-spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--sand-500); border-top-color: var(--brand); animation: spin .8s linear infinite; flex: none; }
-.tut-actions { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; margin-top: var(--sp-2); }
+/* Action row: a fixed footer of the bubble (outside the scroll area), aligned with the text column (Gullu 48 px + gap). */
+.tut-actions { flex: none; display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; padding: var(--sp-2) var(--sp-4) var(--sp-4) calc(var(--sp-4) + 48px + var(--sp-3)); }
+.tut-bubble__inner { padding-bottom: 0; }
+/* Text longer than the room: it scrolls above the action row; the fade + rule show there is more. */
+.tut-bubble.is-scrolling .tut-bubble__scroll { -webkit-mask-image: linear-gradient(to bottom, var(--ink-900) calc(100% - 24px), transparent); mask-image: linear-gradient(to bottom, var(--ink-900) calc(100% - 24px), transparent); }
+.tut-bubble.is-scrolling .tut-actions { border-top: 1px solid var(--line); }
+/* Reads env(safe-area-inset-*) for the placement maths (CoachMark safeInsets). */
+.tut-safe-probe { position: fixed; inset: 0; visibility: hidden; pointer-events: none; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
 
 /* Arrow: 12 px triangle pointing at the target (position set by --arrow). */
 .tut-bubble::after { content: ""; position: absolute; width: 0; height: 0; border: 12px solid transparent; }
