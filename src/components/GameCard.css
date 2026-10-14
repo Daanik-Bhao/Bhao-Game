@@ -69,6 +69,7 @@ html.lang-hi .gcard__flavor { line-height: 1.45; }
 /* Headline value */
 .gcard__value { flex: none; margin-top: auto; font: 800 16px/1 var(--font-num); font-variant-numeric: tabular-nums lining-nums; padding: 0 5px 5px; white-space: nowrap; color: var(--ink-900); }
 html.lang-hi .gcard__value { line-height: 1.05; }
+.gcard__value.is-fit { font-size: 13px; line-height: 1.1; white-space: normal; }
 .gcard--full .gcard__value { font-size: 22px; padding: 0 10px 10px; }
 .gcard--sheet .gcard__value, .gcard--mini .gcard__value { font-size: 18px; padding: 0 7px 8px; }
 .gcard__value.tone-gain { color: var(--gain-fg); }
