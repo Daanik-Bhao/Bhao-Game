@@ -13,7 +13,9 @@ import { useNativeBackNavigation } from './hooks/useBackButton'
 
 // Automatically reload the page if a dynamically imported chunk fails to load 
 // (which happens when a new version is deployed to Vercel while a user has the app open)
-const retryLazy = (componentImport: () => Promise<any>) =>
+/** The component type React.lazy accepts, taken from React's own typings. */
+type LazyComponent = Parameters<typeof lazy>[0] extends () => Promise<{ default: infer C }> ? C : never
+const retryLazy = <T extends LazyComponent>(componentImport: () => Promise<{ default: T }>) =>
   lazy(async () => {
     const pageHasAlreadyBeenForceRefreshed = JSON.parse(
       window.sessionStorage.getItem('page-has-been-force-refreshed') || 'false'
@@ -22,11 +24,13 @@ const retryLazy = (componentImport: () => Promise<any>) =>
       const component = await componentImport()
       window.sessionStorage.setItem('page-has-been-force-refreshed', 'false')
       return component
-    } catch (error: any) {
-      if (!pageHasAlreadyBeenForceRefreshed && (error.message?.includes('Failed to fetch dynamically imported module') || error.message?.includes('Importing a module script failed'))) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : ''
+      if (!pageHasAlreadyBeenForceRefreshed && (message.includes('Failed to fetch dynamically imported module') || message.includes('Importing a module script failed'))) {
         window.sessionStorage.setItem('page-has-been-force-refreshed', 'true')
         window.location.reload()
-        return { default: () => <PageLoader /> } // Return empty while reloading
+        // Never resolves: Suspense keeps showing its PageLoader fallback until the reload happens
+        return new Promise<never>(() => {})
       }
       throw error
     }

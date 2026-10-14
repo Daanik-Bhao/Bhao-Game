@@ -1,11 +1,12 @@
 import { DECISION_CARDS, ACTION_CARDS, DEFENSE_CARDS, LEGENDARY_CARDS } from './src/data/cards'
 import { LEVEL_SITUATION_CARDS } from './src/data/levelCards'
+import type { DecisionOption, GameCard } from './src/types/game'
 import fs from 'fs'
 import path from 'path'
 
 let md = '# Cards in Paisa War\n\n'
 
-const processCards = (title: string, cards: any[]) => {
+const processCards = (title: string, cards: GameCard[]) => {
   md += `## ${title} (${cards.length} cards)\n\n`
   cards.forEach(card => {
     md += `### ${card.name} [${card.tier || 'common'}]\n`
@@ -14,7 +15,7 @@ const processCards = (title: string, cards: any[]) => {
     }
     if (card.options) {
       md += `**Options:**\n`
-      card.options.forEach((opt: any) => {
+      card.options.forEach((opt: DecisionOption) => {
         md += `- **${opt.label}**: ${opt.description}\n`
       })
       md += '\n'
@@ -34,7 +35,7 @@ const artifactPath = path.resolve(process.env.HOME || '', '.gemini/antigravity-i
 try {
   fs.writeFileSync(artifactPath, md)
   console.log('Successfully wrote card_list.md to artifact dir:', artifactPath)
-} catch(e) {
+} catch {
   fs.writeFileSync('card_list.md', md)
   console.log('Wrote card_list.md locally')
 }
