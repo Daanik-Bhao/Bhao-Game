@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import { Bot } from 'lucide-react'
+import { resolveAvatar } from './avatarPresets'
 import './ui.css'
 
 /** Seat colours (spec §D.11) — the one colour constant allowed outside tokens.css. */
@@ -18,6 +19,8 @@ export function initialOf(name: string | undefined | null): string {
   return first.toLocaleUpperCase()
 }
 
+const ICON_SIZE = { default: 20, s: 18, m: 18, l: 28 } as const
+
 export interface AvatarProps {
   name: string
   /** Seat index → colour. Omit with `me` for the light "you" style. */
@@ -29,19 +32,26 @@ export interface AvatarProps {
   bot?: boolean
   /** Brand-soft style used for the signed-in user in app bars */
   me?: boolean
-  imageUrl?: string | null
+  /**
+   * Stored profile avatar (`profiles.avatar_url`): a preset (`/avatar/<id>`) shows its icon + colour.
+   * Legacy photo URLs map to a preset; anything unknown falls back to the initial. Never loads an image.
+   */
+  avatar?: string | null
   className?: string
   /** Decorative by default (the name is usually shown next to it) */
   label?: string
 }
 
-/** Initial-in-a-circle avatar (spec §D.11). */
-export function Avatar({ name, seat = 0, size = 'default', rank, bot, me, imageUrl, className = '', label }: AvatarProps) {
-  const style = me ? undefined : ({ '--seat': seatColor(seat) } as CSSProperties)
-  const cls = ['avatar', size !== 'default' ? `avatar--${size}` : '', me ? 'avatar--me' : '', className].filter(Boolean).join(' ')
+/** Initial-in-a-circle avatar (spec §D.11), or the player's chosen icon preset. */
+export function Avatar({ name, seat = 0, size = 'default', rank, bot, me, avatar, className = '', label }: AvatarProps) {
+  const preset = resolveAvatar(avatar)
+  const plainMe = me && !preset
+  const style = plainMe ? undefined : ({ '--seat': seatColor(preset ? preset.seat : seat) } as CSSProperties)
+  const cls = ['avatar', size !== 'default' ? `avatar--${size}` : '', plainMe ? 'avatar--me' : '', className].filter(Boolean).join(' ')
+  const Icon = preset?.icon
   return (
     <span className={cls} style={style} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
-      {imageUrl ? <img src={imageUrl} alt="" /> : initialOf(name)}
+      {Icon ? <Icon size={ICON_SIZE[size]} strokeWidth={2.25} aria-hidden="true" /> : initialOf(name)}
       {rank !== undefined && <em className="avatar__rank">#{rank}</em>}
       {bot && <span className="avatar__bot"><Bot size={12} strokeWidth={2.5} aria-hidden="true" /></span>}
     </span>

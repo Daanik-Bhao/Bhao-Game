@@ -22,7 +22,7 @@ export interface AppBarProps {
   /** Where the ₹ BHAO wordmark links (default: /dashboard when signed in or guest, else /). */
   homeTo?: string
   /** Override the signed-in / guest identity (dev gallery mocks); default comes from useAuth(). */
-  viewer?: { name: string; signedIn: boolean; imageUrl?: string | null }
+  viewer?: { name: string; signedIn: boolean; avatar?: string | null }
   className?: string
 }
 
@@ -38,7 +38,7 @@ export function AppBar({ active, nav = true, account = 'auto', actions, homeTo, 
   const signedIn = viewer ? viewer.signedIn : !!user
   const known = viewer ? true : signedIn || isGuest
   const name = viewer?.name ?? profile?.username ?? guestProfile?.username ?? ''
-  const imageUrl = viewer ? viewer.imageUrl : profile?.avatar_url
+  const avatar = viewer ? viewer.avatar : profile?.avatar_url
   const home = homeTo ?? (known ? '/dashboard' : '/')
   const showAvatar = account === 'auto' && known
   const profileItem = NAV_ITEMS.find(i => i.key === 'profile')
@@ -70,7 +70,7 @@ export function AppBar({ active, nav = true, account = 'auto', actions, homeTo, 
             aria-label={signedIn ? t('nav.profileOf', { name }) : t('nav.profileGuest', { name })}
             aria-current={active === 'profile' ? 'page' : undefined}
           >
-            <Avatar name={name || t('guest.guest')} me imageUrl={signedIn ? imageUrl : null} />
+            <Avatar name={name || t('guest.guest')} me avatar={signedIn ? avatar : null} />
           </Link>
         )}
       </div>

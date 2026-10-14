@@ -12,6 +12,7 @@ import { ProfileView } from './menus/ProfileView'
 import { LeaderboardView, rankLeaderboard, type LeaderboardRow } from './menus/LeaderboardView'
 import { ContractsView, type ContractProgress, type ContractRow } from './menus/ContractsView'
 import { useHomeHero, useLibraryCount } from './menus/homeData'
+import { AVATAR_OPTIONS } from '../components/ui'
 
 /** YYYY-MM-DD in Asia/Kolkata, offset by `days` (the server's reward calendar). */
 function istDate(days: number): string {
@@ -22,17 +23,6 @@ function istDate(days: number): string {
 /** Dashboard "tabs" are URL state: /dashboard (home), ?tab=profile | leaderboard | contracts. */
 type Tab = 'home' | 'leaderboard' | 'contracts' | 'profile'
 const TABS: Tab[] = ['home', 'leaderboard', 'contracts', 'profile']
-
-const AVATARS = [
-  'https://i.postimg.cc/htzdfgq1/avatar1.jpg',
-  'https://i.postimg.cc/D8PF88vR/avatar2.jpg',
-  'https://i.postimg.cc/MvmxvvZy/avatar3.jpg',
-  'https://i.postimg.cc/VJswMm5v/avatar4.jpg',
-  'https://i.postimg.cc/Ln3Rnn4j/avatar5.jpg',
-  'https://i.postimg.cc/sMfzSs11/avatar6.jpg',
-  'https://i.postimg.cc/4Y4Gtsnz/avatar7.jpg',
-  'https://i.postimg.cc/21jYvr3h/avatar8.jpg',
-]
 
 /** Leaderboard (top 50 by wins), fetched for the Home card and the full screen. */
 function useLeaderboard(enabled: boolean) {
@@ -207,7 +197,7 @@ export function Dashboard() {
     screen = (
       <ProfileView
         profile={profile}
-        avatars={AVATARS}
+        avatars={AVATAR_OPTIONS}
         onSaveName={handleUpdateName}
         onPickAvatar={handleUpdateAvatar}
         onSignOut={async () => { await logout(); navigate('/') }}

@@ -195,8 +195,7 @@ html.lang-hi .home-tile__body { line-height: var(--lh-ui); }
 .profile-head__actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
 .profile-avatar-toggle { display: flex; justify-content: flex-end; margin-top: var(--sp-2); }
 .profile-avatars { display: flex; flex-wrap: wrap; gap: var(--sp-4); justify-content: center; padding: var(--sp-5); margin-top: var(--sp-2); }
-.profile-avatars__opt { position: relative; width: 56px; height: 56px; border-radius: 50%; padding: 0; overflow: visible; border: 3px solid transparent; background: var(--bg-sunken); cursor: pointer; }
-.profile-avatars__opt img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+.profile-avatars__opt { position: relative; display: grid; place-items: center; width: 68px; height: 68px; border-radius: 50%; padding: 0; overflow: visible; border: 3px solid transparent; background: transparent; cursor: pointer; }
 .profile-avatars__opt[aria-pressed="true"] { border-color: var(--brand); }
 .profile-avatars__check { position: absolute; right: -4px; bottom: -4px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--brand); color: var(--white); }
 .profile-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); }

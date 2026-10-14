@@ -7,10 +7,11 @@ import { DailyRewardModal } from '../../components/DailyRewardModal'
 import { DeleteAccountButton } from '../../components/DeleteAccountButton'
 import type { DailyRewardResult } from '../../types/database'
 import type { GalleryScreen } from './types'
+import { AVATAR_OPTIONS } from '../../components/ui'
 
 /* Mock data for the signed-in menu screens (no Supabase needed). */
-const ME = { name: 'Tester', signedIn: true, imageUrl: null }
-const GUEST = { name: 'Tester', signedIn: false, imageUrl: null }
+const ME = { name: 'Tester', signedIn: true, avatar: null }
+const GUEST = { name: 'Tester', signedIn: false, avatar: null }
 const NAMES = ['Priya', 'Rahul', 'Aman', 'Tester', 'Sneha', 'Kabir', 'Isha', 'Arjun', 'Meera', 'Dev', 'Zoya', 'Neel', 'Tara', 'Vikram']
 
 const LB_ROWS: LeaderboardRow[] = NAMES.map((n, i) => ({
@@ -59,9 +60,9 @@ function SignedInProfile({ openDelete = false }: { openDelete?: boolean }) {
   return (
     <ProfileView
       profile={p}
-      avatars={[]}
+      avatars={AVATAR_OPTIONS}
       onSaveName={async name => { await wait(400); setP(x => ({ ...x, username: name.trim() || x.username })) }}
-      onPickAvatar={async () => {}}
+      onPickAvatar={async avatar => { await wait(300); setP(x => ({ ...x, avatar_url: avatar })) }}
       onSignOut={noop}
       dangerZone={<DeleteAccountButton initialOpen={openDelete} onDelete={async () => { await wait(800); throw new Error('mock') }} />}
       viewer={ME}

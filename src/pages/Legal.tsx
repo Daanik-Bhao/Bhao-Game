@@ -128,7 +128,6 @@ export function Privacy() {
         <li><strong>Google</strong> – optional "Sign in with Google" and STUN servers that help players' devices find each other for voice chat (they see your IP address, never your audio).</li>
         <li><strong>Sentry</strong> – error tracking (when enabled).</li>
         <li><strong>Vercel</strong> – website hosting.</li>
-        <li>Some avatar images may be loaded from external image hosts.</li>
       </ul>
       <p>These providers process data on our behalf and may store it outside India.</p>
 
