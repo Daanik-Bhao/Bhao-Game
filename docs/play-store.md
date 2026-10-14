@@ -388,8 +388,56 @@ Practical plan for a personal account:
 - [ ] Content rating questionnaire done (section 3).
 - [ ] Ads: No. App access: provide a test account (email + password) for reviewers, since multiplayer
       and ranked need sign-in. Note that voice/chat need a second player; mention that in the notes.
-- [ ] Microphone permission (`RECORD_AUDIO`) is only requested when joining voice; Play may ask why
-      the app needs the microphone: "Optional in-game voice chat between players in a multiplayer room.
-      Audio is peer-to-peer and not recorded."
+- [ ] Microphone (`RECORD_AUDIO`): still requested only when the player taps "Join voice" (re-test on
+      a fresh install: no prompt at launch, prompt on first "Join voice"). Declaration text: section 10.
 - [ ] Sentry "Prevent storing of IP addresses" turned on (if Sentry is enabled).
 - [ ] Graphics from section 7 uploaded.
+
+---
+
+## 10. Microphone permission (`RECORD_AUDIO`)
+
+### What the code does (checked 14 October 2026)
+
+- `android/app/src/main/AndroidManifest.xml` declares `RECORD_AUDIO` and `MODIFY_AUDIO_SETTINGS`
+  (the latter is a normal, install-time permission with no prompt), and
+  `<uses-feature android:name="android.hardware.microphone" android:required="false" />` so devices
+  without a mic still see the app.
+- **Nothing asks for the microphone at app start.** `MainActivity.java` only handles window insets; the
+  Capacitor plugins in use (app, browser, haptics, splash-screen, status-bar, keep-awake) don't touch
+  the mic; there is no `navigator.permissions` query and no `getUserMedia` call outside voice chat.
+- The only path to the runtime prompt: in a multiplayer room the player taps the mic / "Join voice"
+  button (`src/components/game/RoomComms.tsx`) → `joinVoice()` (`src/hooks/useRoomComms.ts`) →
+  `VoiceMesh.join()` → `navigator.mediaDevices.getUserMedia({ audio })` (`src/lib/voiceChat.ts`) →
+  Capacitor's `BridgeWebChromeClient.onPermissionRequest` → Android's `RECORD_AUDIO` dialog.
+  Creating the voice mesh on entering a room, and receiving other players' voice signals, never
+  opens the microphone (unit test "asks for the microphone only on join()" in
+  `src/lib/__tests__/roomComms.test.ts`).
+- If the player denies it, voice shows the `comms` "mic_denied" message ("Mic permission was blocked…"); chat and the game keep working.
+- Leaving voice or the room stops the audio track (the Android mic indicator turns off).
+
+### Play Console text
+
+`RECORD_AUDIO` is not on Play's restricted-permissions list, so there is normally **no Permissions
+Declaration Form** for it **(verify)** in App content → Sensitive permissions. Use the text below wherever
+Play asks why the app uses the microphone (a reviewer question, the app access / review notes, or a
+future declaration form):
+
+```
+BHAO uses the microphone only for optional voice chat between players in a multiplayer room. The
+permission is requested at runtime only when the player taps "Join voice"; it is never requested at
+app start, and every other feature works without it. Audio goes directly between the players'
+devices over an encrypted WebRTC connection. It is not recorded, not stored and never sent to our
+servers. Players can mute themselves, mute others, or leave voice at any time.
+```
+
+Short version (if a field is limited to about 250 characters):
+
+```
+Optional voice chat in multiplayer rooms. Mic is requested only when the player taps "Join voice".
+Audio is peer-to-peer and encrypted, never recorded or stored, and doesn't reach our servers.
+```
+
+Data safety: don't declare "Voice or sound recordings" (section 5). No prominent-disclosure screen is
+needed because the mic is used only in the foreground, for a feature the user starts, and the system
+prompt appears right after their tap **(verify)** against Play's current User Data policy.
