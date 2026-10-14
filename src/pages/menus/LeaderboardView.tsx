@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, RefreshCw, Trophy } from 'lucide-react'
+import { ArrowLeft, EyeOff, RefreshCw, Trophy } from 'lucide-react'
 import { Avatar, Button, EmptyState, Segmented, Skeleton, buttonClass, useToastPlacement } from '../../components/ui'
 import { TabBar } from '../../components/nav/TabBar'
 import { formatMoney } from '../../lib/format'
 import { useLang } from '../../i18n/lang'
 import '../menus.css'
+import '../../components/age/age.css'
 
 export interface LeaderboardRow {
   id: string
@@ -36,10 +37,12 @@ export interface LeaderboardViewProps {
   onRefresh: () => void
   /** Back to Home (default: /dashboard) */
   onBack?: () => void
+  /** 13–17 account: everyone else's leaderboard leaves this player out (server RLS); say so. */
+  hiddenFromPublic?: boolean
 }
 
 /** Full Leaderboard screen (opened from the Home card; Dashboard tab state `leaderboard`). */
-export function LeaderboardView({ rows, loading, meId, meName, onRefresh, onBack }: LeaderboardViewProps) {
+export function LeaderboardView({ rows, loading, meId, meName, onRefresh, onBack, hiddenFromPublic = false }: LeaderboardViewProps) {
   const { t } = useTranslation()
   const lang = useLang()
   const navigate = useNavigate()
@@ -72,7 +75,12 @@ export function LeaderboardView({ rows, loading, meId, meName, onRefresh, onBack
           ]}
         />
 
-        {!loading && me && (
+        {hiddenFromPublic ? (
+          <p className="child-safe-note" role="note">
+            <EyeOff size={18} strokeWidth={2.25} aria-hidden="true" />
+            <span>{t('consent.limits.leaderboard')}</span>
+          </p>
+        ) : !loading && me && (
           <p className="lb__me">{t('home.yourRank')} <b className="num">#{me.rank}</b></p>
         )}
 

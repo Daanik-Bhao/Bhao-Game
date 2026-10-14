@@ -1137,7 +1137,7 @@
       "title": "In short",
       "voice": "Voice chat is peer-to-peer and is never recorded.",
       "chat": "Chat messages are not stored. A report keeps the reported player's recent messages.",
-      "age": "You must be {{age}} or older to play.",
+      "age": "You must be {{age}} or older to play. Players under 18 can play online only after a parent or guardian agrees.",
       "money": "No real-money purchases. Coins have no cash value.",
       "delete": "You can delete your account any time from your profile."
     },
@@ -1223,7 +1223,7 @@
       "errors": {
         "title": "Error tracking",
         "p1": "If error tracking is enabled, we use Sentry to receive crash and error reports, for example the error message, the screen you were on, and your browser, operating system and device type. We don't attach your account ID, username or email address, and Sentry is set up not to send your IP address or cookies.",
-        "p2": "When an error happens, Sentry may also keep a short replay of the screen activity just before it, so we can reproduce the bug; text and input fields are masked. For about 1 in 10 visits, Sentry also records performance timings, such as how long screens take to load. Sentry deletes this data automatically after a limited period."
+        "p2": "Only for players we know are 18 or older: when an error happens, Sentry may also keep a short replay of the screen activity just before it, so we can reproduce the bug (text and input fields are masked), and for about 1 in 10 visits it records performance timings, such as how long screens take to load. For players aged 13 to 17, and before we know a player's age group, there are no replays and no performance timings, only plain error reports. Sentry deletes this data automatically after a limited period."
       },
       "device": {
         "title": "Data stored on your device",
@@ -1263,7 +1263,7 @@
       "children": {
         "title": "Children",
         "p1": "You must be <strong>at least {{age}} years old</strong> to use BHAO, because multiplayer rooms let you voice- and text-chat with other players, including strangers. BHAO is not directed at children under {{age}} and we do not knowingly collect their data. If we learn that an account belongs to someone under {{age}}, we delete it. Parents or guardians who believe their child has created an account can contact us to have it deleted.",
-        "minors": "If you are under 18, please use BHAO only with the consent of a parent or guardian."
+        "minors": "If you are 13 to 17, you can play online only after a parent or guardian agrees through the link we email them (see \"Players aged 13 to 17 and parental consent\" below). Until then your games stay on your device."
       },
       "changes": {
         "title": "Changes",
@@ -1283,7 +1283,7 @@
       "account": {
         "title": "Your account",
         "age": "You must be at least {{age}} years old to use BHAO.",
-        "minors": "If you are under 18, you need the permission of a parent or guardian.",
+        "minors": "If you are under 18, a parent or guardian must agree first.",
         "login": "Keep your login details safe; you're responsible for activity on your account.",
         "username": "Choose a username that isn't offensive, impersonating, or infringing anyone's rights.",
         "guest": "Guest progress is kept only on your device. If you clear the app's data or lose the device before copying it into an account, it can't be recovered.",

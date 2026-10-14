@@ -73,9 +73,11 @@ function Section({ n, title, children }: { n: number; title: string; children: R
   )
 }
 
-const ACCOUNT_ITEMS = ['details', 'profile', 'stats', 'matches', 'campaign', 'library', 'multiplayer'] as const
+const ACCOUNT_ITEMS = ['details', 'age', 'profile', 'stats', 'matches', 'campaign', 'library', 'multiplayer'] as const
+/** Child-safety limits for 13–17 players (same keys as the parent consent page). */
+const CHILD_LIMIT_ITEMS = ['leaderboard', 'rooms', 'voice', 'chat', 'tracking', 'money'] as const
 const DEVICE_ITEMS = ['session', 'prefs', 'progress', 'flags', 'cache'] as const
-const SERVICE_ITEMS = ['supabase', 'google', 'sentry', 'vercel', 'relay'] as const
+const SERVICE_ITEMS = ['supabase', 'google', 'sentry', 'vercel', 'relay', 'resend'] as const
 
 /** Privacy Policy. Every statement here is checked against the code; see docs/play-store.md §5. */
 export function Privacy() {
@@ -167,7 +169,20 @@ export function Privacy() {
         </p>
       </Section>
 
-      <Section n={12} title={t(`${p}.changes.title`)}>
+      {ADMITS_MINORS && (
+        <Section n={12} title={t(`${p}.parents.title`)}>
+          <p>{t(`${p}.parents.p1`)}</p>
+          <p>{t(`${p}.parents.p2`)}</p>
+          <p><Rich k={`${p}.parents.p3`} /></p>
+          <p>{t(`${p}.parents.limitsIntro`)}</p>
+          <ul>
+            {CHILD_LIMIT_ITEMS.map(k => <li key={k}>{t(`consent.limits.${k}`)}</li>)}
+          </ul>
+          <p><Rich k={`${p}.parents.grievance`} /></p>
+        </Section>
+      )}
+
+      <Section n={ADMITS_MINORS ? 13 : 12} title={t(`${p}.changes.title`)}>
         <p>{t(`${p}.changes.p1`)}</p>
       </Section>
     </LegalLayout>
@@ -197,6 +212,7 @@ export function Terms() {
             {t(`${p}.account.age`, { age: MIN_AGE })}
             {ADMITS_MINORS && <> {t(`${p}.account.minors`)}</>}
           </li>
+          {ADMITS_MINORS && <li>{t(`${p}.account.consent`)}</li>}
           <li>{t(`${p}.account.login`)}</li>
           <li>{t(`${p}.account.username`)}</li>
           <li>{t(`${p}.account.guest`)}</li>
