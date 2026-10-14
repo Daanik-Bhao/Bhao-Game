@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Eye, EyeOff, Info, Play } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
+import { SUPABASE_NOT_CONFIGURED_MESSAGE } from '../lib/supabase'
 import { Button, Input, Tabs } from '../components/ui'
 import { Gullu } from '../components/mascot/Gullu'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
@@ -18,6 +19,9 @@ export function Auth() {
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
   const [error, setError] = useState('')
+  // The "not configured" error comes from lib code in English; show the translated notice instead.
+  const errorText = (err: unknown, fallback: string) =>
+    !(err instanceof Error) ? fallback : err.message === SUPABASE_NOT_CONFIGURED_MESSAGE ? t('auth.unavailable') : err.message
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
@@ -42,7 +46,7 @@ export function Auth() {
       }
       navigate('/dashboard')
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('auth.genericError'))
+      setError(errorText(err, t('auth.genericError')))
     } finally {
       setLoading(false)
     }
@@ -62,7 +66,7 @@ export function Auth() {
       // Tab flow ends; on success the auth state change navigates to /dashboard.
       await loginWithGoogle()
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('auth.googleFailed'))
+      setError(errorText(err, t('auth.googleFailed')))
     } finally {
       setGoogleLoading(false)
     }
