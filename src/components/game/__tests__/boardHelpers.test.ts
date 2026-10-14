@@ -25,6 +25,15 @@ describe('logView — engine log lines become localized sentences', () => {
     expect(v.text).toMatch(/बचत की/)
     expect(v.text).not.toMatch(/saved|played/)
   })
+  it('forced-sale lines are localized (were shown in English on the Hindi board)', () => {
+    const line = '🚨 Rahul AI had to sell 🏠 Property at a 15% penalty — an emergency fund would have avoided this.'
+    const hi = logView(line, tHi, 'hi')
+    expect(hi.text).not.toMatch(/had to sell|penalty/)
+    expect(hi.text).toMatch(/15%/)
+    expect(hi.actor).toBe('Rahul AI')
+    expect(logView(line, t, 'en').text).toBe('Rahul AI had to sell Property at a 15% penalty. An emergency fund would have avoided this.')
+    expect(logView('🚨 Rahul AI had to sell 🏠 Property to cover a loss — an emergency fund would have avoided this.', tHi, 'hi').text).not.toMatch(/had to sell/)
+  })
   it('feed skips the year header and deck noise', () => {
     expect(feedEntries(['📅 Year 2', 'Deck reshuffled.', 'Priya AI passed.'], 2)).toEqual(['Priya AI passed.'])
   })

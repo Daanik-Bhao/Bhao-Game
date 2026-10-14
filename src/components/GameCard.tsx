@@ -122,6 +122,27 @@ function CardName({ title, className, fit }: { title: string; className: string;
   return <span ref={ref} className={`${className}${small ? ' is-fit' : ''}`} aria-hidden="true">{hyphenateText(title)}</span>
 }
 
+/**
+ * Headline value ("−10%", "Floor ₹2 L", "कम से कम ₹50K"). On narrow cards a value wider than the
+ * card drops to 13 px and may wrap to two lines instead of being clipped at the card edge.
+ */
+function CardValue({ text, className, fit }: { text: string; className: string; fit: boolean }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const [small, setSmall] = useState(false)
+  useLayoutEffect(() => {
+    if (!fit) return
+    setSmall(false)
+    const check = () => {
+      const el = ref.current
+      if (el && el.scrollWidth > el.clientWidth + 1) setSmall(true)
+    }
+    const raf = requestAnimationFrame(check)
+    document.fonts?.ready.then(() => requestAnimationFrame(check)).catch(() => {})
+    return () => cancelAnimationFrame(raf)
+  }, [text, fit])
+  return <span ref={ref} className={`${className}${small ? ' is-fit' : ''}`} aria-hidden="true">{text}</span>
+}
+
 const LIFT = { type: 'spring' as const, stiffness: 500, damping: 32 }
 
 /**
@@ -178,11 +199,9 @@ export function GameCard({
       {state === 'locked' && <Lock className="gcard__lock" size={12} strokeWidth={2.5} aria-hidden="true" />}
       <CardName title={title} className={`gcard__name${isLong ? ' is-long' : ''}${size === 'full' && title.length > 18 ? ' is-long-name' : ''}`} fit={(size === 'hand' && !isLong) || size === 'sheet'} />
       {size === 'full' && !noFlavor && <span className="gcard__flavor" aria-hidden="true">{cardFlavor(card, lang)}</span>}
-      <span className={`gcard__value tone-${headline.tone}`} aria-hidden="true">
-        {headline.kind === 'choose'
-          ? <span className="gcard__dots"><i className="dot-spend" /><i className="dot-save" /><i className="dot-invest" /></span>
-          : headline.text}
-      </span>
+      {headline.kind === 'choose'
+        ? <span className={`gcard__value tone-${headline.tone}`} aria-hidden="true"><span className="gcard__dots"><i className="dot-spend" /><i className="dot-save" /><i className="dot-invest" /></span></span>
+        : <CardValue text={headline.text} className={`gcard__value tone-${headline.tone}`} fit={narrow} />}
       {children}
     </>
   )

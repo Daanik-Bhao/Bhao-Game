@@ -120,6 +120,18 @@ describe('short card names fit a hand card', () => {
     expect(tooLong).toEqual([])
   })
 
+  it('no hand-card word joined by "/" is wider than one line (it can only break mid-letter)', () => {
+    // Card names hyphenate Latin syllables only (lib/hyphenate); "Joining/Signing" overflowed on the Android build.
+    const bad: string[] = []
+    for (const c of CARDS) {
+      for (const [lang, limit] of [['en', SHORT_NAME_LIMIT.en.word], ['hi', SHORT_NAME_LIMIT.hi.word]] as const) {
+        const title = cardTitle(c, lang)
+        for (const w of title.split(/\s+/)) if (w.includes('/') && graphemes(w) > limit) bad.push(`${lang}: ${title}`)
+      }
+    }
+    expect(bad).toEqual([])
+  })
+
   it('the full name is still available for the card sheet and aria-label', () => {
     for (const c of CARDS) {
       expect(cardFullTitle(c, 'en')).toBe(c.name)
