@@ -955,7 +955,7 @@
       "title": "Get a money report card",
       "body": "See what your choices would earn in real life over 10 years."
     },
-    "footerAge": "For ages 13+. No real money is used.",
+    "footerAge": "For ages {{age}}+. No real money is used.",
     "show": {
       "crash": {
         "name": "Market Crash",
@@ -1163,7 +1163,7 @@
       "title": "In short",
       "voice": "Voice chat is peer-to-peer and is never recorded.",
       "chat": "Chat messages are not stored. A report keeps the reported player's recent messages.",
-      "age": "You must be 13 or older to play.",
+      "age": "You must be {{age}} or older to play.",
       "money": "No real-money purchases. Coins have no cash value.",
       "delete": "You can delete your account any time from your profile."
     },

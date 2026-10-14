@@ -9,6 +9,7 @@ import { useAuth } from '../hooks/useAuth'
 import type { GameCard as GameCardType } from '../types/game'
 import './menus.css'
 import './landing.css'
+import { MIN_AGE } from '../config/age'
 
 const SUPPORT_EMAIL = 'support@daanik.com'
 
@@ -96,7 +97,7 @@ export function Landing() {
           <Link to="/privacy">{t('legal.privacyShort')}</Link>
           <Link to="/terms">{t('legal.termsShort')}</Link>
           <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
-          <span className="landing-footer__age">{t('landing.footerAge')}</span>
+          <span className="landing-footer__age">{t('landing.footerAge', { age: MIN_AGE })}</span>
         </footer>
       </main>
     </div>

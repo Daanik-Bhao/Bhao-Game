@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Info } from 'lucide-react'
 import { Button } from '../components/ui'
 import './menus.css'
+import { MIN_AGE } from '../config/age'
 
 const CONTACT_EMAIL = 'support@daanik.com'
 const LAST_UPDATED = '13 October 2026'
@@ -57,7 +58,7 @@ export function Privacy() {
         <ul>
           <li>{t('legal.keyPoints.voice')}</li>
           <li>{t('legal.keyPoints.chat')}</li>
-          <li>{t('legal.keyPoints.age')}</li>
+          <li>{t('legal.keyPoints.age', { age: MIN_AGE })}</li>
           <li>{t('legal.keyPoints.money')}</li>
           <li>{t('legal.keyPoints.delete')}</li>
         </ul>
@@ -155,8 +156,8 @@ export function Privacy() {
 
       <h2>11. {t('legal.sections.privacy.h9')}</h2>
       <p>
-        You must be <strong>at least 13 years old</strong> to use BHAO, because multiplayer rooms let you voice- and
-        text-chat with other players, including strangers. BHAO is not directed at children under 13 and we do not
+        You must be <strong>at least {MIN_AGE} years old</strong> to use BHAO, because multiplayer rooms let you voice- and
+        text-chat with other players, including strangers. BHAO is not directed at children under {MIN_AGE} and we do not
         knowingly collect their data. If you are under 18, please use BHAO with the consent of a parent or guardian.
         Parents who believe their child has created an account without consent can contact us to have it deleted.
       </p>
@@ -192,7 +193,7 @@ export function Terms() {
 
       <h2>3. {t('legal.sections.terms.h3')}</h2>
       <ul>
-        <li>You must be at least 13 years old to use BHAO.</li>
+        <li>You must be at least {MIN_AGE} years old to use BHAO.</li>
         <li>Keep your login details safe; you're responsible for activity on your account.</li>
         <li>Choose a username that isn't offensive, impersonating, or infringing anyone's rights.</li>
         <li>You can delete your account at any time from your profile inside the app.</li>

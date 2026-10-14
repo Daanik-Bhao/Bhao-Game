@@ -955,7 +955,7 @@
       "title": "Money report card pao",
       "body": "Dekho tumhare decisions real life mein 10 saal mein kitna kamate."
     },
-    "footerAge": "13+ ke liye. Asli paisa use nahi hota.",
+    "footerAge": "{{age}}+ ke liye. Asli paisa use nahi hota.",
     "show": {
       "crash": {
         "name": "Market Crash",
@@ -1163,7 +1163,7 @@
       "title": "Short mein",
       "voice": "Voice chat seedha players ke beech chalti hai aur kabhi record nahi hoti.",
       "chat": "Chat messages save nahi hote. Report mein sirf us player ke recent messages rakhe jaate hain.",
-      "age": "Khelne ke liye umar kam se kam 13 saal honi chahiye.",
+      "age": "Khelne ke liye umar kam se kam {{age}} saal honi chahiye.",
       "money": "Real money se kuch nahi khareedna. Coins ki koi cash value nahi hai.",
       "delete": "Apna account kabhi bhi profile se delete kar sakte ho."
     },
