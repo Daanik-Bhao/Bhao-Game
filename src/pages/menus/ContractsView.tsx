@@ -110,7 +110,7 @@ export function ContractsView({ contracts, progress, loading, onBack }: Contract
           </>
         )}
       </main>
-      <TabBar active="home" />
+      <TabBar />
     </div>
   )
 }
