@@ -81,11 +81,11 @@ html.lang-hi .why-list__item { line-height: 1.65; }
 .library__lede { margin-bottom: var(--sp-4); }
 .library__empty { margin-bottom: var(--sp-4); }
 .library__filters { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin-bottom: var(--sp-5); }
-.lib-ring { position: relative; width: 48px; height: 48px; display: inline-grid; place-items: center; flex: none; }
+.lib-ring { position: relative; width: 56px; height: 56px; display: inline-grid; place-items: center; flex: none; }
 .lib-ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
 .lib-ring__track { fill: none; stroke: var(--bg-sunken); stroke-width: 4; }
 .lib-ring__fill { fill: none; stroke: var(--save); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset var(--dur-ceremony) var(--ease-standard); }
-.lib-ring__text { position: relative; font-size: 12px; font-weight: 800; color: var(--text); }
+.lib-ring__text { position: relative; font-size: 12px; font-weight: 800; line-height: 1; white-space: nowrap; color: var(--text); }
 .library-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); }
 @media (min-width: 600px) { .library-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (min-width: 1024px) { .library-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
