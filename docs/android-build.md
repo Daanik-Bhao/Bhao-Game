@@ -1,6 +1,8 @@
 # Android app (Capacitor)
 
 The Android app wraps the same web build (`dist/`) in a Capacitor WebView.
+Owner checklist from zero to Play Store (Hinglish): [launch-steps.md](launch-steps.md).
+
 App id: `com.daanik.bhao` · name: BHAO · config: `capacitor.config.ts` · native project: `android/`.
 
 ## 1. One-time setup (no admin rights needed)
