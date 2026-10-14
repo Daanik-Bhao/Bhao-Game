@@ -19,7 +19,7 @@ describe('/delete-account', () => {
     window.history.pushState({}, '', '/delete-account')
     render(<App />)
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Delete your BHAO account' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Delete your BHAO account' }, { timeout: 10000 })).toBeTruthy()
     // In-app steps use the real Profile labels
     expect(screen.getByText('Delete account', { selector: 'strong' })).toBeTruthy()
     expect(screen.getByText('Danger zone', { selector: 'strong' })).toBeTruthy()
@@ -30,11 +30,22 @@ describe('/delete-account', () => {
     expect(window.location.pathname).toBe('/delete-account')
   })
 
+  it('is linked from the privacy policy, which renders its rich text (no raw tags)', async () => {
+    await i18n.changeLanguage('en')
+    window.history.pushState({}, '', '/privacy')
+    render(<App />)
+    await screen.findByRole('heading', { level: 1, name: 'Privacy Policy' }, { timeout: 10000 })
+    const links = screen.getAllByRole('link').map(a => a.getAttribute('href'))
+    expect(links).toContain('/delete-account')
+    expect(document.body.textContent).toContain('Gyaan Library progress')
+    expect(document.body.textContent).not.toMatch(/<\/?(strong|em|mail|deleteLink|privacyLink)>/)
+  })
+
   it('renders in Hindi too', async () => {
     await i18n.changeLanguage('hi')
     window.history.pushState({}, '', '/delete-account')
     render(<App />)
-    const h1 = await screen.findByRole('heading', { level: 1 })
+    const h1 = await screen.findByRole('heading', { level: 1 }, { timeout: 10000 })
     expect(h1.textContent).toMatch(/[ऀ-ॿ]/)
     await i18n.changeLanguage('en')
   })

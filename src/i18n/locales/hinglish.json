@@ -1131,34 +1131,6 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "lastUpdated": "Last update: {{date}}",
-    "englishOnly": "Poora text abhi sirf English mein hai.",
-    "sections": {
-      "privacy": {
-        "h1": "Guest ban ke khelna",
-        "h2": "Account banane pe hum kya info lete hain",
-        "h3": "Error tracking",
-        "h4": "Tumhare device pe store data",
-        "h5": "Third-party services",
-        "h6": "Hum kya nahi karte",
-        "h7": "Data rakhna aur delete karna",
-        "h8": "Tumhare rights",
-        "h9": "Bachche",
-        "h10": "Changes",
-        "chat": "Voice chat, text chat aur pokes",
-        "reports": "Players ko report karna"
-      },
-      "terms": {
-        "h1": "Game",
-        "h2": "Virtual items",
-        "h3": "Tumhara account",
-        "h4": "Fair play",
-        "h5": "Availability",
-        "h6": "Liability",
-        "h7": "Privacy",
-        "h8": "Changes aur laagu kanoon",
-        "community": "Chat, voice aur reporting"
-      }
-    },
     "keyPoints": {
       "title": "Short mein",
       "voice": "Voice chat seedha players ke beech chalti hai aur kabhi record nahi hoti.",
@@ -1213,6 +1185,137 @@
         "p1": "Guests ka humare servers pe koi account nahi hota. Guest data hatane ke liye app ka storage ya browser ka site data clear karo, ya app uninstall karo."
       },
       "more": "BHAO kaunsa data handle karta hai, iske baare mein aur jaanne ke liye humari <privacyLink>Privacy Policy</privacyLink> padho."
+    },
+    "translationNote": "Ye ek translation hai. Agar ye English version se alag ho, toh English version hi laagu hoga.",
+    "privacyDoc": {
+      "intro": "BHAO (\"hum\") ek financial-literacy card game hai jo aap browser mein ya BHAO Android app ke roop mein khel sakte ho. Ye page batata hai ki app kaunsi info handle karta hai, kyun, aur aapke paas kya choices hain. Koi sawaal? <mail>{{email}}</mail>.",
+      "guest": {
+        "title": "Guest ban ke khelna",
+        "p1": "Aap bina account ke tutorial, campaign, practice games aur Gyaan Library khel sakte ho. Guest mode mein hum apne servers pe koi account nahi banate. Ek random guest naam, aapki campaign progress aur aapki Gyaan Library progress sirf aapke device pe save hoti hai.",
+        "p2": "Jab aap baad mein usi device pe sign in karte ho, toh app ek baar ye guest progress aapke account mein copy karne ka option de sakta hai. <strong>Sirf agar aap haan bolte ho</strong>, tabhi aapke complete kiye campaign levels (stars aur best net worth) aur aapke unlock kiye Gyaan Library topics humare servers pe bheje jaate hain aur aapke account ke saath save hote hain, saath mein ek note ki import kab hua. Agar aap mana karte ho, toh kuch nahi bheja jaata."
+      },
+      "account": {
+        "title": "Account banane pe hum kya info lete hain",
+        "details": "<strong>Account details:</strong> aapka email address aur password (sirf hashed form mein save). Agar aap \"Sign in with Google\" use karte ho, toh Google aapka email address, naam, profile picture ka link aur Google account ID humare sign-in provider ke saath share karta hai. Hum email address se aapka account pehchaante hain; game aapka Google naam ya picture nahi dikhata.",
+        "profile": "<strong>Profile:</strong> aapka username aur aapka chuna hua avatar. Avatars app mein pehle se bani pictures hain, toh aap kabhi koi photo upload nahi karte.",
+        "stats": "<strong>Game data:</strong> kitne games khele aur jeete, win streaks, rank points, XP, in-game coins, aapki daily login date aur streak, daily-reward aur contract progress, aur aapke virtual stock holdings.",
+        "matches": "<strong>Match history:</strong> har match ka mode, wo kab start aur end hua, aapka result aur final net worth, aapne kitne coins, XP aur rank points jeete ya gawaaye, aur game mein aapki choices ke stats.",
+        "campaign": "<strong>Campaign progress:</strong> har level ke stars aur best net worth, aapne use kab complete kiya, aur kya wo guest play se import hua tha.",
+        "library": "<strong>Gyaan Library progress:</strong> aapne kaunse topics unlock kiye aur khole, aur kab. Isse aapki library doosre devices pe bhi aapke saath rehti hai.",
+        "multiplayer": "<strong>Multiplayer:</strong> aapke banaye ya join kiye rooms, aapki seat, game state (aapke cards bhi) aur ek \"last seen\" time jo dikhata hai ki aap abhi bhi connected ho ya nahi.",
+        "shown": "Aapka username, avatar aur game stats doosre players ko dikh sakte hain, jaise leaderboards pe aur multiplayer rooms mein.",
+        "logs": "Kisi bhi online service ki tarah, har request ke saath humare servers ko aapke device ka IP address aur basic browser ya device info milti hai, aur hum ise short-lived technical logs mein rakhte hain jo service chalane aur use protect karne ke liye use hote hain.",
+        "noPayment": "BHAO mein real money se koi purchase nahi hota, isliye hum kabhi payment info collect nahi karte."
+      },
+      "chat": {
+        "title": "Voice chat, text chat aur pokes",
+        "voice": "<strong>Voice chat aur microphone:</strong> multiplayer rooms mein aap chaho toh voice chat join kar sakte ho. App microphone permission tabhi maangta hai jab aap join karne ke liye tap karte ho, aur aap kabhi bhi khud ko mute kar sakte ho ya leave kar sakte ho. Voice seedha players ke devices ke beech jaati hai (peer-to-peer, encrypted). Hum ise <strong>na record karte hain, na store karte hain</strong>. Kisi bhi peer-to-peer call ki tarah, connected rehne tak doosre players ke devices aapka network (IP) address dekh sakte hain. Agar direct connection possible na ho, toh ek relay server encrypted audio aage pass kar sakta hai; wo use sun nahi sakta aur store nahi karta.",
+        "text": "<strong>Text chat, quick chat aur pokes:</strong> ye usi room ke players ko live bheje jaate hain aur humare servers pe <strong>store nahi hote</strong>. Room chhodte hi ye gayab ho jaate hain. Links aur lambe numbers hide ho jaate hain aur common gaaliyan automatically mask ho jaati hain.",
+        "mute": "Aap room mein kisi bhi player ko mute kar sakte ho. Mute karne se aapke liye unki chat aur pokes hide ho jaate hain aur unki voice band ho jaati hai."
+      },
+      "reports": {
+        "title": "Players ko report karna",
+        "p1": "Aap room chat se kisi player ko report kar sakte ho. Ek report mein ye store hota hai: kisne report kiya, kisko report kiya, room, time, chuna gaya reason, jo bhi details type ki, aur <strong>reported player ke recent chat messages</strong> (max 10, jaise wo reporter ke device pe dikhe the), taaki hum check kar sakein ki kya hua. Voice kabhi report ka part nahi hoti kyunki wo record hi nahi hoti.",
+        "p2": "Reports sirf humari moderation team dekh sakti hai; reported player ko nahi bataya jaata ki kisne report kiya. Hum reports ka use rules todne wale players ko warn, suspend ya ban karne ke liye karte hain. Hum report tab tak rakhte hain jab tak case handle karne aur baar-baar hone wale abuse ko pakadne ke liye zaroorat ho, aur kisi bhi ek player ka account delete hone pe wo delete ho jaati hai."
+      },
+      "errors": {
+        "title": "Error tracking",
+        "p1": "Agar error tracking on hai, toh hum crash aur error reports paane ke liye Sentry use karte hain, jaise error message, aap kaunsi screen pe the, aur aapka browser, operating system aur device type. Hum isme aapka account ID, username ya email address nahi jodte, aur Sentry aise set hai ki wo aapka IP address ya cookies na bheje.",
+        "p2": "Jab koi error aata hai, toh Sentry usse just pehle ki screen activity ka ek chhota replay bhi rakh sakta hai, taaki hum bug reproduce kar sakein; text aur input fields masked rehte hain. Lagbhag har 10 mein se 1 visit pe Sentry performance timings bhi record karta hai, jaise screens load hone mein kitna time lagta hai. Sentry ye data ek limited time ke baad automatically delete kar deta hai."
+      },
+      "device": {
+        "title": "Aapke device pe store data",
+        "intro": "Hum ye cheezein yaad rakhne ke liye aapke device ka local storage use karte hain (advertising cookies nahi):",
+        "session": "aapka sign-in session (Supabase manage karta hai);",
+        "prefs": "aapki language, sound aur reduced-motion settings;",
+        "progress": "aapka guest naam, aur aapki tutorial, campaign aur Gyaan Library progress (guests ke liye, aur signed-in players ke liye ek copy ke roop mein);",
+        "flags": "chhote flags, jaise ki kya aapne guest progress import karne wale offer ka jawaab pehle hi de diya hai;",
+        "cache": "website pe, cached app files taaki BHAO jaldi load ho aur offline bhi chale (service worker).",
+        "end": "Ye data aapke device pe tab tak rehta hai jab tak aap app ka storage ya browser ka site data clear nahi karte, ya app uninstall nahi karte. Sign out karne se sign-in session hat jaata hai."
+      },
+      "services": {
+        "title": "Third-party services",
+        "supabase": "<strong>Supabase</strong>: sign-in, database, aur wo live connection jo multiplayer moves, chat aur voice set-up messages le jaata hai.",
+        "google": "<strong>Google</strong>: optional \"Sign in with Google\", aur STUN servers jo voice chat ke liye players ke devices ko ek-doosre ko dhoondhne mein help karte hain (wo aapka IP address dekhte hain, aapka audio kabhi nahi).",
+        "sentry": "<strong>Sentry</strong>: error tracking (jab on ho).",
+        "vercel": "<strong>Vercel</strong>: BHAO website ki hosting.",
+        "relay": "<strong>Ek voice relay (TURN) service</strong>, sirf agar hum use on karein: direct connection fail hone pe ye players ke beech encrypted voice pass karti hai.",
+        "p1": "Ye providers humari taraf se data process karte hain aur ise India ke bahar bhi store kar sakte hain.",
+        "p2": "Fonts aur avatar pictures app mein hi bane hain, isliye unhe dikhane ke liye kisi aur website se contact nahi kiya jaata. Agar aap friends ko invite karne ke liye WhatsApp button use karte ho, toh invite text (room code ke saath) WhatsApp ko diya jaata hai, jo phir apne khud ke terms ke under kaam karta hai."
+      },
+      "dont": {
+        "title": "Hum kya nahi karte",
+        "p1": "Hum aapka personal data nahi bechte aur ads nahi dikhate. Hum advertising ID use nahi karte, aur aapki location, contacts, photos ya files access nahi karte. BHAO mein real money se koi purchase nahi hota aur sirf virtual coins use hote hain; hum kabhi bank, UPI ya payment details nahi maangte. Hum voice chat record nahi karte aur text chat store nahi karte. Game mein kuch bhi financial advice nahi hai."
+      },
+      "retention": {
+        "title": "Data rakhna aur delete karna",
+        "p1": "Jab tak aapka account hai, hum aapka account data rakhte hain.",
+        "p2": "Aap apna account kabhi bhi app mein <em>{{profile}} → {{button}}</em> se, ya <mail>{{email}}</mail> pe email karke delete kar sakte ho. App mein delete karna turant hota hai: humare servers pe aapka account, profile aur aapka saara game data hamesha ke liye delete ho jaata hai, jisme match history, campaign aur Gyaan Library progress, guest-import note, aapki ki hui reports aur aapke baare mein ki gayi reports shaamil hain. Email requests 30 din ke andar complete hoti hain. Steps aur details: <deleteLink>Apna BHAO account delete karo</deleteLink>.",
+        "p3": "Humare database provider ke backups mein copies thode time tak reh sakti hain jab tak wo overwrite na ho jaayein. Error reports Sentry ek limited time tak rakhta hai aur phir automatically delete ho jaati hain; wo aapke account se linked nahi hoti.",
+        "p4": "Aapke device pe store data (settings, guest progress, cached progress) humare servers pe nahi hai. Ise hatane ke liye app ka storage ya browser ka site data clear karo, ya app uninstall karo."
+      },
+      "rights": {
+        "title": "Aapke rights",
+        "p1": "Aap kahan rehte ho uske hisaab se (India ke Digital Personal Data Protection Act, 2023 ke under bhi), aapko apna personal data access karne, correct karne ya erase karwane ka, aur grievance (shikayat) raise karne ka right ho sakta hai. <mail>{{email}}</mail> pe email karo aur hum reasonable time mein reply karenge."
+      },
+      "children": {
+        "title": "Bachche",
+        "p1": "BHAO use karne ke liye aapki umar <strong>kam se kam {{age}} saal</strong> honi chahiye, kyunki multiplayer rooms mein aap doosre players ke saath, strangers bhi, voice aur text chat kar sakte ho. BHAO {{age}} saal se chhote bachchon ke liye nahi bana hai aur hum jaan-boojh ke unka data collect nahi karte. Agar humein pata chale ki koi account {{age}} saal se kam umar wale ka hai, toh hum use delete kar dete hain. Jin parents ya guardians ko lagta hai ki unke bachche ne account banaya hai, wo use delete karwane ke liye humse contact kar sakte hain.",
+        "minors": "Agar aapki umar 18 se kam hai, toh please BHAO sirf parent ya guardian ki consent se use karo."
+      },
+      "changes": {
+        "title": "Changes",
+        "p1": "Jab humare practices badlenge, hum ye page update karenge aur upar di gayi \"Last update\" date badal denge."
+      }
+    },
+    "termsDoc": {
+      "intro": "Ye terms tab laagu hote hain jab aap BHAO use karte ho, browser mein ya Android app ke roop mein. Khel ke aap inse agree karte ho. Koi sawaal? <mail>{{email}}</mail>.",
+      "game": {
+        "title": "Game",
+        "p1": "BHAO entertainment aur financial-literacy education ke liye ek card game hai. Game ke scenarios, returns aur market events simple banaye gaye hain aur fictional hain. <strong>BHAO mein kuch bhi financial, investment, tax ya legal advice nahi hai.</strong> Real financial decisions lene se pehle kisi qualified professional se baat karo."
+      },
+      "virtual": {
+        "title": "Virtual items",
+        "p1": "BHAO mein <strong>real money se koi purchase nahi hota</strong>. In-game coins sirf khel ke kamaye jaate hain. Coins, rank points, XP, stars aur cards ki real world mein koi money value nahi hai, inhe paison ke liye khareeda, becha ya exchange nahi kiya ja sakta, aur ye aapki property nahi hain. BHAO gambling nahi hai. Hum inhe adjust ya reset kar sakte hain, jaise bugs fix karne ya game balance karne ke liye."
+      },
+      "account": {
+        "title": "Aapka account",
+        "age": "BHAO use karne ke liye aapki umar kam se kam {{age}} saal honi chahiye.",
+        "minors": "Agar aapki umar 18 se kam hai, toh aapko parent ya guardian ki permission chahiye.",
+        "login": "Apni login details safe rakho; aapke account pe jo bhi activity hoti hai uski zimmedari aapki hai.",
+        "username": "Aisa username chuno jo offensive na ho, kisi aur ki nakal (impersonation) na kare, aur kisi ke rights ka ullanghan na kare.",
+        "guest": "Guest progress sirf aapke device pe rehti hai. Agar account mein copy karne se pehle aap app ka data clear kar do ya device kho do, toh wo wapas nahi aa sakti.",
+        "delete": "Aap apna account kabhi bhi app mein apni profile se, ya email se delete kar sakte ho (<deleteLink>kaise, ye dekho</deleteLink>)."
+      },
+      "fairPlay": {
+        "title": "Fair play",
+        "p1": "Cheating mat karo, bugs ka galat fayda mat uthao, bots ya scripts use mat karo, doosre players ko harass mat karo, aur service ko todne ya overload karne ki koshish mat karo. Aisa karne wale accounts ko hum suspend ya delete kar sakte hain."
+      },
+      "community": {
+        "title": "Chat, voice aur reporting",
+        "intro": "Multiplayer chat aur voice mein respect se raho. Ye mat karo:",
+        "abuse": "kisi ko gaali dena, dhamkana, bully karna ya kisi ke against hate speech;",
+        "sexual": "sexual content share karna ya maangna;",
+        "scams": "spam, advertising, ya scams chalana (jaise UPI ID, OTP, password ya paise maangna);",
+        "personal": "apni ya kisi aur ki personal info share karna (phone number, address, school waghera).",
+        "p2": "Kisi player ko sunna ya dekhna band karne ke liye <strong>mute</strong> button, aur humein unke baare mein batane ke liye <strong>report</strong> button use karo. Report mein us player ke recent chat messages hote hain (voice record nahi hoti). Hum reports review karte hain aur in rules ko todne wale accounts ko warn, suspend ya delete kar sakte hain."
+      },
+      "availability": {
+        "title": "Availability",
+        "p1": "BHAO \"jaisa hai waisa\" (as is) diya jaata hai. Hum ise chalu rakhne ki koshish karte hain par promise nahi kar sakte ki ye hamesha available rahega, error-free rahega, ya progress kabhi lose nahi hogi. Online features badal sakte hain ya band ho sakte hain."
+      },
+      "liability": {
+        "title": "Liability",
+        "p1": "Jitna kanoon allow karta hai, us had tak hum indirect losses ke liye ya game ke basis pe liye gaye aapke decisions ke liye zimmedar nahi hain. In terms mein kuch bhi laagu consumer law ke under aapke rights ko limit nahi karta."
+      },
+      "privacy": {
+        "title": "Privacy",
+        "p1": "Hum aapka data kaise handle karte hain, ye jaanne ke liye humari <privacyLink>Privacy Policy</privacyLink> dekho."
+      },
+      "changes": {
+        "title": "Changes aur laagu kanoon",
+        "p1": "Hum ye terms update kar sakte hain; update ke baad bhi use karte rehne ka matlab hai ki aap use accept karte ho. Ye terms India ke kanoonon ke under chalte hain."
+      }
     }
   },
   "tutorial": {
