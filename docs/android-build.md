@@ -83,6 +83,13 @@ com.daanik.bhao://login-callback
 
 (The `AndroidManifest.xml` intent filter for this scheme/host is already in place.)
 
+`npm run android:sha1` prints the SHA-1 / SHA-256 of the debug and upload keys and explains
+where each is used. The Custom Tab login above uses Google's **Web** OAuth client (configured
+in Supabase → Authentication → Providers → Google), so it needs no SHA-1. An Android OAuth
+client (package + SHA-1) is only required if the app later switches to native Google Sign-In;
+then register the Play App Signing SHA-1 (Play Console → Test and release → App integrity),
+the upload SHA-1 and the debug SHA-1.
+
 ## Notes
 
 - The service worker (PWA offline cache) is not registered inside the app; the web files
