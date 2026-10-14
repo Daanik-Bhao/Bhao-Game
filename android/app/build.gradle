@@ -9,6 +9,20 @@ if (keystorePropertiesFile.exists()) {
     keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
 }
 
+// App version: package.json "version" is the single source of truth (scripts/version.mjs,
+// `npm run version:bump`). versionCode = major*1000000 + minor*1000 + patch, so every
+// version bump also raises the versionCode Google Play requires to increase.
+def appVersionName = new groovy.json.JsonSlurper().parse(rootProject.file("../package.json")).version
+def appVersionMatch = (appVersionName =~ /^(\d+)\.(\d+)\.(\d+)$/)
+if (!appVersionMatch.matches()) {
+    throw new GradleException("package.json version '${appVersionName}' must look like 1.2.3")
+}
+def (appMajor, appMinor, appPatch) = [1, 2, 3].collect { appVersionMatch.group(it) as int }
+if (appMinor > 999 || appPatch > 999) {
+    throw new GradleException("package.json version '${appVersionName}': minor and patch must be 0-999")
+}
+def appVersionCode = appMajor * 1000000 + appMinor * 1000 + appPatch
+
 android {
     namespace = "com.daanik.bhao"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,8 +30,8 @@ android {
         applicationId "com.daanik.bhao"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "0.1.0"
+        versionCode appVersionCode
+        versionName appVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

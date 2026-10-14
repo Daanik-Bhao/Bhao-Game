@@ -1,7 +1,7 @@
 {
   "name": "bhao",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,7 +16,9 @@
     "android:assets": "node scripts/generate-android-assets.mjs",
     "android:sync": "npm run build && npx cap sync android",
     "android:apk": "npm run android:sync && node scripts/android-gradle.mjs apk",
-    "android:bundle": "npm run android:sync && node scripts/android-gradle.mjs bundle"
+    "android:bundle": "node scripts/android-gradle.mjs bundle-check && npm run android:sync && node scripts/android-gradle.mjs bundle",
+    "version:show": "node scripts/version.mjs",
+    "version:bump": "node scripts/version.mjs bump"
   },
   "dependencies": {
     "@capacitor-community/keep-awake": "8.0.1",

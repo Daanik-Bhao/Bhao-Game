@@ -52,9 +52,14 @@ Without that file debug builds still work; `npm run android:bundle` refuses to r
 
 ## 4. Upload to Google Play
 
-1. Before each release bump `versionCode` (+1, must always increase) and `versionName`
-   in `android/app/build.gradle`.
-2. `npm run android:bundle`.
+1. Before each release run `npm run version:bump` (patch; or `npm run version:bump -- minor`).
+   The version lives only in `package.json`; `android/app/build.gradle` derives
+   `versionName` from it and `versionCode = major*1000000 + minor*1000 + patch`
+   (0.1.0 → 1000, 1.2.3 → 1002003). `npm run version:show` prints both.
+2. `npm run android:bundle`. It refuses to build if the versionCode is not higher than the
+   last AAB recorded in `android/release-builds.json` (git-tracked; the bundle step updates it,
+   commit it together with `package.json`). Only if that last AAB was never uploaded may you
+   rebuild the same version with `BHAO_ALLOW_SAME_VERSION=1`.
 3. Play Console → create the app (package `com.daanik.bhao`) → enrol in **Play App Signing**
    (Google keeps the app signing key; your keystore is the upload key).
 4. Testing → Internal testing → Create release → upload `app-release.aab` → roll out.
