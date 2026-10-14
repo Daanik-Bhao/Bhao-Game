@@ -32,9 +32,10 @@ button.gcard { cursor: pointer; appearance: none; }
 
 /* Band: type colour + icon (+ label on full cards) */
 .gcard__band { flex: none; height: 26px; background: var(--_band); color: var(--_bandfg); display: flex; align-items: center; justify-content: center; gap: 6px; }
-.gcard--full .gcard__band { height: 36px; justify-content: flex-start; padding: 0 26px 0 10px; }
+.gcard--full .gcard__band { height: 36px; justify-content: flex-start; gap: 5px; padding: 0 26px 0 10px; }
 .gcard--sheet .gcard__band, .gcard--mini .gcard__band { height: 28px; justify-content: flex-start; padding: 0 8px; }
-.gcard__type { font: 700 12px/1 var(--font-body); text-transform: var(--tt-caps); letter-spacing: var(--ls-caps); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* Caps with a tighter tracking than --ls-caps so "LIFE EVENT" fits the 128 px full card's band */
+.gcard__type { font: 700 12px/1 var(--font-body); text-transform: var(--tt-caps); letter-spacing: min(var(--ls-caps), 0.02em); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 
 /* Tier gem: rotated square, top-right */
 .gcard__gem { position: absolute; top: 7px; right: 5px; width: 10px; height: 10px; transform: rotate(45deg); border-radius: 2px; border: 1.5px solid var(--gem-outline); }

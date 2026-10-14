@@ -146,7 +146,9 @@ button.deck { cursor: pointer; }
 .hand--tablet { gap: var(--sp-3); }
 .hand--tablet .gcard, .hand--tablet .hand__empty { --card-w: 96px; --card-h: 140px; }
 .hand--tablet .gcard--full .gcard__name { font-size: 15px; padding: 6px 8px 0; }
-.hand--tablet .gcard--full .gcard__band { height: 30px; }
+.hand--tablet .gcard--full .gcard__band { height: 30px; justify-content: center; padding: 0; }
+/* 96 px is a narrow card (spec §D.14: < 110 px shows the icon only; the type is in the accessible name) */
+.hand--tablet .gcard--full .gcard__type { display: none; }
 .hand--tablet .gcard--full .gcard__value { font-size: 18px; padding: 0 8px 8px; }
 @media (max-width: 374px) { .hand { gap: 4px; padding-left: 2px; padding-right: 2px; } .hand__empty { --card-w: 68px; --card-h: 100px; } }
 
