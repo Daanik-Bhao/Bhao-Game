@@ -1,24 +1,66 @@
 import { supabase, isSupabaseConfigured, SUPABASE_NOT_CONFIGURED_MESSAGE } from './supabase'
 import { isNativeApp, startNativeGoogleSignIn, type NativeSignInOutcome } from './nativeAuth'
 import type { Profile, DailyRewardResult, MatchResultSummary } from '../types/database'
+import type { AccountAgeBand, AgeBand } from './ageBand'
+import type { ConsentStatus } from '../config/consent'
+import { savePendingSignup, savePendingUsername } from './ageGate'
 
 function requireSupabase(): void {
   if (!isSupabaseConfigured) throw new Error(SUPABASE_NOT_CONFIGURED_MESSAGE)
 }
 
-export async function signUp(email: string, password: string, username: string): Promise<void> {
+/**
+ * Creates an email account. The age question has already been answered (an under-13
+ * answer never gets here). The profile is created through `create_my_profile`, which
+ * stores only the age band: a 13–17 account starts `pending_consent` with a neutral
+ * server-made username (the chosen one stays on this device until a parent says yes).
+ *
+ * When the project requires email confirmation there is no session yet: the sign-up is
+ * remembered on this device and the profile is created at the first sign-in.
+ */
+export async function signUp(email: string, password: string, username: string, band: AccountAgeBand): Promise<void> {
   requireSupabase()
   const { data, error } = await supabase.auth.signUp({ email, password })
   if (error) throw error
   if (!data.user) throw new Error('No user returned')
+  if (band === '13to17') savePendingUsername(data.user.id, username)
 
-  // Only id/username are taken from the client: a database trigger forces every
-  // economy column to its default and creates the leaderboard row.
-  const { error: profileError } = await supabase
-    .from('profiles')
-    .insert({ id: data.user.id, username })
+  if (!data.session) {
+    savePendingSignup(email, band, username)
+    return
+  }
+  await createMyProfile(username, band)
+}
 
-  if (profileError) throw profileError
+/** Result of create_my_profile / set_my_age_band. */
+export interface AgeRecordResult {
+  consent_status?: ConsentStatus
+  age_band?: AccountAgeBand | null
+  /** set_my_age_band('under13'): the account was deleted */
+  deleted?: boolean
+}
+
+/**
+ * Creates the signed-in user's profile with their age band (`create_my_profile` RPC).
+ * A database trigger forces every economy column to its default. For 13–17 the server
+ * ignores `username` and picks a neutral one.
+ */
+export async function createMyProfile(username: string, band: AccountAgeBand): Promise<AgeRecordResult> {
+  requireSupabase()
+  const { data, error } = await supabase.rpc('create_my_profile', { p_username: username, p_age_band: band })
+  if (error) throw error
+  return (data ?? {}) as AgeRecordResult
+}
+
+/**
+ * Records the age band of an account that has none yet (`set_my_age_band` RPC, once
+ * only). 'under13' makes the server delete the account.
+ */
+export async function setMyAgeBand(band: AgeBand): Promise<AgeRecordResult> {
+  requireSupabase()
+  const { data, error } = await supabase.rpc('set_my_age_band', { p_age_band: band })
+  if (error) throw error
+  return (data ?? {}) as AgeRecordResult
 }
 
 export async function signIn(email: string, password: string): Promise<void> {

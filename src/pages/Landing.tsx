@@ -17,12 +17,12 @@ import { SUPPORT_EMAIL } from '../config/contact'
 /** Landing `/` (spec §E.1): "fun card game that makes you smarter with money — play free now". */
 export function Landing() {
   const navigate = useNavigate()
-  const { user, isGuest, loading, playAsGuest } = useAuth()
+  const { user, authUser, isGuest, loading, playAsGuest } = useAuth()
   const { t, i18n } = useTranslation()
 
   // "Play free, no sign-up": guest login → home (or straight home when already signed in / guest).
   const playFree = () => {
-    if (!user && !isGuest) playAsGuest()
+    if (!authUser && !isGuest) playAsGuest()
     navigate('/dashboard')
   }
 
@@ -40,7 +40,7 @@ export function Landing() {
 
   // Android app: every cold start opens at '/'. A returning guest or signed-in player goes
   // straight home instead of seeing the marketing page (and a "Sign in" link) each launch.
-  if (isNative() && !loading && (user || isGuest)) return <Navigate to="/dashboard" replace />
+  if (isNative() && !loading && (authUser || isGuest)) return <Navigate to="/dashboard" replace />
 
   return (
     <div className="page landing">

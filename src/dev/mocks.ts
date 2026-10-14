@@ -18,13 +18,14 @@ const MOCK_FEED: FeedItem[] = [
 ]
 
 /** A fake RoomComms (chat, pokes, voice) that works without Supabase or a microphone. */
-export function useMockComms(opts: { panelOpen?: boolean; unread?: number; voice?: 'off' | 'live' | 'muted' } = {}): RoomComms {
+export function useMockComms(opts: { panelOpen?: boolean; unread?: number; voice?: 'off' | 'live' | 'muted'; childSafe?: boolean } = {}): RoomComms {
   const [panelOpen, setPanelOpen] = useState(!!opts.panelOpen)
   const [feed, setFeed] = useState<FeedItem[]>(MOCK_FEED)
   const [silenced, setSilenced] = useState<Set<string>>(new Set())
   const [voice, setVoice] = useState(opts.voice ?? 'off')
   return useMemo<RoomComms>(() => ({
     feed,
+    childSafe: !!opts.childSafe,
     unread: panelOpen ? 0 : opts.unread ?? 2,
     panelOpen,
     setPanelOpen,
@@ -50,7 +51,7 @@ export function useMockComms(opts: { panelOpen?: boolean; unread?: number; voice
     toggleMic: () => setVoice(v => (v === 'live' ? 'muted' : 'live')),
     handleIncoming: () => {},
     onConnected: () => {},
-  }), [feed, panelOpen, silenced, voice, opts.unread])
+  }), [feed, panelOpen, silenced, voice, opts.unread, opts.childSafe])
 }
 import { doBotTurn, initGame } from '../lib/gameEngine'
 import type { GameState } from '../types/game'

@@ -52,7 +52,8 @@ export function CommsControls({ comms, myId }: { comms: RoomComms; myId: string 
         <span className="dockbtn__label" aria-hidden="true">{t('comms.chat')}</span>
         <Badge count={comms.unread} float />
       </button>
-      <button
+      {/* Child-safe rooms (13–17 player): no voice, so no mic button. */}
+      {!comms.childSafe && <button
         type="button"
         className={`dockbtn dockbtn--mic is-${micState}${iAmSpeaking ? ' is-speaking' : ''}`}
         aria-label={`${micLabel}. ${micAction}`}
@@ -62,7 +63,7 @@ export function CommsControls({ comms, myId }: { comms: RoomComms; myId: string 
       >
         {micState === 'live' ? <Mic size={22} strokeWidth={2.25} aria-hidden="true" /> : <MicOff size={22} strokeWidth={2.25} aria-hidden="true" />}
         <span className="dockbtn__label" aria-hidden="true">{micLabel}</span>
-      </button>
+      </button>}
     </>
   )
 }
@@ -215,6 +216,9 @@ export function ChatPanel({ comms, players, myId, onReport }: {
               ))}
             </div>
             {hint && <p className="chat-hint" role="status">{hint}</p>}
+            {comms.childSafe ? (
+              <p className="chat-safety" data-testid="child-safe-chat">{t('comms.childSafe')}</p>
+            ) : <>
             <form className="chat-input" onSubmit={e => { e.preventDefault(); send() }}>
               <input
                 className="field__input"
@@ -230,11 +234,12 @@ export function ChatPanel({ comms, players, myId, onReport }: {
               <Button type="submit" variant="secondary" icon={<Send size={20} aria-hidden="true" />} aria-label={t('comms.send')} disabled={!draft.trim()} />
             </form>
             <p className="chat-safety">{t('comms.safety')}</p>
+            </>}
           </>
         }
       >
-        {/* Voice bar */}
-        <div className="chat-voice">
+        {/* Voice bar (none in child-safe rooms) */}
+        {!comms.childSafe && <div className="chat-voice">
           {!voice.joined ? (
             <Button variant="secondary" size="s" icon={<Headphones size={18} aria-hidden="true" />} loading={voice.joining} onClick={() => void comms.joinVoice()}>
               {voice.joining ? t('comms.voiceJoining') : t('comms.voiceJoin')}
@@ -248,7 +253,7 @@ export function ChatPanel({ comms, players, myId, onReport }: {
             </>
           )}
           <span className="chat-voice__count">{t('comms.inVoice', { n: Object.keys(voice.members).length })}</span>
-        </div>
+        </div>}
         {comms.voiceError && (
           <div className="comms-error" role="alert">
             <span>{t(`comms.err.${comms.voiceError}`)}</span>

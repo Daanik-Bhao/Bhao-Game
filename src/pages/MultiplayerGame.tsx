@@ -47,7 +47,7 @@ const noop = () => { /* no extra-card purchase in multiplayer */ }
 export function MultiplayerGame() {
   const { roomId } = useParams<{ roomId: string }>()
   const navigate = useNavigate()
-  const { user, profile, refreshProfile } = useAuth()
+  const { user, profile, refreshProfile, isMinor } = useAuth()
   const { t } = useTranslation()
 
   const [publicGs, setPublicGs] = useState<MpPublicState | null>(null)
@@ -78,7 +78,8 @@ export function MultiplayerGame() {
 
   // Social layer: chat, pokes and voice (cosmetic, never part of the game state).
   const playerIds = useMemo(() => publicGs?.players.map(p => p.id) ?? [], [publicGs?.players])
-  const comms = useRoomComms({ channelRef, myId: myPlayerId, playerIds, onlineIds: onlinePlayers })
+  // 13–17 players: quick chat only, no typed chat, no voice (docs/age-policy.md, child-safe defaults).
+  const comms = useRoomComms({ channelRef, myId: myPlayerId, playerIds, onlineIds: onlinePlayers, childSafe: isMinor })
   const commsRef = useRef(comms)
   commsRef.current = comms
   const commsPlayers = useMemo(

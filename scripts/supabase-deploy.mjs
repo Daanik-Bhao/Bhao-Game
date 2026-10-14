@@ -25,7 +25,8 @@
  *   4. supabase functions deploy <name> --use-api   (every supabase/functions/<name>/index.ts,
  *                                                    skipping _shared etc.; --use-api = no Docker)
  *   5. supabase secrets set --env-file <tmp>        (keys declared in the "Edge function secrets"
- *                                                    section of .env.example; skipped if none)
+ *                                                    section of .env.example that have a value;
+ *                                                    empty ones are skipped with a warning)
  * No supabase/config.toml is needed: the CLI falls back to defaults (verify_jwt stays on).
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync, rmSync, mkdtempSync } from 'node:fs'
@@ -116,12 +117,15 @@ function declaredFunctionSecrets() {
 
 const secretKeys = declaredFunctionSecrets()
 const secretProblems = []
+const secretWarnings = []
 const secrets = {}
 for (const k of secretKeys) {
+  const value = (process.env[k] ?? env[k] ?? '').trim()
   if (k.startsWith('VITE_')) secretProblems.push(`${k}: VITE_ keys are bundled into the app, rename it`)
   else if (k.startsWith('SUPABASE_')) secretProblems.push(`${k}: SUPABASE_* names are reserved (Supabase sets them itself)`)
-  else if (!(process.env[k] ?? env[k])) secretProblems.push(`${k}: declared in .env.example but no value in shell / .env / .env.local`)
-  else secrets[k] = process.env[k] ?? env[k]
+  // Empty = not set up yet: skipped (never pushed as an empty secret); the function degrades.
+  else if (!value) secretWarnings.push(`${k}: no value in shell / .env / .env.local, skipped (not set on the project)`)
+  else secrets[k] = value
 }
 
 // ---------------------------------------------------------------- plan
@@ -165,6 +169,7 @@ function printPlan() {
   console.log('\n  Function secrets (from the "Edge function secrets" section of .env.example):')
   if (!secretKeys.length) console.log('    no function secrets to set')
   for (const [k, v] of Object.entries(secrets)) console.log(`    - ${k} = ${mask(v)}`)
+  for (const w of secretWarnings) console.log(`    -- ${w}`)
   for (const p of secretProblems) console.log(`    !! ${p}`)
 
   console.log('\n  Commands (SUPABASE_ACCESS_TOKEN and SUPABASE_DB_PASSWORD passed as env vars, not arguments):')

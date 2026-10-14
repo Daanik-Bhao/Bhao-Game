@@ -103,7 +103,7 @@ function useContracts(profile: Profile | null) {
 
 /** Signed-in home (`/dashboard`): Home, Profile, and the Leaderboard / Contracts screens. */
 export function Dashboard() {
-  const { user, profile, refreshProfile, logout } = useAuth()
+  const { user, profile, refreshProfile, logout, isMinor } = useAuth()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const tabParam = params.get('tab') as Tab | null
@@ -190,6 +190,7 @@ export function Dashboard() {
         meId={profile?.id}
         meName={profile?.username}
         onRefresh={() => void leaderboard.refresh()}
+        hiddenFromPublic={isMinor}
         onBack={goHome}
       />
     )

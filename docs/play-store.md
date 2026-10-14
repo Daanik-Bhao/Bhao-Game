@@ -74,7 +74,7 @@ SAFE AND FAIR
 • Voice chat is peer-to-peer and never recorded.
 • Delete your account any time from your profile.
 
-BHAO is for players 13 and older. It is an educational game and not financial advice.
+BHAO is for players 13 and older; players under 18 need a parent's consent to play online, and then play with child-safe limits (no voice chat, quick chat only, private rooms only). It is an educational game and not financial advice.
 ```
 
 (The age line must match `MIN_AGE` in `src/config/age.ts`; see `docs/age-policy.md`.)
@@ -118,7 +118,7 @@ BHAO एक तेज़ और मज़ेदार कार्ड गेम 
 • वॉइस चैट सीधे खिलाड़ियों के बीच चलती है और कभी रिकॉर्ड नहीं होती।
 • प्रोफ़ाइल से कभी भी अपना अकाउंट मिटाएँ।
 
-BHAO 13 साल और उससे बड़े खिलाड़ियों के लिए है। यह एक शैक्षिक गेम है, वित्तीय सलाह नहीं।
+BHAO 13 साल और उससे बड़े खिलाड़ियों के लिए है; 18 से कम उम्र के खिलाड़ियों को ऑनलाइन खेलने के लिए माता-पिता की सहमति चाहिए, और फिर बच्चों के लिए सुरक्षित सीमाएँ लागू होती हैं (वॉइस चैट नहीं, सिर्फ़ क्विक चैट, सिर्फ़ प्राइवेट रूम)। यह एक शैक्षिक गेम है, वित्तीय सलाह नहीं।
 ```
 
 Before pasting, re-check the claims against the build you ship (offline single-player, "no ads", the
@@ -180,18 +180,31 @@ Also in **App content**:
 
 ## 4. Target audience and content
 
-- The minimum age lives in one place, `MIN_AGE` in `src/config/age.ts` (currently **13**); the in-app
-  legal text and Landing footer read it. **The owner has not decided** between "18+ only" and
-  "13+ with verifiable parental consent" (DPDP Act 2023): see `docs/age-policy.md`. The answers below are
-  for today's `MIN_AGE = 13`; if it becomes 18, select only "18 and over" and update section 1.
+- The minimum age lives in one place, `MIN_AGE` in `src/config/age.ts` (**13**); the in-app
+  legal text and Landing footer read it. **Owner decision (2026-10-14): 13+ with verifiable parental
+  consent for 13–17** (Option B in `docs/age-policy.md`, implemented).
 - **Target age groups: 13–15, 16–17, 18 and over.** Do **not** select any group under 13.
-- Why 13+: multiplayer has real-time text chat and peer-to-peer voice chat with other players,
-  including strangers. Apps that target children under 13 must meet the Families policy, which
-  restricts open chat with strangers. The in-app policy states the minimum age from `MIN_AGE`
-  (Privacy Policy section 11, Terms section 3).
+- How the app handles age (say this in "App access" / review notes):
+  - A neutral **year-of-birth question** is asked once per device before guest play, at email sign-up,
+    at the first Google sign-in and once for older accounts. Only the age band is stored.
+  - **Under 13:** no account, friendly "come back later" screen, guest play blocked on that device for
+    24 hours.
+  - **13–17:** the account stays `pending_consent` (offline play only, nothing stored server-side beyond
+    the account, age band and parent email) until a parent approves through an emailed link
+    (`/parent-consent`). The parent can decline or later withdraw (`/parent-consent/withdraw`), which
+    deletes the account.
+  - **13–17 after consent (child-safe defaults):** hidden from the public leaderboard (server RLS),
+    multiplayer only in private invite-code rooms (server guard; public rooms are blocked for minors),
+    **no voice chat**, **quick-chat presets only** (no typed chat sent or shown), no Sentry Session
+    Replay or performance tracing.
+- Why 13+ and not under 13: multiplayer has real-time chat and peer-to-peer voice for adults. Apps that
+  target children under 13 must meet the Families policy. The in-app policy states the minimum age from
+  `MIN_AGE` (Privacy Policy sections 11–12, Terms section 3).
 - "Could your store listing unintentionally appeal to children?" Answer honestly. The art is cartoony,
-  so Play may ask; explain the money-management theme, the 13+ minimum, chat moderation (filters,
-  mute, report) and that there are no ads or purchases.
+  so Play may ask; explain the money-management theme, the 13+ minimum with an age question, parental
+  consent for 13–17, the child-safe limits above, chat moderation (filters, mute, report) and that there
+  are no ads or purchases.
+- Reviewers need an **adult** test account (minors can't use voice/typed chat, so they can't review it).
 - **(verify)** If Play flags the app as appealing to children, it may require the Families policy
   anyway; the fallback is a neutral age gate before multiplayer.
 
@@ -209,6 +222,10 @@ Re-checked against the code on 14 October 2026, including the guest-progress imp
 | Where | What | Source in code |
 |---|---|---|
 | Supabase Auth | Email + password (hashed by Supabase), or Google sign-in. With Google, Supabase stores the identity data Google returns (email, name, profile-picture URL, Google account id); the app itself only uses the email. | `src/lib/auth.ts`, `src/lib/nativeAuth.ts` |
+| `profiles` (age) | **Age band** (`13to17` / `adult`, never the birth year; `under13` is never stored), when it was recorded, server-derived `consent_status`. A 13–17 account gets a neutral server-made username until a parent consents. | `20261014500000_age_band_profiles.sql`, `src/lib/auth.ts` |
+| `parental_consents` | For each approved 13–17 account: parent email, parent full name, "declared adult" flag (the parent's year of birth is checked, **not stored**), method `email_link_declaration`, notice version, consent time, optional HMAC hash of the parent's IP | `20261014500000_age_band_profiles.sql`, `supabase/functions/parent-consent` |
+| `parent_consent_requests`, `parent_withdraw_tokens` | Parent email, **hashed** single-use consent token (7 days) and hashed withdraw token, send status, times | `20261014500200_parent_consent_flow.sql` |
+| Resend (email provider) | Receives the parent's email address and the consent / confirmation email text, to deliver it | `supabase/functions/parent-consent` |
 | `profiles`, `leaderboard` | Username, avatar **preset id** (`/avatar/<id>`, a built-in picture: nothing is uploaded), coins, XP, rank points, games played/won, win streaks, last login date + login streak, placement games | `create_profiles_table`, `economy_profiles`, `create_leaderboard` |
 | `matches`, `match_results` | Per match: mode, room or level id, start/finish time, result, placement, final net worth, coins/XP/RP gained, choice statistics (`stats` jsonb) | `20261013000300_matches_and_results.sql` |
 | `campaign_progress` | Per level: stars, best net worth, completion time, `imported` flag (stars that came from a guest import) | `20261013200000_campaign_progress.sql`, `20261014000000_guest_campaign_import.sql` |
@@ -219,9 +236,9 @@ Re-checked against the code on 14 October 2026, including the guest-progress imp
 | `player_reports` | Reporter id, reported id, room id, time, reason, optional details text (≤ 500 chars), reported player's last ≤ 10 chat lines | `20261013300000_player_reports.sql`, `src/lib/reports.ts` |
 | Supabase Realtime broadcast | Text chat, quick chat, pokes, voice signalling. **Not stored.** | `src/lib/roomChat.ts`, `src/hooks/useRoomComms.ts` |
 | WebRTC peer-to-peer | Voice audio between players' devices, encrypted (DTLS-SRTP). **Not recorded, never reaches our servers.** A TURN relay is used only if `VITE_TURN_URL` is set; it forwards encrypted packets only. Peers and Google STUN see the IP address. | `src/lib/voiceChat.ts` |
-| Sentry (only if `VITE_SENTRY_DSN` is set) | Crash/error events, 10% performance traces, Session Replay **only on error** (all text and inputs masked, media blocked: SDK defaults). `sendDefaultPii: false`; no user id, username or email is attached. | `src/main.tsx`, `src/App.tsx` |
+| Sentry (only if `VITE_SENTRY_DSN` is set) | Crash/error events for everyone. **Only for a known adult** (age band stored on the device): 10% performance traces and Session Replay **only on error** (all text and inputs masked, media blocked: SDK defaults). 13–17 players and players who have not answered the age question get error events only. `sendDefaultPii: false`; no user id, username or email is attached. | `src/main.tsx`, `src/lib/telemetry.ts`, `src/App.tsx` |
 | Hosting / API request logs | Supabase and Vercel see the request IP address and user agent in their infrastructure logs (service providers, not used by the app) | n/a |
-| On device (`localStorage`) | Supabase session, `language`, sound and `bhao.reduceMotion` settings, `bhao_guest_profile` (guest name), `bhao_tutorial_done`, `bhao_campaign_*` and `bhao_library_progress:*` (guest and signed-in copies), `bhao_guest_merge:*` / `bhao_guest_merge_claimed` (import offer answered), `justRegistered` | various |
+| On device (`localStorage`) | Supabase session, `language`, sound and `bhao.reduceMotion` settings, `bhao_guest_profile` (guest name), `bhao_tutorial_done`, `bhao_campaign_*` and `bhao_library_progress:*` (guest and signed-in copies), `bhao_guest_merge:*` / `bhao_guest_merge_claimed` (import offer answered), `justRegistered`, `bhao_age_band` (device age band + time), `bhao_age_block` (under-13 cooldown end), `bhao_account_age_band`, `bhao_pending_signup` (email sign-up waiting for confirmation: email, band, chosen name), `bhao_pending_username:*` (a 13–17 player's chosen name, applied after consent) | various, `src/lib/ageGate.ts` |
 | Third-party loads | **None** for content: fonts are self-hosted (`public/fonts`, `src/styles/fonts.css`) and avatars are in-app presets. (Google Fonts and DiceBear are gone.) The WhatsApp invite button opens `wa.me` with the invite text only when the player taps it. | `src/styles/fonts.css`, `avatarPresets.ts`, `src/pages/lobby/LobbyViews.tsx` |
 
 No location, contacts, photos, files, SMS, call logs, calendar, advertising ID, payment info, or health
@@ -237,6 +254,8 @@ Sentry; WebRTC voice is always encrypted).
 
 **Do you provide a way for users to request that their data be deleted?** Yes.
 - In-app: **Profile → Danger zone → Delete account**, type `DELETE`, **Delete forever**.
+  Parents of a 13–17 player can also delete the child's account with the withdraw link in every consent
+  email (or by declining the consent request).
   The `delete_own_account` RPC deletes the auth user; every user table cascades from `auth.users`
   (profiles, leaderboard, matches, match results, campaign progress, `campaign_guest_imports`,
   `library_progress`, contracts, stocks, rooms the user hosts, room seats and hands, reports made by
@@ -256,6 +275,8 @@ behalf, which Play does not count as "sharing"):
 | Personal info → **Email address** | Optional (only if you create an account) | Account management | Supabase Auth. |
 | Personal info → **Name** | Optional | App functionality, Account management | The username shown to other players, and the name Google returns at Google sign-in (stored by Supabase Auth, not shown in the game). |
 | Personal info → **User IDs** | Optional | Account management, App functionality | Supabase user id; Google account id when signing in with Google. |
+| Personal info → **Email address** + **Name** (parent) | Optional (only for 13–17 accounts) | Account management (legal compliance: parental consent) | The parent's email (to send the consent link) and the parent's full name (consent record). Sent to the email provider (Resend) as a service provider. Covered by the Email address / Name rows above; mention "parent or guardian contact for consent" in the description. |
+| Personal info → **Other info** (age band) | Required for accounts (asked at sign-up) | Account management, App functionality (legal compliance) | Age group 13–17 / 18+ only; never the date or year of birth. **(verify)** whether Play wants this under "Other info" or no declaration. |
 | Messages → **Other in-app messages** | Optional | App functionality (safety and moderation) | Only stored when someone **reports** a player: the reported player's last ≤ 10 chat lines. Normal chat is relayed, not stored (ephemeral). |
 | App activity → **App interactions** | Optional (account) | App functionality | Match results, campaign stars (incl. imported guest progress), Gyaan Library unlocked/seen concepts, contracts, rank points, coins, login streak. |
 | App activity → **Other user-generated content** | Optional | App functionality (safety and moderation) | The optional free-text "details" of a report. Usernames could also go here; don't double-count with Name. |
@@ -294,6 +315,7 @@ What Play requires for apps with UGC, and where BHAO does it:
 | Moderation of UGC | Proactive: chat is filtered on the receiving client (swear words masked, links and phone/OTP-like numbers hidden, length and rate limits). Reactive: reports are reviewed by the team in Supabase (`player_reports`, status `open → reviewing → actioned/dismissed`) and accounts can be banned. |
 | Safeguards against abuse of the report tool | Server-side: sign-in required, no self-reports, 10 reports/day per reporter, 1 per reporter/player/room, size limits. |
 | Voice | Not recorded. Mute any player; leave voice at any time. Microphone permission is requested only when the player taps "Join voice". |
+| Players aged 13–17 | Parental consent first (`docs/age-policy.md`). Then: **no voice** (no mic button, no voice connection is created), **quick-chat presets only** (no typing box; typed messages from others are dropped on the minor's device), multiplayer only in private invite-code rooms (server rejects minors joining or creating public rooms), hidden from the public leaderboard. Chat and voice travel over Realtime broadcast, so the chat/voice limits are enforced on the minor's client (a modified client could bypass them); room and leaderboard limits are enforced on the server. |
 
 **You must actually review reports.** Set a routine (e.g. daily) to run in the Supabase SQL editor:
 ```sql
@@ -383,8 +405,14 @@ Practical plan for a personal account:
       interactions, Other user-generated content, plus Crash logs and Diagnostics if Sentry is on).
 - [ ] Production Supabase has every migration applied, including `player_reports`,
       `guest_campaign_import` and `library_progress`; someone owns report review (section 6).
-- [ ] Minimum age decided (`docs/age-policy.md`), `MIN_AGE` in `src/config/age.ts` set to match, and
-      the target audience (section 4), store text (section 1) and content rating (section 3) agree with it.
+- [ ] Minimum age: 13+ with parental consent for 13–17 (`docs/age-policy.md`, Option B). Target
+      audience 13–15, 16–17, 18+ (section 4); store text (section 1) and content rating (section 3) agree.
+- [ ] Parental consent works end to end on production: Resend domain verified, `RESEND_API_KEY`,
+      `CONSENT_FROM_EMAIL`, `PUBLIC_SITE_URL` set as function secrets (`npm run supabase:deploy -- --apply`),
+      a 13–17 test account receives the email, Approve unlocks online play, the withdraw link deletes the
+      account. `/parent-consent` and `/parent-consent/withdraw` load without signing in.
+- [ ] Data safety form includes the parent email/name and the age band (section 5).
+- [ ] Someone owns parent requests to support@daanik.com (grievance contact, data access/deletion).
 - [ ] Content rating questionnaire done (section 3).
 - [ ] Ads: No. App access: provide a test account (email + password) for reviewers, since multiplayer
       and ranked need sign-in. Note that voice/chat need a second player; mention that in the notes.

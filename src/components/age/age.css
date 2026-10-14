@@ -1,0 +1,45 @@
+/* Age question, under-13 block, consent waiting card (docs/age-policy.md, Option B). Tokens only. */
+
+.age__form { display: flex; flex-direction: column; gap: var(--sp-4); align-self: stretch; text-align: left; }
+.age__lang { align-self: stretch; display: flex; justify-content: center; }
+.age__links { margin: 0; font: 400 var(--fs-ui)/var(--lh-ui) var(--font-body); color: var(--text-muted); }
+.age__links a { display: inline-flex; align-items: center; justify-content: center; min-height: var(--tap-min); min-width: var(--tap-min); color: var(--link); }
+.age-select { appearance: auto; cursor: pointer; }
+
+.consent-card { display: flex; flex-direction: column; gap: var(--sp-4); padding: var(--sp-5); text-align: left; }
+.consent-card__head { display: flex; align-items: center; gap: var(--sp-4); }
+.consent-card__title { margin: 0; font: 700 var(--fs-subtitle)/var(--lh-subtitle) var(--font-display); color: var(--text); }
+.consent-card__body { margin: 0; font: 400 var(--fs-body)/var(--lh-body) var(--font-body); color: var(--text-muted); }
+.consent-card__form, .consent-card__sent { display: flex; flex-direction: column; gap: var(--sp-4); }
+.consent-card__status { display: flex; align-items: flex-start; gap: var(--sp-3); margin: 0; padding: 10px 14px; border-radius: var(--r-sm); background: var(--save-soft); color: var(--save-strong); font: 600 var(--fs-ui)/var(--lh-ui) var(--font-body); overflow-wrap: anywhere; }
+.consent-card__status > svg { flex: none; margin-top: 1px; }
+.consent-card__row { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
+.consent-card__row > * { flex: 1 1 140px; }
+
+.consent-pending__main { max-width: 520px; display: flex; flex-direction: column; gap: var(--sp-5); }
+.consent-pending__hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--sp-3); }
+.consent-pending__hero .lede { margin: 0; }
+
+/* Parent consent / withdraw pages (public, no login). Reading column from .legal__*. */
+.parent-page__bar { gap: var(--sp-4); padding-left: var(--gutter); }
+.parent-page__bar-title { font-size: var(--fs-ui); color: var(--text-muted); font-weight: 600; }
+.parent-page__hero { display: flex; align-items: center; gap: var(--sp-4); margin-bottom: var(--sp-3); }
+.parent-page__hero .page-title { margin: 0; }
+.parent-page__foot { margin-top: var(--sp-8); }
+.parent-page__bar .wordmark { display: inline-flex; align-items: center; min-height: var(--tap-min); }
+.parent-page__foot a { display: inline-flex; align-items: center; justify-content: center; min-height: var(--tap-min); min-width: var(--tap-min); }
+.parent-form { display: flex; flex-direction: column; gap: var(--sp-4); padding: var(--sp-5); margin: var(--sp-7) 0 var(--sp-5); }
+.parent-form--plain { padding: 0; background: none; border: 0; box-shadow: none; }
+.legal__body .parent-form__title { display: flex; align-items: center; gap: var(--sp-3); margin: 0; font: 700 var(--fs-subtitle)/var(--lh-subtitle) var(--font-display); }
+.parent-form__method { display: flex; align-items: flex-start; gap: var(--sp-2); }
+.parent-form__method > svg { flex: none; margin-top: 3px; }
+.parent-check { display: flex; align-items: flex-start; gap: var(--sp-4); min-height: var(--tap-min); padding: var(--sp-3) 0; cursor: pointer; font: 600 var(--fs-body)/var(--lh-body) var(--font-body); color: var(--text); }
+.parent-check input { flex: none; width: 24px; height: 24px; margin: 2px 0 0; accent-color: var(--brand); cursor: pointer; }
+.parent-outcome { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--sp-4); padding: var(--sp-8) 0; }
+.parent-outcome .lede { margin: 0; }
+
+.child-safe-note { display: flex; align-items: flex-start; gap: var(--sp-3); margin: 0; padding: 10px 14px; border-radius: var(--r-sm); background: var(--defence-soft); color: var(--text); font: 400 var(--fs-ui)/var(--lh-ui) var(--font-body); }
+.child-safe-note > svg { flex: none; margin-top: 1px; }
+
+/* Consent card above the Home hero while a 13–17 account waits for its parent. */
+.home-notice { margin-bottom: var(--sp-5); }

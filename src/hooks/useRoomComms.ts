@@ -35,6 +35,11 @@ export interface RoomComms {
   joinVoice: () => Promise<void>
   leaveVoice: () => void
   toggleMic: () => void
+  /**
+   * Child-safe room (a 13–17 player): quick chat and pokes only. Typed messages are neither
+   * sent nor shown, and voice is off (no voice mesh is created, voice signals are ignored).
+   */
+  childSafe: boolean
   /** Route channel broadcasts here (from `subscribeToGame`'s `onComms`). */
   handleIncoming: (event: CommsEvent, payload: unknown) => void
   /** Call when the channel (re)subscribes. */
@@ -46,11 +51,13 @@ export interface RoomComms {
  * the game state. `playerIds` = everyone in the game (messages from anyone else are
  * dropped); `onlineIds` = presence, used to drop voice peers that went away.
  */
-export function useRoomComms({ channelRef, myId, playerIds, onlineIds }: {
+export function useRoomComms({ channelRef, myId, playerIds, onlineIds, childSafe = false }: {
   channelRef: MutableRefObject<RealtimeChannel | null>
   myId: string
   playerIds: string[]
   onlineIds: Set<string>
+  /** 13–17 player: quick chat + pokes only, no typed chat, no voice (docs/age-policy.md). */
+  childSafe?: boolean
 }): RoomComms {
   const [feed, setFeed] = useState<FeedItem[]>([])
   const [unread, setUnread] = useState(0)
@@ -104,7 +111,7 @@ export function useRoomComms({ channelRef, myId, playerIds, onlineIds }: {
 
   // --- voice mesh lifecycle ---------------------------------------------------
   useEffect(() => {
-    if (!myId) return
+    if (!myId || childSafe) return
     const mesh = new VoiceMesh({
       selfId: myId,
       transport: { send: sig => { void sendComms(channelRef.current, 'voice', sig) } },
@@ -119,7 +126,7 @@ export function useRoomComms({ channelRef, myId, playerIds, onlineIds }: {
       meshRef.current = null
       setVoice(EMPTY_VOICE)
     }
-  }, [myId, channelRef])
+  }, [myId, channelRef, childSafe])
 
   // Drop voice peers who are no longer in the room.
   useEffect(() => {
@@ -140,6 +147,8 @@ export function useRoomComms({ channelRef, myId, playerIds, onlineIds }: {
     if (event === 'chat') {
       const msg = parseChatWire(payload)
       if (!msg || msg.from === myId || !playersRef.current.has(msg.from)) return
+      // Child-safe: typed messages from others are dropped; preset quick chat still shows.
+      if (childSafe && msg.kind === 'text') return
       if (!inChatLimit.current.allow(msg.from) || silencedRef.current.has(msg.from)) return
       addFromOthers({ ...msg, at: Date.now() })
     } else if (event === 'poke') {
@@ -159,7 +168,7 @@ export function useRoomComms({ channelRef, myId, playerIds, onlineIds }: {
       if (!sig || !playersRef.current.has(sig.from) || !inVoiceLimit.current.allow(sig.from)) return
       void meshRef.current?.handleSignal(sig)
     }
-  }, [myId, addFromOthers])
+  }, [myId, addFromOthers, childSafe])
 
   const onConnected = useCallback(() => {
     meshRef.current?.announce()
@@ -168,13 +177,13 @@ export function useRoomComms({ channelRef, myId, playerIds, onlineIds }: {
   // --- outgoing ---------------------------------------------------------------
   const sendText = useCallback((raw: string): 'ok' | 'empty' | 'limited' => {
     const text = sanitizeChatText(raw)
-    if (!text || !myId) return 'empty'
+    if (!text || !myId || childSafe) return 'empty'
     if (!myChatLimit.current.allow()) return 'limited'
     const wire: ChatWire = { id: makeCommsId(), from: myId, kind: 'text', text }
     setFeed(f => appendFeed(f, { ...wire, at: Date.now() }))
     void sendComms(channelRef.current, 'chat', wire)
     return 'ok'
-  }, [myId, channelRef])
+  }, [myId, channelRef, childSafe])
 
   const sendQuick = useCallback((quickId: QuickChatId) => {
     if (!myId || !myChatLimit.current.allow()) return false
@@ -205,6 +214,7 @@ export function useRoomComms({ channelRef, myId, playerIds, onlineIds }: {
 
   // --- voice controls -----------------------------------------------------------
   const joinVoice = useCallback(async () => {
+    if (childSafe) return
     const reason = voiceUnsupportedReason()
     if (reason) {
       setVoiceError(reason)
@@ -216,7 +226,7 @@ export function useRoomComms({ channelRef, myId, playerIds, onlineIds }: {
     } catch (e) {
       setVoiceError(e instanceof VoiceError ? e.code : 'mic_denied')
     }
-  }, [])
+  }, [childSafe])
 
   const leaveVoice = useCallback(() => meshRef.current?.leave(), [])
 
@@ -233,6 +243,6 @@ export function useRoomComms({ channelRef, myId, playerIds, onlineIds }: {
     feed, unread, panelOpen, setPanelOpen, bubble, pokeHit,
     sendText, sendQuick, poke, silenced, toggleSilenced,
     voice, voiceError, clearVoiceError, joinVoice, leaveVoice, toggleMic,
-    handleIncoming, onConnected,
+    childSafe, handleIncoming, onConnected,
   }
 }

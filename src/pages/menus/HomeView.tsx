@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -45,6 +45,12 @@ export interface HomeViewProps {
   onlineAvailable?: boolean
   /** Dev gallery: identity for the app bar avatar */
   viewer?: AppBarProps['viewer']
+  /**
+   * A 13–17 account waiting for a parent's consent: 'notice' (the consent card) replaces the
+   * "keep your progress safe" sign-in nudge and the Friends tile says it needs a parent's OK.
+   */
+  consentPending?: boolean
+  notice?: ReactNode
 }
 
 const fmtCount = (n: number) => new Intl.NumberFormat('en-IN').format(n)
@@ -55,7 +61,7 @@ const fmtCount = (n: number) => new Intl.NumberFormat('en-IN').format(n)
  */
 export function HomeView({
   name, signedIn, hero, library, streak = 0, coins = 0, leaderboard, contracts,
-  onOpenLeaderboard, onOpenContracts, onlineAvailable = true, viewer,
+  onOpenLeaderboard, onOpenContracts, onlineAvailable = true, viewer, consentPending = false, notice,
 }: HomeViewProps) {
   const { t } = useTranslation()
   const [coinInfo, setCoinInfo] = useState(false)
@@ -78,12 +84,14 @@ export function HomeView({
                 </button>
               </div>
             ) : (
-              <p className="home-greet__sub">{t('home.guestSaved')}</p>
+              <p className="home-greet__sub">{consentPending ? t('consent.home.sub') : t('home.guestSaved')}</p>
             )}
           </div>
         </div>
 
         <div className="home__col home__col--hero">
+          {/* Waiting for a parent: the consent card comes first, it is the one thing to do. */}
+          {notice && <div className="home-notice">{notice}</div>}
           <HeroCard hero={hero} />
         </div>
 
@@ -113,11 +121,11 @@ export function HomeView({
                 <span className="home-tile__body">{t('home.tile.friends.bodySignedIn')}</span>
               </Link>
             ) : (
-              <Link to="/auth" className="panel home-tile">
+              <Link to={consentPending ? '/multiplayer' : '/auth'} className="panel home-tile">
                 <span className="icon-box icon-box--muted"><Users size={24} strokeWidth={2.25} aria-hidden="true" /></span>
                 <span className="home-tile__title">{t('home.tile.friends.title')}</span>
-                <span className="home-tile__body">{t('home.tile.friends.body')}</span>
-                <span className="chip home-tile__corner"><Lock size={12} strokeWidth={2.5} aria-hidden="true" />{t('home.signIn')}</span>
+                <span className="home-tile__body">{consentPending ? t('consent.home.friendsBody') : t('home.tile.friends.body')}</span>
+                <span className="chip home-tile__corner"><Lock size={12} strokeWidth={2.5} aria-hidden="true" />{consentPending ? t('consent.home.friendsLock') : t('home.signIn')}</span>
               </Link>
             )}
           </div>
@@ -127,7 +135,7 @@ export function HomeView({
               {leaderboard && <LeaderboardCard data={leaderboard} onOpen={onOpenLeaderboard} />}
               {contracts && <ContractsCard data={contracts} onOpen={onOpenContracts} />}
             </div>
-          ) : (
+          ) : notice ? null : (
             <div className="panel home-keep">
               <Gullu mood="wow" size={52} />
               <div className="home-keep__text">

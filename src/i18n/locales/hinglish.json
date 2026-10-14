@@ -1137,7 +1137,7 @@
       "title": "Short mein",
       "voice": "Voice chat seedha players ke beech chalti hai aur kabhi record nahi hoti.",
       "chat": "Chat messages save nahi hote. Report mein sirf us player ke recent messages rakhe jaate hain.",
-      "age": "Khelne ke liye umar kam se kam {{age}} saal honi chahiye.",
+      "age": "Khelne ke liye umar kam se kam {{age}} saal honi chahiye. 18 se kam umar ke players parent ya guardian ki haan ke baad hi online khel sakte hain.",
       "money": "Real money se kuch nahi khareedna. Coins ki koi cash value nahi hai.",
       "delete": "Apna account kabhi bhi profile se delete kar sakte ho."
     },
@@ -1223,7 +1223,7 @@
       "errors": {
         "title": "Error tracking",
         "p1": "Agar error tracking on hai, toh hum crash aur error reports paane ke liye Sentry use karte hain, jaise error message, aap kaunsi screen pe the, aur aapka browser, operating system aur device type. Hum isme aapka account ID, username ya email address nahi jodte, aur Sentry aise set hai ki wo aapka IP address ya cookies na bheje.",
-        "p2": "Jab koi error aata hai, toh Sentry usse just pehle ki screen activity ka ek chhota replay bhi rakh sakta hai, taaki hum bug reproduce kar sakein; text aur input fields masked rehte hain. Lagbhag har 10 mein se 1 visit pe Sentry performance timings bhi record karta hai, jaise screens load hone mein kitna time lagta hai. Sentry ye data ek limited time ke baad automatically delete kar deta hai."
+        "p2": "Sirf un players ke liye jinki umar humein 18 ya usse zyada pata hai: error aane pe Sentry usse just pehle ki screen activity ka ek chhota replay rakh sakta hai, taaki hum bug reproduce kar sakein (text aur input fields masked rehte hain), aur lagbhag har 10 mein se 1 visit pe performance timings record karta hai, jaise screens load hone mein kitna time lagta hai. 13 se 17 saal ke players ke liye, aur jab tak humein player ka age group pata na ho, koi replay ya performance timings nahi hoti, sirf normal error reports. Sentry ye data ek limited time ke baad automatically delete kar deta hai."
       },
       "device": {
         "title": "Aapke device pe store data",
@@ -1263,7 +1263,7 @@
       "children": {
         "title": "Bachche",
         "p1": "BHAO use karne ke liye aapki umar <strong>kam se kam {{age}} saal</strong> honi chahiye, kyunki multiplayer rooms mein aap doosre players ke saath, strangers bhi, voice aur text chat kar sakte ho. BHAO {{age}} saal se chhote bachchon ke liye nahi bana hai aur hum jaan-boojh ke unka data collect nahi karte. Agar humein pata chale ki koi account {{age}} saal se kam umar wale ka hai, toh hum use delete kar dete hain. Jin parents ya guardians ko lagta hai ki unke bachche ne account banaya hai, wo use delete karwane ke liye humse contact kar sakte hain.",
-        "minors": "Agar aapki umar 18 se kam hai, toh please BHAO sirf parent ya guardian ki consent se use karo."
+        "minors": "Agar aapki umar 13 se 17 hai, toh aap tabhi online khel sakte ho jab parent ya guardian hamare email kiye link se consent dein (neeche \"13 se 17 saal ke players aur parent ki consent\" dekho). Tab tak aapke games aapke device pe rehte hain."
       },
       "changes": {
         "title": "Changes",
@@ -1283,7 +1283,7 @@
       "account": {
         "title": "Aapka account",
         "age": "BHAO use karne ke liye aapki umar kam se kam {{age}} saal honi chahiye.",
-        "minors": "Agar aapki umar 18 se kam hai, toh aapko parent ya guardian ki permission chahiye.",
+        "minors": "Agar aapki umar 18 se kam hai, toh pehle parent ya guardian ki consent zaroori hai.",
         "login": "Apni login details safe rakho; aapke account pe jo bhi activity hoti hai uski zimmedari aapki hai.",
         "username": "Aisa username chuno jo offensive na ho, kisi aur ki nakal (impersonation) na kare, aur kisi ke rights ka ullanghan na kare.",
         "guest": "Guest progress sirf aapke device pe rehti hai. Agar account mein copy karne se pehle aap app ka data clear kar do ya device kho do, toh wo wapas nahi aa sakti.",
