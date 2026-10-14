@@ -1612,5 +1612,19 @@
     "already": "You already collected today's bonus.",
     "error": "Couldn't collect right now. Check your connection and try again.",
     "collectedNote": "Added to your Daanik Coins."
+  },
+  "guestMerge": {
+    "title": "Bring your guest progress?",
+    "body": "You played as a guest on this device. Add that progress to your account?",
+    "levels_one": "{{count}} campaign level · +{{stars}} ★",
+    "levels_other": "{{count}} campaign levels · +{{stars}} ★",
+    "concepts_one": "{{count}} Gyaan Library card",
+    "concepts_other": "{{count}} Gyaan Library cards",
+    "note": "We keep the best result for each level. You can only do this once per account.",
+    "accept": "Add to my account",
+    "decline": "No thanks",
+    "done": "Guest progress added to your account",
+    "already": "This account already has guest progress added",
+    "failed": "Couldn't add progress right now. We'll ask again later."
   }
 }

@@ -485,6 +485,100 @@ await check('deleting an account removes reports made by and about it', async ()
   eq((await one(su(`SELECT count(*)::int AS c FROM player_reports WHERE reporter_id = $1 OR reported_id = $1`, [U5]))).c, 0, 'reports left')
 })
 
+// ---------------------------------------------------------------------------
+// Guest campaign import + library progress (20261014*)
+// ---------------------------------------------------------------------------
+const importSql = `SELECT import_guest_campaign_progress($1::jsonb) AS r`
+const levelsOf = async uid => Object.fromEntries((await su(
+  `SELECT level_id, stars, imported FROM campaign_progress WHERE user_id = $1`, [uid])).rows.map(r => [r.level_id, r]))
+
+await check('import_guest_campaign_progress: caps, unlock chain, best kept, once per account', async () => {
+  const U6 = '00000000-0000-4000-8000-000000000006'
+  await su(`INSERT INTO auth.users (id) VALUES ($1)`, [U6])
+  // existing signed-in result on level_1 (2 stars)
+  await asUser(U6, `SELECT record_level_result('level_1', 2, 1500000)`)
+  const claim = [
+    { level_id: 'level_1', stars: 1, net_worth: 900000 },     // worse than the account: kept at 2
+    { level_id: 'level_2', stars: 9, net_worth: 1e20 },       // clamped to 3, net worth capped
+    { level_id: 'level_4', stars: 3, net_worth: 6500000 },    // level_3 missing → rejected (chain)
+    { level_id: 'level_3', stars: 0, net_worth: 100 },        // 0 stars → ignored
+    { level_id: 'nope', stars: 3 }, 'junk', 42,               // invalid entries skipped
+  ]
+  const r = (await one(asUser(U6, importSql, [JSON.stringify(claim)]))).r
+  eq(r.already_imported, false, 'first import')
+  eq(r.accepted, 1, 'accepted count')
+  const lv = await levelsOf(U6)
+  eq(lv.level_1.stars, 2, 'level_1 keeps the better account result')
+  eq(lv.level_1.imported, false, 'level_1 not marked imported')
+  eq(lv.level_2.stars, 3, 'level_2 stars clamped')
+  eq(lv.level_2.imported, true, 'level_2 marked imported')
+  assert(!lv.level_3 && !lv.level_4, 'level_3/level_4 not imported')
+  eq((await one(su(`SELECT best_net_worth::text AS n FROM campaign_progress WHERE user_id = $1 AND level_id = 'level_2'`, [U6]))).n, '1000000000000', 'net worth cap')
+  eq(r.progress.length, 2, 'returns the account progress')
+
+  // second import: no changes at all
+  const again = (await one(asUser(U6, importSql, [JSON.stringify([{ level_id: 'level_3', stars: 3, net_worth: 1 }])]))).r
+  eq(again.already_imported, true, 'second import refused')
+  eq(again.accepted, 0, 'nothing accepted twice')
+  assert(!(await levelsOf(U6)).level_3, 'level_3 still absent')
+
+  // a signed-in result with as many stars verifies the level
+  await asUser(U6, `SELECT record_level_result('level_2', 3, 100)`)
+  eq((await levelsOf(U6)).level_2.imported, false, 'verified by play')
+
+  // chain inside one import + limits + auth
+  const U7 = '00000000-0000-4000-8000-000000000007'
+  await su(`INSERT INTO auth.users (id) VALUES ($1)`, [U7])
+  const chain = (await one(asUser(U7, importSql, [JSON.stringify([
+    { level_id: 'level_2', stars: 1, net_worth: 1 }, { level_id: 'level_1', stars: 3, net_worth: 1 },
+  ])]))).r
+  eq(chain.accepted, 2, 'level_1 then level_2 in one import')
+  await expectError(asUser(U3, importSql, [JSON.stringify(Array.from({ length: 51 }, () => ({})))]), /Too many/, '51 entries')
+  await expectError(asUser(U3, importSql, ['{"a":1}']), /Invalid levels/, 'not an array')
+  await expectError(asAnon(importSql, ['[]']), /permission denied|Not authenticated/, 'anon')
+  // import table: own row readable, not writable
+  eq((await asUser(U6, `SELECT user_id FROM campaign_guest_imports`)).rows.length, 1, 'own import row')
+  eq((await asUser(U7, `SELECT user_id FROM campaign_guest_imports WHERE user_id = $1`, [U6])).rows.length, 0, 'foreign import row hidden')
+  await expectError(asUser(U3, `INSERT INTO campaign_guest_imports (user_id) VALUES ($1)`, [U3]), /permission denied/, 'direct insert')
+  await expectError(asUser(U6, `DELETE FROM campaign_guest_imports`), /permission denied/, 'delete own import row')
+  await expectError(asUser(U6, `UPDATE campaign_progress SET stars = 3`), /permission denied/, 'direct progress update')
+})
+
+const libUpsert = `INSERT INTO library_progress (user_id, concept_id, seen) VALUES ($1, $2, $3)
+  ON CONFLICT (user_id, concept_id) DO UPDATE SET seen = EXCLUDED.seen, unlocked_at = EXCLUDED.unlocked_at`
+
+await check('library_progress: own rows only, monotonic union, no delete', async () => {
+  await asUser(U1, libUpsert, [U1, 'inflation', true])
+  await asUser(U1, libUpsert, [U1, 'sip', false])
+  // re-upsert with seen=false must not un-see; unlocked_at keeps the earliest
+  const before = (await one(su(`SELECT unlocked_at FROM library_progress WHERE user_id = $1 AND concept_id = 'inflation'`, [U1]))).unlocked_at
+  await asUser(U1, libUpsert, [U1, 'inflation', false])
+  const row = await one(su(`SELECT seen, unlocked_at FROM library_progress WHERE user_id = $1 AND concept_id = 'inflation'`, [U1]))
+  eq(row.seen, true, 'seen stays true')
+  eq(row.unlocked_at.getTime(), before.getTime(), 'unlocked_at kept')
+  await asUser(U1, libUpsert, [U1, 'sip', true])
+  eq((await one(su(`SELECT seen FROM library_progress WHERE user_id = $1 AND concept_id = 'sip'`, [U1]))).seen, true, 'seen can turn true')
+  await asUser(U1, `UPDATE library_progress SET user_id = $1, concept_id = 'x' WHERE concept_id = 'sip'`, [U2])
+  eq((await one(su(`SELECT count(*)::int AS c FROM library_progress WHERE user_id = $1 AND concept_id = 'sip'`, [U1]))).c, 1, 'keys immutable')
+
+  eq((await asUser(U2, `SELECT * FROM library_progress`)).rows.length, 0, 'other user sees nothing')
+  await expectError(asUser(U2, libUpsert, [U1, 'scams', true]), /row-level|permission denied/, 'insert for another user')
+  await asUser(U2, `UPDATE library_progress SET seen = false WHERE user_id = $1`, [U1])
+  await expectError(asUser(U1, `DELETE FROM library_progress`), /permission denied/, 'delete')
+  await expectError(asAnon(`SELECT * FROM library_progress`), /permission denied/, 'anon select')
+  await expectError(asUser(U1, libUpsert, [U1, 'Bad Id!', false]), /check constraint/, 'invalid concept id')
+  eq((await one(su(`SELECT count(*)::int AS c FROM library_progress WHERE user_id = $1`, [U1]))).c, 2, 'rows intact')
+})
+
+await check('library_progress: 200 concepts per player cap (existing rows still upsert)', async () => {
+  await su(`INSERT INTO library_progress (user_id, concept_id) SELECT $1, 'c_' || g FROM generate_series(1, 198) g`, [U2])
+  await asUser(U2, libUpsert, [U2, 'inflation', false])
+  await asUser(U2, libUpsert, [U2, 'sip', false])
+  await expectError(asUser(U2, libUpsert, [U2, 'scams', false]), /Too many/, '201st concept')
+  await asUser(U2, libUpsert, [U2, 'sip', true])
+  eq((await one(su(`SELECT seen FROM library_progress WHERE user_id = $1 AND concept_id = 'sip'`, [U2]))).seen, true, 'existing row upserted at cap')
+})
+
 await db.close()
 console.log(`\n${files.length} migrations applied, ${passed} checks passed, ${failures.length} failed`)
 if (failures.length) process.exit(1)

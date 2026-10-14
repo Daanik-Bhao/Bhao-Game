@@ -2,6 +2,7 @@
 // signed-in players — merged up to Supabase (`campaign_progress` table, RPC
 // `record_level_result`, migration 20261013200000_campaign_progress.sql).
 // Stars are cosmetic (no coins), so client-reported results are acceptable.
+// Guest progress joins an account only via the merge offer (guestMerge.ts).
 
 // Supabase is loaded lazily so guest/offline code (and unit tests) never touch it.
 const loadSupabase = () => import('./supabase')
@@ -170,7 +171,7 @@ export function totalStars(levelIds: string[], stars: Record<string, number>): n
 // Server sync (signed-in players)
 // ---------------------------------------------------------------------------
 
-interface ServerRow {
+export interface ServerRow {
   level_id: string
   stars: number
   best_net_worth: number | string
@@ -206,10 +207,36 @@ export function rowsToResults(rows: ServerRow[] | null | undefined): LevelResult
   return out
 }
 
+/** Local results incl. legacy completions (legacy = 1★, no net worth). */
+export function localLevelResults(ownerKey: string): LevelResults {
+  const legacy: LevelResults = Object.fromEntries(
+    legacyCompleted(ownerKey).map(id => [id, { stars: 1, bestNetWorth: 0, completedAt: null }]),
+  )
+  return mergeLevelResults(getLevelResults(ownerKey), legacy)
+}
+
 /**
- * Merge local progress (this user's + any guest progress on this device) up to the
- * server, then pull the server's best back into localStorage. Call after sign-in and
- * when the campaign screen opens. No-op without Supabase or a user. Never throws.
+ * Merge `extra` into an owner's stored results (best per level, never lowers anything),
+ * keep the legacy completed list in step and notify listeners. Returns the stored map.
+ */
+export function storeMergedResults(ownerKey: string, extra: LevelResults): LevelResults {
+  const merged = mergeLevelResults(getLevelResults(ownerKey), extra)
+  writeJson(RESULTS_PREFIX + ownerKey, merged)
+  const completed = legacyCompleted(ownerKey)
+  for (const [id, r] of Object.entries(merged)) if (r.stars >= 1 && !completed.includes(id)) completed.push(id)
+  writeJson(STORAGE_PREFIX + ownerKey, completed)
+  notify(ownerKey)
+  return merged
+}
+
+/**
+ * Push this user's local progress up to the server, then pull the server's best back
+ * into localStorage. Call after sign-in and when the campaign screen opens. No-op
+ * without Supabase or a user. Never throws.
+ *
+ * Guest progress on this device is NOT included: it is only brought into an account
+ * when the player accepts the merge offer (`src/lib/guestMerge.ts`), through the
+ * capped, once-per-account `import_guest_campaign_progress` RPC.
  */
 export async function syncCampaignProgress(userId: string | null | undefined): Promise<LevelResults | null> {
   if (!userId) return null
@@ -217,13 +244,7 @@ export async function syncCampaignProgress(userId: string | null | undefined): P
   try {
     const { isSupabaseConfigured, supabase } = await loadSupabase()
     if (!isSupabaseConfigured) return null
-    const guestKey = progressOwnerKey(null)
-    const legacyToResults = (key: string): LevelResults =>
-      Object.fromEntries(legacyCompleted(key).map(id => [id, { stars: 1, bestNetWorth: 0, completedAt: null }]))
-    const local = mergeLevelResults(
-      mergeLevelResults(getLevelResults(ownerKey), legacyToResults(ownerKey)),
-      mergeLevelResults(getLevelResults(guestKey), legacyToResults(guestKey)),
-    )
+    const local = localLevelResults(ownerKey)
 
     const { data, error } = await supabase
       .from('campaign_progress')
@@ -237,13 +258,7 @@ export async function syncCampaignProgress(userId: string | null | undefined): P
       if (!s || r.stars > s.stars || r.bestNetWorth > s.bestNetWorth) await pushLevelResult(levelId, r)
     }
 
-    const merged = mergeLevelResults(local, server)
-    writeJson(RESULTS_PREFIX + ownerKey, merged)
-    const completed = legacyCompleted(ownerKey)
-    for (const [id, r] of Object.entries(merged)) if (r.stars >= 1 && !completed.includes(id)) completed.push(id)
-    writeJson(STORAGE_PREFIX + ownerKey, completed)
-    notify(ownerKey)
-    return merged
+    return storeMergedResults(ownerKey, mergeLevelResults(local, server))
   } catch {
     return null
   }

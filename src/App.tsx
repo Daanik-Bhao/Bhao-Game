@@ -50,6 +50,11 @@ const GuestHome = retryLazy(() => import('./pages/GuestHome').then(m => ({ defau
 const SignInRequired = retryLazy(() => import('./pages/SignInRequired').then(m => ({ default: m.SignInRequired })))
 const Privacy = retryLazy(() => import('./pages/Legal').then(m => ({ default: m.Privacy })))
 const Terms = retryLazy(() => import('./pages/Legal').then(m => ({ default: m.Terms })))
+// Optional extra: if its chunk fails to load, render nothing instead of the crash screen.
+const GuestMergePrompt = lazy(() => import('./components/GuestMergePrompt').then(
+  m => ({ default: m.GuestMergePrompt }),
+  () => ({ default: () => null }),
+))
 
 import * as Sentry from '@sentry/react'
 
@@ -123,6 +128,13 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return user ? <Navigate to="/dashboard" replace /> : <>{children}</>
 }
 
+/** Signed-in only: offer once to bring this device's guest progress into the account. */
+function GuestMergeOffer() {
+  const { user } = useAuth()
+  if (!user) return null
+  return <Suspense fallback={null}><GuestMergePrompt key={user.id} userId={user.id} /></Suspense>
+}
+
 /** Android back button: router fallback when no screen handled the press. */
 function NativeBackNavigation() {
   useNativeBackNavigation()
@@ -162,6 +174,7 @@ export default function App() {
           <ToastProvider>
             <AuthProvider>
               <AppRoutes />
+              <GuestMergeOffer />
             </AuthProvider>
           </ToastProvider>
         </Sentry.ErrorBoundary>

@@ -1612,5 +1612,19 @@
     "already": "Aaj ka bonus tum le chuke ho.",
     "error": "Abhi collect nahi ho paya. Internet check karke dobara try karo.",
     "collectedNote": "Tumhare Daanik Coins mein jud gaya."
+  },
+  "guestMerge": {
+    "title": "Guest progress account mein laayein?",
+    "body": "Aapne is device par guest ban ke khela hai. Wo progress apne account mein add karein?",
+    "levels_one": "{{count}} campaign level · +{{stars}} ★",
+    "levels_other": "{{count}} campaign levels · +{{stars}} ★",
+    "concepts_one": "{{count}} Gyaan Library card",
+    "concepts_other": "{{count}} Gyaan Library cards",
+    "note": "Har level ka best result rakha jayega. Ye har account ke liye sirf ek baar hota hai.",
+    "accept": "Mere account mein add karo",
+    "decline": "Nahi, thanks",
+    "done": "Guest progress aapke account mein add ho gaya",
+    "already": "Is account mein guest progress pehle hi add ho chuka hai",
+    "failed": "Abhi progress add nahi ho paaya. Hum baad mein phir poochenge."
   }
 }

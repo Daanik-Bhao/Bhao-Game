@@ -99,7 +99,8 @@ count once the target is reached. Criteria carry `labelKey` (+`params`) for i18n
 
 **Progress**: `recordLevelResult(ownerKey, levelId, stars, netWorth)` keeps the best per level in localStorage (≥1★ also
 marks completed) and pushes signed-in results to `record_level_result`; `syncCampaignProgress(userId)` merges this
-device's user + guest progress up and the server's best down (no-op without Supabase). Unlock rule: the next level needs
+device's user progress up and the server's best down (no-op without Supabase). Guest progress is no longer merged
+silently — see "Guest progress merge" below. Unlock rule: the next level needs
 ≥1★ on the previous one (`isLevelUnlocked`). Migration `20261013200000_campaign_progress.sql`.
 
 ### Balance (throwaway simulation, not committed)
@@ -144,3 +145,42 @@ Takeaways and tuning:
   count FD/debt funds as ready money and charge a 20% rush cost on any shortfall; planning then wins as often as ignoring
   and earns the goal star. ★★ stays hard (~16–25%) because it needs both goals met *and* insurance at year 9; 3★ is rare on
   L4 (hard bots attack, ~3.6 forced sales per game).
+
+## Guest progress merge & Library sync (follow-up)
+
+### Guest → account merge (`src/lib/guestMerge.ts`, `src/components/GuestMergePrompt.tsx`)
+When a signed-in account opens the app on a device whose guest progress (owner key `guest`: campaign results, legacy
+completions, Gyaan Library unlocks) would add something to the account, a D.6 modal offers once: *Add to my account* /
+*No thanks*. The account's server progress is synced first, so "would add something" means "beats the account", not just
+this device's copy. The offer waits while a match/tutorial route is open.
+
+**Trust choice.** Campaign stars are cosmetic, and `record_level_result` already trusts a signed-in client's own result.
+Guest results are different: the server never saw them, and a merge is a bulk claim. So the merge does **not** go through
+`record_level_result`; it uses `import_guest_campaign_progress(p_levels jsonb)` (migration
+`20261014000000_guest_campaign_import.sql`), which:
+- runs **once per account** (`campaign_guest_imports` row = lock; a second call changes nothing, `already_imported: true`);
+- accepts ≤ 50 entries, valid `level_N` ids only, clamps stars to 0..3 and net worth to the same cap, ignores 0★ entries;
+- enforces the **unlock chain** (level N only if level N-1 already has ≥1★ on the account or earlier in the same import),
+  so a forged payload can't jump to late levels;
+- keeps the best per level (never lowers progress), uses server `now()` for completion, and flags raised rows
+  `campaign_progress.imported = true`. A later signed-in result with ≥ that many stars clears the flag
+  (`record_level_result` updated). **Anything that ever gives stars value (rewards, leaderboards) must ignore `imported`
+  stars** — and should first move `record_level_result` behind `start_match` like the other modes.
+- The client stores exactly the progress the server returns (no local-only stars).
+
+Library unlocks are cosmetic and own-row writable, so they are simply unioned locally into the account (and pushed).
+
+**Never twice / no nagging.** Per account: `bhao_guest_merge:<userId>` = `merged` | `declined` (dismissing the dialog =
+decline). Per device: `bhao_guest_merge_claimed` = the account that took this device's guest progress; no other account
+is offered it. Server: once per account, checked before showing (`campaign_guest_imports`) so an account that already
+imported on another device isn't asked. A failed merge (offline, server error) remembers nothing and shows a toast; it is
+offered again on the next app start. Guest data itself stays on the device. `syncCampaignProgress` no longer includes
+guest progress.
+
+### Library server copy (`src/lib/libraryProgress.ts`)
+Migration `20261014000100_library_progress.sql`: `library_progress(user_id, concept_id, seen, unlocked_at, updated_at)`,
+own-row RLS (SELECT/INSERT/UPDATE, no DELETE), a BEFORE UPDATE trigger that keeps rows monotonic (`seen` only turns true,
+earliest `unlocked_at`), and a 200-concepts-per-player cap. Client: `syncLibraryProgress(userId)` on sign-in (from
+`AuthProvider`, lazily imported) pulls, unions with localStorage and pushes back what the server lacks; every
+`unlockConcepts` / `markSeen` for a `user:` owner schedules a debounced (1.5 s) fire-and-forget upsert of the whole
+library. Everything is skipped silently without Supabase or when offline; local data is never replaced, only unioned.
