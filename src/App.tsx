@@ -50,6 +50,7 @@ const GuestHome = retryLazy(() => import('./pages/GuestHome').then(m => ({ defau
 const SignInRequired = retryLazy(() => import('./pages/SignInRequired').then(m => ({ default: m.SignInRequired })))
 const Privacy = retryLazy(() => import('./pages/Legal').then(m => ({ default: m.Privacy })))
 const Terms = retryLazy(() => import('./pages/Legal').then(m => ({ default: m.Terms })))
+const DeleteAccountInfo = retryLazy(() => import('./pages/Legal').then(m => ({ default: m.DeleteAccountInfo })))
 // Optional extra: if its chunk fails to load, render nothing instead of the crash screen.
 const GuestMergePrompt = lazy(() => import('./components/GuestMergePrompt').then(
   m => ({ default: m.GuestMergePrompt }),
@@ -149,6 +150,8 @@ function AppRoutes() {
         <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
+        {/* Public, no sign-in: Google Play's account-deletion web link. */}
+        <Route path="/delete-account" element={<DeleteAccountInfo />} />
         <Route path="/dashboard" element={<HomeRoute />} />
         <Route path="/game" element={<GameRoute />} />
         <Route path="/game/level/:levelId" element={<PlayableRoute><LevelGame /></PlayableRoute>} />

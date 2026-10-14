@@ -955,7 +955,7 @@
       "title": "Get a money report card",
       "body": "See what your choices would earn in real life over 10 years."
     },
-    "footerAge": "For ages 13+. No real money is used.",
+    "footerAge": "For ages {{age}}+. No real money is used.",
     "show": {
       "crash": {
         "name": "Market Crash",
@@ -1131,44 +1131,192 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "lastUpdated": "Last updated: {{date}}",
-    "englishOnly": "The full text is available in English.",
-    "sections": {
-      "privacy": {
-        "h1": "Playing as a guest",
-        "h2": "Information we collect when you create an account",
-        "h3": "Error tracking",
-        "h4": "Data stored on your device",
-        "h5": "Third-party services",
-        "h6": "What we don't do",
-        "h7": "Keeping and deleting your data",
-        "h8": "Your rights",
-        "h9": "Children",
-        "h10": "Changes",
-        "chat": "Voice chat, text chat and pokes",
-        "reports": "Reporting players"
-      },
-      "terms": {
-        "h1": "The game",
-        "h2": "Virtual items",
-        "h3": "Your account",
-        "h4": "Fair play",
-        "h5": "Availability",
-        "h6": "Liability",
-        "h7": "Privacy",
-        "h8": "Changes and governing law",
-        "community": "Chat, voice and reporting"
-      }
-    },
     "keyPoints": {
       "title": "In short",
       "voice": "Voice chat is peer-to-peer and is never recorded.",
       "chat": "Chat messages are not stored. A report keeps the reported player's recent messages.",
-      "age": "You must be 13 or older to play.",
+      "age": "You must be {{age}} or older to play.",
       "money": "No real-money purchases. Coins have no cash value.",
       "delete": "You can delete your account any time from your profile."
     },
     "navLabel": "Legal pages",
-    "draftNote": "This document is a plain-language template and has not yet been reviewed by a lawyer. It will be updated before BHAO's wider public launch."
+    "draftNote": "This document is a plain-language template and has not yet been reviewed by a lawyer. It will be updated before BHAO's wider public launch.",
+    "deleteShort": "Delete account",
+    "deletePage": {
+      "title": "Delete your BHAO account",
+      "lede": "You can delete your BHAO account and the data linked to it at any time, in the app or by email. You don't need to reinstall the app to ask.",
+      "inApp": {
+        "title": "In the app (fastest)",
+        "step1": "Open BHAO and sign in to the account you want to delete.",
+        "step2": "Open <strong>{{profile}}</strong>: the tab at the bottom of the screen on phones, or your avatar at the top on larger screens.",
+        "step3": "Scroll down to <strong>{{zone}}</strong> and tap <strong>{{button}}</strong>.",
+        "step4": "Type {{word}} and tap <strong>{{confirm}}</strong>.",
+        "done": "Your account is deleted straight away and you are signed out."
+      },
+      "email": {
+        "title": "By email",
+        "p1": "If you can't sign in or no longer have the app, email <mail>{{email}}</mail> from the email address linked to your BHAO account, with the subject \"Delete my account\". Add your username if you know it.",
+        "p2": "We may ask you to confirm that the account is yours. We then delete it and reply to let you know."
+      },
+      "deleted": {
+        "title": "What gets deleted",
+        "account": "your account: email address, password and Google sign-in link",
+        "profile": "your username and avatar",
+        "progress": "coins, XP, rank points, stats, login streak and your leaderboard entry",
+        "matches": "match history, daily contract progress and virtual stock holdings",
+        "campaign": "campaign progress (including progress imported from guest play) and Gyaan Library progress",
+        "rooms": "your place in multiplayer rooms, and rooms you host",
+        "reports": "reports you made and reports made about you"
+      },
+      "timing": {
+        "title": "How long it takes",
+        "app": "<strong>In the app:</strong> immediately.",
+        "email": "<strong>By email:</strong> within 30 days of your request.",
+        "backups": "<strong>Backups:</strong> copies may remain in our database provider's backups for a short period until they are overwritten.",
+        "errors": "<strong>Error reports</strong> (if error tracking is on): not linked to your account, and deleted automatically by Sentry after a limited period."
+      },
+      "notStored": {
+        "title": "Not stored, or stored only on your device",
+        "chat": "Text chat and voice chat are never stored, so there is nothing to delete.",
+        "device": "Settings, guest progress and cached progress saved on your device stay there until you clear the app's storage (Android: Settings → Apps → BHAO → Storage → Clear storage), clear the browser's site data, or uninstall the app."
+      },
+      "guest": {
+        "title": "Playing as a guest?",
+        "p1": "Guests have no account on our servers. To remove guest data, clear the app's storage or the browser's site data, or uninstall the app."
+      },
+      "more": "To learn more about the data BHAO handles, read our <privacyLink>Privacy Policy</privacyLink>."
+    },
+    "translationNote": "This is a translation. If it differs from the English version, the English version applies.",
+    "privacyDoc": {
+      "intro": "BHAO (\"we\", \"us\") is a financial-literacy card game that you can play in a browser or as the BHAO Android app. This page explains what information the app handles, why, and the choices you have. Questions: <mail>{{email}}</mail>.",
+      "guest": {
+        "title": "Playing as a guest",
+        "p1": "You can play the tutorial, campaign, practice games and the Gyaan Library without an account. In guest mode we don't create any account on our servers. A random guest name, your campaign progress and your Gyaan Library progress are stored only on your device.",
+        "p2": "When you later sign in on the same device, the app may offer once to copy this guest progress into your account. <strong>Only if you agree</strong>, your completed campaign levels (stars and best net worth) and your unlocked Gyaan Library topics are sent to our servers and saved with your account, together with a note of when the import happened. If you say no, nothing is sent."
+      },
+      "account": {
+        "title": "Information we collect when you create an account",
+        "details": "<strong>Account details:</strong> your email address and password (stored only in hashed form). If you use \"Sign in with Google\", Google shares your email address, name, profile picture link and Google account ID with our sign-in provider. We use the email address to identify your account; the game doesn't show your Google name or picture.",
+        "profile": "<strong>Profile:</strong> your username and the avatar you pick. Avatars are pictures built into the app, so you never upload a photo.",
+        "stats": "<strong>Game data:</strong> games played and won, win streaks, rank points, XP, in-game coins, your daily login date and streak, daily-reward and contract progress, and your virtual stock holdings.",
+        "matches": "<strong>Match history:</strong> for each match, the mode, when it started and ended, your result and final net worth, the coins, XP and rank points you gained or lost, and statistics about your in-game choices.",
+        "campaign": "<strong>Campaign progress:</strong> the stars and best net worth for each level, when you completed it, and whether it was imported from guest play.",
+        "library": "<strong>Gyaan Library progress:</strong> which topics you have unlocked and opened, and when. This lets your library follow you to other devices.",
+        "multiplayer": "<strong>Multiplayer:</strong> the rooms you create or join, your seat, the game state (including your cards) and a \"last seen\" time that shows whether you are still connected.",
+        "shown": "Your username, avatar and game statistics may be shown to other players, for example on leaderboards and in multiplayer rooms.",
+        "logs": "Like any online service, our servers receive your device's IP address and basic browser or device information with each request, and keep it in short-lived technical logs that are used to run and protect the service.",
+        "noPayment": "There are no real-money purchases in BHAO, so we never collect payment information."
+      },
+      "chat": {
+        "title": "Voice chat, text chat and pokes",
+        "voice": "<strong>Voice chat and the microphone:</strong> in multiplayer rooms you can choose to join voice chat. Only when you tap to join does the app ask for microphone permission, and you can mute yourself or leave at any time. Voice goes directly between the players' devices (peer-to-peer, encrypted). It is <strong>not recorded and not stored</strong> by us. As with any peer-to-peer call, the other players' devices can see your network (IP) address while connected. If a direct connection isn't possible, a relay server may pass the encrypted audio along; it can't listen to it and doesn't store it.",
+        "text": "<strong>Text chat, quick chat and pokes:</strong> these are sent live to the players in the same room and are <strong>not stored</strong> on our servers. They disappear when you leave the room. Links and long numbers are hidden and common swear words are masked automatically.",
+        "mute": "You can mute any player in a room. Muting hides their chat and pokes and silences their voice for you."
+      },
+      "reports": {
+        "title": "Reporting players",
+        "p1": "You can report a player from the room chat. A report stores who reported, who was reported, the room, the time, the reason chosen, any details typed, and <strong>the reported player's recent chat messages</strong> (up to 10, as they appeared on the reporter's device) so we can check what happened. Voice is never part of a report because it is not recorded.",
+        "p2": "Only our moderation team can see reports; the reported player is not told who reported them. We use reports to warn, suspend or ban players who break the rules. We keep a report while we need it to handle the case and to spot repeated abuse, and it is deleted when either player's account is deleted."
+      },
+      "errors": {
+        "title": "Error tracking",
+        "p1": "If error tracking is enabled, we use Sentry to receive crash and error reports, for example the error message, the screen you were on, and your browser, operating system and device type. We don't attach your account ID, username or email address, and Sentry is set up not to send your IP address or cookies.",
+        "p2": "When an error happens, Sentry may also keep a short replay of the screen activity just before it, so we can reproduce the bug; text and input fields are masked. For about 1 in 10 visits, Sentry also records performance timings, such as how long screens take to load. Sentry deletes this data automatically after a limited period."
+      },
+      "device": {
+        "title": "Data stored on your device",
+        "intro": "We use your device's local storage (not advertising cookies) to remember:",
+        "session": "your sign-in session (managed by Supabase);",
+        "prefs": "your language, sound and reduced-motion settings;",
+        "progress": "your guest name, and your tutorial, campaign and Gyaan Library progress (for guests, and as a copy for signed-in players);",
+        "flags": "small flags, such as whether you have already answered the offer to import guest progress;",
+        "cache": "on the website, cached app files so BHAO loads quickly and works offline (service worker).",
+        "end": "This data stays on your device until you clear the app's storage or the browser's site data, or uninstall the app. Signing out removes the sign-in session."
+      },
+      "services": {
+        "title": "Third-party services",
+        "supabase": "<strong>Supabase</strong>: sign-in, the database, and the live connection that carries multiplayer moves, chat and voice set-up messages.",
+        "google": "<strong>Google</strong>: optional \"Sign in with Google\", and STUN servers that help players' devices find each other for voice chat (they see your IP address, never your audio).",
+        "sentry": "<strong>Sentry</strong>: error tracking (when enabled).",
+        "vercel": "<strong>Vercel</strong>: hosting for the BHAO website.",
+        "relay": "<strong>A voice relay (TURN) service</strong>, only if we turn one on: it passes encrypted voice between players when a direct connection fails.",
+        "p1": "These providers process data on our behalf and may store it outside India.",
+        "p2": "Fonts and avatar pictures are built into the app, so no other websites are contacted to show them. If you use the WhatsApp button to invite friends, the invite text (with the room code) is handed to WhatsApp, which then works under its own terms."
+      },
+      "dont": {
+        "title": "What we don't do",
+        "p1": "We don't sell your personal data and we don't show ads. We don't use an advertising ID, and we don't access your location, contacts, photos or files. BHAO has no real-money purchases and uses virtual coins only; we never ask for bank, UPI or payment details. We don't record voice chat or store text chat. Nothing in the game is financial advice."
+      },
+      "retention": {
+        "title": "Keeping and deleting your data",
+        "p1": "We keep your account data for as long as your account exists.",
+        "p2": "You can delete your account at any time in the app from <em>{{profile}} → {{button}}</em>, or by emailing <mail>{{email}}</mail>. Deleting in the app takes effect immediately: your account, profile and all your game data on our servers are permanently deleted, including match history, campaign and Gyaan Library progress, the guest-import note, reports you made and reports about you. Email requests are completed within 30 days. Steps and details: <deleteLink>Delete your BHAO account</deleteLink>.",
+        "p3": "Copies may remain in our database provider's backups for a short period until they are overwritten. Error reports are kept by Sentry for a limited period and then deleted automatically; they are not linked to your account.",
+        "p4": "Data stored on your device (settings, guest progress, cached progress) is not on our servers. Remove it by clearing the app's storage or the browser's site data, or by uninstalling the app."
+      },
+      "rights": {
+        "title": "Your rights",
+        "p1": "Depending on where you live (including under India's Digital Personal Data Protection Act, 2023), you may have the right to access, correct or erase your personal data and to raise a grievance. Email <mail>{{email}}</mail> and we will respond within a reasonable time."
+      },
+      "children": {
+        "title": "Children",
+        "p1": "You must be <strong>at least {{age}} years old</strong> to use BHAO, because multiplayer rooms let you voice- and text-chat with other players, including strangers. BHAO is not directed at children under {{age}} and we do not knowingly collect their data. If we learn that an account belongs to someone under {{age}}, we delete it. Parents or guardians who believe their child has created an account can contact us to have it deleted.",
+        "minors": "If you are under 18, please use BHAO only with the consent of a parent or guardian."
+      },
+      "changes": {
+        "title": "Changes",
+        "p1": "We will update this page when our practices change and revise the \"Last updated\" date above."
+      }
+    },
+    "termsDoc": {
+      "intro": "These terms apply when you use BHAO, in a browser or as the Android app. By playing you agree to them. Questions: <mail>{{email}}</mail>.",
+      "game": {
+        "title": "The game",
+        "p1": "BHAO is a card game for entertainment and financial-literacy education. Scenarios, returns and market events in the game are simplified and fictional. <strong>Nothing in BHAO is financial, investment, tax or legal advice.</strong> Talk to a qualified professional before making real financial decisions."
+      },
+      "virtual": {
+        "title": "Virtual items",
+        "p1": "BHAO has <strong>no real-money purchases</strong>. In-game coins are earned only by playing. Coins, rank points, XP, stars and cards have no real-world monetary value, can't be bought, sold or exchanged for money, and are not your property. BHAO is not gambling. We may adjust or reset them, for example to fix bugs or balance the game."
+      },
+      "account": {
+        "title": "Your account",
+        "age": "You must be at least {{age}} years old to use BHAO.",
+        "minors": "If you are under 18, you need the permission of a parent or guardian.",
+        "login": "Keep your login details safe; you're responsible for activity on your account.",
+        "username": "Choose a username that isn't offensive, impersonating, or infringing anyone's rights.",
+        "guest": "Guest progress is kept only on your device. If you clear the app's data or lose the device before copying it into an account, it can't be recovered.",
+        "delete": "You can delete your account at any time from your profile in the app, or by email (<deleteLink>see how</deleteLink>)."
+      },
+      "fairPlay": {
+        "title": "Fair play",
+        "p1": "Don't cheat, exploit bugs, use bots or scripts, harass other players, or try to break or overload the service. We may suspend or delete accounts that do."
+      },
+      "community": {
+        "title": "Chat, voice and reporting",
+        "intro": "In multiplayer chat and voice, be respectful. Don't:",
+        "abuse": "abuse, threaten, bully or use hate speech against anyone;",
+        "sexual": "share or ask for sexual content;",
+        "scams": "spam, advertise, or run scams (for example asking for UPI IDs, OTPs, passwords or money);",
+        "personal": "share your own or anyone else's personal information (phone number, address, school and so on).",
+        "p2": "Use the <strong>mute</strong> button to stop hearing or seeing a player, and the <strong>report</strong> button to tell us about them. A report includes the player's recent chat messages (voice is not recorded). We review reports and may warn, suspend or delete accounts that break these rules."
+      },
+      "availability": {
+        "title": "Availability",
+        "p1": "BHAO is provided \"as is\". We work to keep it running but can't promise it will always be available, error-free, or that progress will never be lost. Online features may change or end."
+      },
+      "liability": {
+        "title": "Liability",
+        "p1": "To the extent allowed by law, we are not liable for indirect losses or for decisions you make based on the game. Nothing in these terms limits rights you have under applicable consumer law."
+      },
+      "privacy": {
+        "title": "Privacy",
+        "p1": "See our <privacyLink>Privacy Policy</privacyLink> for how we handle your data."
+      },
+      "changes": {
+        "title": "Changes and governing law",
+        "p1": "We may update these terms; continued use after an update means you accept it. These terms are governed by the laws of India."
+      }
+    }
   },
   "tutorial": {
     "skip": "Skip tutorial",

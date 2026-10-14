@@ -48,7 +48,7 @@ html.lang-hi .legal__doc { line-height: 1.7; }
 .legal__draft { margin: var(--sp-4) 0 var(--sp-5); }
 .legal__body h2 { font: 700 var(--fs-title)/var(--lh-title) var(--font-display); color: var(--text); margin: var(--sp-8) 0 var(--sp-3); }
 .legal__body p { margin: 0 0 var(--sp-4); }
-.legal__body ul { margin: 0 0 var(--sp-4); padding-left: var(--sp-6); }
+.legal__body ul, .legal__body ol { margin: 0 0 var(--sp-4); padding-left: var(--sp-6); }
 .legal__body li { margin-bottom: var(--sp-3); }
 .legal__body a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; padding-block: 9px; }
 .legal__keypoints { background: var(--save-soft); border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5); margin: var(--sp-5) 0; }

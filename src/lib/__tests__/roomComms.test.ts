@@ -202,6 +202,26 @@ describe('VoiceMesh', () => {
     expect(sent.length).toBe(before)
   })
 
+  it('asks for the microphone only on join(), never for incoming voice signals (Play RECORD_AUDIO)', async () => {
+    let micRequests = 0
+    const mesh = new VoiceMesh({
+      selfId: 'b', iceServers: [], detectSpeaking: false, onChange: () => {},
+      transport: { send: () => {} },
+      createPeerConnection: () => new FakePc() as unknown as RTCPeerConnection,
+      getMicrophone: async () => { micRequests++; return fakeMic().stream },
+    })
+    mesh.announce()
+    await mesh.handleSignal({ kind: 'ping', from: 'a' })
+    await mesh.handleSignal({ kind: 'join', from: 'a', muted: false })
+    await mesh.handleSignal({ kind: 'hello', from: 'a', to: 'b', muted: false })
+    await mesh.handleSignal({ kind: 'offer', from: 'a', to: 'b', sdp: 'offer-sdp' })
+    await settle()
+    expect(micRequests).toBe(0)
+    await mesh.join()
+    expect(micRequests).toBe(1)
+    mesh.destroy()
+  })
+
   it('reports a blocked microphone', async () => {
     const mesh = new VoiceMesh({
       selfId: 'a', iceServers: [], detectSpeaking: false, onChange: () => {},
