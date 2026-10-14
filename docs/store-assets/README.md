@@ -26,7 +26,7 @@ translation. Slot: Main store listing → Phone screenshots (8 maximum). Upload 
 
 | # | File | Screen |
 |---|---|---|
-| 1 | `01-board-decision.png` | Practice game, year 5–6, decision card sheet open (Spend / Save / Invest) |
+| 1 | `01-board-decision.png` | Practice game, year 5, decision card sheet open (Spend / Save / Invest) |
 | 2 | `02-scam-lesson.png` | Tutorial lesson 8: the "guaranteed" hot tip turns out to be a scam (Gullu explains it) |
 | 3 | `03-campaign-map.png` | Artha Yatra campaign map with stars (5/12, 2 of 4 levels done) |
 | 4 | `04-multiplayer-chat.png` | Multiplayer room chat: voice, poke, mute and report buttons, quick chat, safety line |
