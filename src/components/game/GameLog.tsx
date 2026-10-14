@@ -170,6 +170,12 @@ export function logView(entry: string, t: TFunction, lang: string): LogView {
   if ((m = raw.match(/^☠️ (.+?)'s (.+) was wiped out\.$/))) {
     return { text: t('log.wiped', { name: m[1], asset: assetFromLabel(m[2], lang) }), actor: m[1], icon: Skull, tone: 'loss' }
   }
+  // Forced sale (economy.ts): "🚨 Rahul had to sell 🏠 Property at a 15% penalty — an emergency fund…"
+  if ((m = raw.match(/^🚨 (.+?) had to sell (.+?) (?:at a (\d+)% penalty|to cover a loss) — /))) {
+    const [, name, asset, pct] = m
+    const a = assetFromLabel(asset, lang)
+    return { text: pct ? t('log.forcedSale', { name, asset: a, pct }) : t('log.forcedSaleNoPenalty', { name, asset: a }), actor: name, icon: TriangleAlert, tone: 'loss' }
+  }
   if ((m = raw.match(/^🎲 Life event: (.+?)(?: \(everyone\)| — (.+))?$/))) {
     const card = cardNameFor(m[1])
     return { text: m[2] ? t('log.lifeEventFor', { card, name: m[2] }) : t('log.lifeEventAll', { card }), icon: CalendarDays, tone: 'neutral' }

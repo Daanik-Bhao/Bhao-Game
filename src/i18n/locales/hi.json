@@ -1512,6 +1512,8 @@
     "inflation": "महँगाई ने {{name}} के नकद से {{amount}} खा लिए",
     "market": "बाज़ार: {{moves}}",
     "wiped": "{{name}} का {{asset}} डूब गया",
+    "forcedSale": "{{name}} को {{asset}} {{pct}}% नुकसान पर बेचना पड़ा। इमरजेंसी फंड होता तो ऐसा नहीं होता।",
+    "forcedSaleNoPenalty": "{{name}} को नुकसान भरने के लिए {{asset}} बेचना पड़ा। इमरजेंसी फंड होता तो ऐसा नहीं होता।",
     "lifeEventFor": "{{name}} के लिए ज़िंदगी की घटना: {{card}}",
     "lifeEventAll": "सबके लिए ज़िंदगी की घटना: {{card}}",
     "change": "{{name}}: {{amount}}",
