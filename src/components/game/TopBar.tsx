@@ -14,7 +14,7 @@ export type TopBarVariant = 'portrait' | 'landscape' | 'desktop'
 /** Match clock chip: hidden until the last 2:00 (amber), attack-red under 0:30 (spec q9). */
 export function MatchClockChip({ m }: { m: BoardModel }) {
   const { t } = useTranslation()
-  const remaining = useMatchRemaining(m.gs)
+  const remaining = useMatchRemaining(m.gs, m.pausedAt)
   if (m.gs.phase === 'game_over' || remaining >= 120000) return null
   return (
     <span className={`clock-chip${remaining < 30000 ? ' is-danger' : ''}`} role="status">
@@ -73,7 +73,7 @@ function LogButton({ m, desktop }: { m: BoardModel; desktop?: boolean }) {
 
 function DesktopTurn({ m }: { m: BoardModel }) {
   const { t } = useTranslation()
-  const remaining = useTurnRemaining(m.gs.turnStartTime, TURN_TIME_LIMIT_MS)
+  const remaining = useTurnRemaining(m.gs.turnStartTime, TURN_TIME_LIMIT_MS, m.pausedAt)
   return (
     <span className="topbar__turn">
       <b>{m.isMyTurn ? t('board.yourTurn') : t('board.isPlayingShort', { name: m.current?.name ?? '' })}</b>
@@ -87,7 +87,7 @@ export function TopBar({ m, variant }: { m: BoardModel; variant: TopBarVariant }
   const { t } = useTranslation()
   const running = m.gs.phase !== 'game_over'
   const ring = running && (
-    <TurnRing key={m.gs.turnStartTime} turnStartTime={m.gs.turnStartTime} timeLimit={TURN_TIME_LIMIT_MS} announce={m.isMyTurn} />
+    <TurnRing key={m.gs.turnStartTime} turnStartTime={m.gs.turnStartTime} timeLimit={TURN_TIME_LIMIT_MS} announce={m.isMyTurn} pausedAt={m.pausedAt} />
   )
 
   if (variant === 'desktop') {

@@ -58,6 +58,16 @@ export interface GameBoardProps {
   onQuit?: () => void
   /** "How to play" in the pause menu; defaults to the built-in rules modal. */
   onHowToPlay?: () => void
+  /**
+   * Single player: the moment the page froze the match (pause menu, quit dialog, outcome
+   * banner, app in the background), null while it runs. The turn ring and clocks stop there.
+   */
+  pausedAt?: number | null
+  /**
+   * Single player: the pause menu (or the rules opened from it) opened / closed. The page
+   * freezes the turn timer, bots and match clock while it is true. Never called in multiplayer.
+   */
+  onPauseChange?: (paused: boolean) => void
   /** Dev / gallery: open the card sheet for this hand card on mount */
   initialOpenCardId?: string
   /** Dev / gallery: open one of the board sheets on mount */
@@ -113,6 +123,8 @@ export interface BoardModel {
   openYear: () => void
   openRule: () => void
   openRules: () => void
+  /** Frozen time for the turn ring / clocks (null = live) */
+  pausedAt: number | null
 }
 
 /** Design size of the desktop board; it is scaled uniformly to fit. */
@@ -411,9 +423,18 @@ export function GameBoard(props: GameBoardProps) {
     openYear: () => setSheet('year'),
     openRule: () => setSheet('rule'),
     openRules: () => (props.onHowToPlay ? props.onHowToPlay() : setSheet('rules')),
+    pausedAt: props.isMultiplayer ? null : props.pausedAt ?? null,
   }
 
   const closeBoardSheet = () => setSheet(null)
+
+  // ---- pause (single player): the pause menu and the rules opened from it freeze the match ----
+  const pauseOpen = !props.isMultiplayer && (sheet === 'menu' || sheet === 'rules')
+  const onPauseChange = props.onPauseChange
+  useEffect(() => {
+    if (props.isMultiplayer) return
+    onPauseChange?.(pauseOpen)
+  }, [pauseOpen, onPauseChange, props.isMultiplayer])
   const rival = rivalSheet !== null ? gs.players[rivalSheet] : null
 
   return (

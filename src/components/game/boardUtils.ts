@@ -102,16 +102,22 @@ export function useNow(stepMs = 250, active = true) {
   return now
 }
 
-/** Remaining milliseconds of the current turn, ticking every 250ms. */
-export function useTurnRemaining(turnStartTime: number, timeLimit: number) {
-  const now = useNow(250)
-  return Math.max(0, timeLimit - Math.max(0, now - turnStartTime))
+/**
+ * Remaining milliseconds of the current turn, ticking every 250ms. `pausedAt` (the moment the
+ * match was paused) freezes it: no ticking, the value stays where the pause began.
+ */
+export function useTurnRemaining(turnStartTime: number, timeLimit: number, pausedAt: number | null = null) {
+  const now = useNow(250, pausedAt === null)
+  // Live: read the clock now (the ticking state can be a tick stale right after a resume).
+  const at = pausedAt ?? Math.max(now, Date.now())
+  return Math.max(0, timeLimit - Math.max(0, at - turnStartTime))
 }
 
-/** Remaining milliseconds of the whole match (match clock). */
-export function useMatchRemaining(gameState: GameState) {
-  const now = useNow(1000)
-  return Math.max(0, gameState.timeLimit - Math.max(0, now - gameState.startTime))
+/** Remaining milliseconds of the whole match (match clock); frozen at `pausedAt` while paused. */
+export function useMatchRemaining(gameState: GameState, pausedAt: number | null = null) {
+  const now = useNow(1000, pausedAt === null)
+  const at = pausedAt ?? Math.max(now, Date.now())
+  return Math.max(0, gameState.timeLimit - Math.max(0, at - gameState.startTime))
 }
 
 /** "14:21" */

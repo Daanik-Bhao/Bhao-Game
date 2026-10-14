@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /**
  * Spec §F.5: crossing the desktop ↔ compact breakpoint (resize, rotation, fold) must not reset
- * the match, and a remount / reload restores the running match from sessionStorage.
+ * the match, and a remount / reload / app kill restores the running match from localStorage.
  */
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
@@ -24,6 +24,8 @@ vi.mock('../../lib/audio', () => ({ playSound: () => {}, isSoundEnabled: true, t
 
 import '../../i18n/i18n'
 import { Game } from '../Game'
+
+const SAVE_KEY = 'bhao.match.v2:guest:guest-test'
 
 // ---- viewport + layout mocks: the board measures .game-board-area (clientWidth / clientHeight) ----
 let vw = 1366
@@ -62,6 +64,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   sessionStorage.clear()
+  localStorage.clear()
   setViewport(1366, 768)
 })
 afterEach(() => cleanup())
@@ -135,12 +138,13 @@ describe('F.5 — breakpoint crossing keeps the match', () => {
     expect(document.querySelector(`[data-card-id="${id}"]`)?.getAttribute('aria-pressed')).toBe('true')
   })
 
-  it('restores the running match from the sessionStorage snapshot after a remount (reload)', async () => {
+  it('restores the running match from the saved match (localStorage) after a remount / app kill, paused', async () => {
     await startAndDraw()
     const hand = handIds()
     const year = yearText()
-    const key = Object.keys(sessionStorage).find(k => k.startsWith('bhao.match.v1:'))
-    expect(key).toBe('bhao.match.v1:/game?mode=practice')
+    await flush(400) // debounced save
+    const key = Object.keys(localStorage).find(k => k.startsWith('bhao.match.v2:'))
+    expect(key).toBe(SAVE_KEY)
     cleanup()
     await flush()
 
@@ -150,17 +154,55 @@ describe('F.5 — breakpoint crossing keeps the match', () => {
     expect(document.querySelector('[data-tour="hand"]')).not.toBeNull()
     expect(handIds()).toEqual(hand)
     expect(yearText()).toBe(year)
+    // Resumes paused: the pause menu is open and the turn ring is stopped.
+    expect(screen.getByRole('button', { name: /^resume$/i })).toBeTruthy()
+    expect(document.querySelector('.turn-ring.is-paused')).not.toBeNull()
   })
 
-  it('ignores a snapshot older than 30 minutes', async () => {
+  it('ignores a save older than 7 days and drops it', async () => {
     await startAndDraw()
-    const key = 'bhao.match.v1:/game?mode=practice'
-    const snap = JSON.parse(sessionStorage.getItem(key)!)
-    snap.savedAt = Date.now() - 31 * 60 * 1000
-    sessionStorage.setItem(key, JSON.stringify(snap))
+    await flush(400)
+    const snap = JSON.parse(localStorage.getItem(SAVE_KEY)!)
+    snap.savedAt = Date.now() - 8 * 24 * 60 * 60 * 1000
+    localStorage.setItem(SAVE_KEY, JSON.stringify(snap))
     cleanup()
     renderGame()
     await flush(80)
     expect(screen.getByRole('button', { name: /start game/i })).toBeTruthy()
+    expect(localStorage.getItem(SAVE_KEY)).toBeNull()
+  })
+
+  it('never crashes on a corrupt save and drops it', async () => {
+    localStorage.setItem(SAVE_KEY, '{"schema":2,"gameState":')
+    renderGame()
+    await flush(80)
+    expect(screen.getByRole('button', { name: /start game/i })).toBeTruthy()
+    expect(localStorage.getItem(SAVE_KEY)).toBeNull()
+  })
+
+  it('ignores a save from another schema version', async () => {
+    await startAndDraw()
+    await flush(400)
+    const snap = JSON.parse(localStorage.getItem(SAVE_KEY)!)
+    snap.schema = 1
+    localStorage.setItem(SAVE_KEY, JSON.stringify(snap))
+    cleanup()
+    renderGame()
+    await flush(80)
+    expect(screen.getByRole('button', { name: /start game/i })).toBeTruthy()
+  })
+
+  it('quitting the match deletes the save', async () => {
+    await startAndDraw()
+    await flush(400)
+    expect(localStorage.getItem(SAVE_KEY)).not.toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: /^menu$/i }))
+    await flush(80)
+    fireEvent.click(screen.getByRole('button', { name: /quit game/i }))
+    await flush(80)
+    const buttons = screen.getAllByRole('button', { name: /quit game/i })
+    fireEvent.click(buttons[buttons.length - 1])
+    await flush(80)
+    expect(localStorage.getItem(SAVE_KEY)).toBeNull()
   })
 })

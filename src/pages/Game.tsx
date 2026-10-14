@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useAppHidden } from '../hooks/useAppHidden'
 import { useBackButton, useKeepAwake } from '../hooks/useBackButton'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
@@ -27,6 +28,7 @@ import { GameBoard, UIPhase } from '../components/game/GameBoard'
 import { OutcomeBanner, type OutcomeInfo } from '../components/game/OutcomeBanner'
 import { cardNameFor, localizeEngineText } from '../components/game/economyUi'
 import { formatMoney } from '../lib/format'
+import { MATCH_SAVE_SCHEMA, clearMatch, loadMatch, matchOwnerKey, restoredGameState, storeMatch, type SavedMatch } from '../lib/matchSave'
 
 type GamePhaseUI = 'setup' | UIPhase | 'result'
 
@@ -40,46 +42,27 @@ function rankedPlacement(isWinner: boolean, wealthPlacement: number): number {
 }
 
 // ---------------------------------------------------------------------------
-// Match snapshot (spec §F.5): a reload / app kill / remount must not throw the
-// player back to Setup. The running single-player match is kept in
-// sessionStorage and restored when it is younger than 30 minutes.
+// Saved match (spec §F.5): a reload / Android killing the app / a remount must not throw
+// the player back to Setup. The running single-player match lives in localStorage, one slot
+// per profile (src/lib/matchSave.ts); Home offers "Continue your match?".
 // ---------------------------------------------------------------------------
 
-const SNAPSHOT_VERSION = 1
-const SNAPSHOT_MAX_AGE_MS = 30 * 60 * 1000
-export const matchSnapshotKey = (pathAndSearch: string) => `bhao.match.v1:${pathAndSearch}`
+/** Debounce for saving after a committed state change. */
+const SAVE_DEBOUNCE_MS = 300
 
-interface MatchSnapshot {
-  v: number
-  savedAt: number
-  gameState: GameState
-  uiPhase: UIPhase
-  mode: string
-  levelId: string | null
-  botCount: number
+interface RestoredMatch extends SavedMatch {
   popupQueue: OutcomeInfo[]
-  /** Resolved server match id (signed-in players), null = none / failed, undefined = still opening */
-  matchId?: string | null
 }
 
-function readSnapshot(key: string, mode: string, levelId: string | null): MatchSnapshot | null {
-  try {
-    const raw = sessionStorage.getItem(key)
-    if (!raw) return null
-    const s = JSON.parse(raw) as MatchSnapshot
-    if (s.v !== SNAPSHOT_VERSION || Date.now() - s.savedAt > SNAPSHOT_MAX_AGE_MS) { sessionStorage.removeItem(key); return null }
-    if (s.mode !== mode || s.levelId !== levelId || !s.gameState || s.gameState.phase === 'game_over') return null
-    // Time spent away does not count against the turn or the match clock.
-    const gap = Math.max(0, Date.now() - s.savedAt)
-    s.gameState = { ...s.gameState, turnStartTime: s.gameState.turnStartTime + gap, startTime: s.gameState.startTime + gap }
-    return s
-  } catch {
+/** The saved match for this profile, if it belongs on this route (mode / level). */
+function readRestore(owner: string | null, route: string, levelId: string | null): RestoredMatch | null {
+  const save = loadMatch(owner)
+  if (!save || save.route !== route || save.levelId !== levelId) return null
+  if (save.levelId && !ARTHA_YATRA_LEVELS.some(l => l.id === save.levelId)) {
+    clearMatch(owner)
     return null
   }
-}
-
-function clearSnapshot(key: string) {
-  try { sessionStorage.removeItem(key) } catch { /* storage unavailable */ }
+  return { ...save, gameState: restoredGameState(save), popupQueue: save.popupQueue as OutcomeInfo[] }
 }
 
 /** Learn-more concept for a decision (card text first, then the choice itself). */
@@ -101,8 +84,10 @@ export function Game() {
   const navigate = useNavigate()
   const toast = useToast()
   const { user, profile, guestProfile, refreshProfile } = useAuth()
-  const snapKey = matchSnapshotKey(location.pathname + location.search)
-  const [restored] = useState(() => readSnapshot(snapKey, mode, levelId ?? null))
+  // One saved match per profile: a guest never sees an account's match and vice versa.
+  const owner = matchOwnerKey(user?.id ?? profile?.id, guestProfile?.id)
+  const route = location.pathname + location.search
+  const [restored] = useState(() => readRestore(owner, route, levelId ?? null))
 
   // Server match for this game (signed-in only). Resolves to null if it could not be opened.
   const matchIdRef = useRef<Promise<string | null> | null>(restored?.matchId ? Promise.resolve(restored.matchId) : null)
@@ -124,28 +109,45 @@ export function Game() {
   // Outcome banners are queued so a decision result and an attack can both be shown.
   const [popupQueue, setPopupQueue] = useState<OutcomeInfo[]>(restored?.popupQueue ?? [])
   const popupInfo = popupQueue[0] ?? null
-  // When the outcome banner opens we remember when, so the human's turn timer can be
-  // paused (turnStartTime shifted forward) for as long as the banner blocks the board.
-  const popupOpenedAtRef = useRef<number | null>(restored?.popupQueue?.length ? Date.now() : null)
   const enqueuePopup = useCallback((info: OutcomeInfo) => {
-    if (popupOpenedAtRef.current === null) popupOpenedAtRef.current = Date.now()
     setPopupQueue(q => [...q, info])
   }, [])
   const handlePopupContinue = useCallback(() => {
-    if (popupQueue.length > 1) {
-      setPopupQueue(q => q.slice(1))
+    setPopupQueue(q => q.slice(1))
+  }, [])
+
+  // ---- pause: one freeze for everything that stops the match ----
+  // The pause menu (and the rules opened from it), the quit dialog, an outcome banner and the
+  // app being in the background all freeze the turn timer, the bots and the match clock. When
+  // the last of them goes away, both clocks are shifted forward by the paused time, so the
+  // match resumes exactly where it stopped. A restored match starts paused (pause menu open).
+  const appHidden = useAppHidden()
+  const restoredIntoMenu = !!restored && restored.popupQueue.length === 0
+  const [boardPaused, setBoardPaused] = useState(restoredIntoMenu)
+  const frozen = appHidden || boardPaused || showForfeitModal || popupInfo !== null
+  const frozenAtRef = useRef<number | null>(restored ? Date.now() : null)
+  const [frozenAt, setFrozenAt] = useState<number | null>(frozenAtRef.current)
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    if (frozen) {
+      if (frozenAtRef.current === null) {
+        frozenAtRef.current = Date.now()
+        setFrozenAt(frozenAtRef.current)
+      }
       return
     }
-    const openedAt = popupOpenedAtRef.current
-    popupOpenedAtRef.current = null
-    setPopupQueue([])
-    if (openedAt === null) return
-    const pausedFor = Date.now() - openedAt
+    const at = frozenAtRef.current
+    if (at === null) return
+    frozenAtRef.current = null
+    // A save scheduled before the shift would count the pause as played time.
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    setFrozenAt(null)
+    const pausedFor = Math.max(0, Date.now() - at)
     setGameState(gs => {
-      if (!gs || gs.phase === 'game_over' || gs.currentPlayerIndex !== 0) return gs
-      return { ...gs, turnStartTime: gs.turnStartTime + pausedFor }
+      if (!gs || gs.phase === 'game_over') return gs
+      return { ...gs, startTime: gs.startTime + pausedFor, turnStartTime: gs.turnStartTime + pausedFor }
     })
-  }, [popupQueue.length])
+  }, [frozen])
   const botTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevWealthRef = useRef(restored ? restored.gameState.players[0]?.wealth ?? 0 : 0)
   const prevRoundRef = useRef(restored?.gameState.round ?? 1)
@@ -156,24 +158,58 @@ export function Game() {
     toast.show(msg, { tone })
   }, [toast])
 
-  // ---- snapshot: save while a match runs, drop it otherwise ----
+  // ---- saved match: written (debounced) after every committed change while a match runs ----
+  const running = !!gameState && gameState.phase !== 'game_over' && (uiPhase === 'playing' || uiPhase === 'decision' || uiPhase === 'targeting')
+  const saveNowRef = useRef<() => void>(() => {})
+  saveNowRef.current = () => {
+    if (!owner || !running || !gameState) return
+    // Elapsed time stops at the pause, so a restore gets exactly the time that was left.
+    const at = frozenAtRef.current ?? Date.now()
+    const human = gameState.players[humanPlayerIndex]
+    storeMatch({
+      schema: MATCH_SAVE_SCHEMA,
+      savedAt: Date.now(),
+      owner,
+      mode: matchMode,
+      levelId: levelId ?? null,
+      route,
+      botCount,
+      uiPhase: uiPhase as UIPhase,
+      popupQueue,
+      matchId: matchId ?? null,
+      turnElapsedMs: Math.max(0, at - gameState.turnStartTime),
+      matchElapsedMs: Math.max(0, at - gameState.startTime),
+      summary: { round: gameState.round ?? 1, maxRounds: getRoundLimit(gameState), netWorth: human ? getNetWorth(human) : 0 },
+      gameState,
+    })
+  }
   useEffect(() => {
-    const running = !!gameState && gameState.phase !== 'game_over' && (uiPhase === 'playing' || uiPhase === 'decision' || uiPhase === 'targeting')
-    if (!running) {
-      if (uiPhase === 'result') clearSnapshot(snapKey)
-      return
+    if (!running) return
+    const id = setTimeout(() => saveNowRef.current(), SAVE_DEBOUNCE_MS)
+    saveTimerRef.current = id
+    return () => clearTimeout(id)
+  }, [running, gameState, uiPhase, popupQueue, matchId, botCount, frozenAt])
+  // Going to the background is the last chance before Android may kill the app: save now.
+  useEffect(() => {
+    const onHidden = () => { if (document.visibilityState === 'hidden') saveNowRef.current() }
+    const onPageHide = () => saveNowRef.current()
+    document.addEventListener('visibilitychange', onHidden)
+    window.addEventListener('pagehide', onPageHide)
+    return () => {
+      document.removeEventListener('visibilitychange', onHidden)
+      window.removeEventListener('pagehide', onPageHide)
     }
-    const snap: MatchSnapshot = {
-      v: SNAPSHOT_VERSION, savedAt: Date.now(), gameState: gameState!, uiPhase: uiPhase as UIPhase,
-      mode, levelId: levelId ?? null, botCount, popupQueue, matchId,
-    }
-    try { sessionStorage.setItem(snapKey, JSON.stringify(snap)) } catch { /* quota / private mode: no snapshot */ }
-  }, [gameState, uiPhase, popupQueue, matchId, mode, levelId, botCount, snapKey])
+  }, [])
+
+  const clearSave = useCallback(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    clearMatch(owner)
+  }, [owner])
 
   const leaveToHome = useCallback(() => {
-    clearSnapshot(snapKey)
+    clearSave()
     navigate('/dashboard')
-  }, [navigate, snapKey])
+  }, [navigate, clearSave])
 
   const startGame = useCallback(() => {
     const humanName = profile?.username ?? guestProfile?.username ?? 'You'
@@ -189,7 +225,6 @@ export function Game() {
     // Baseline for the wealth-change banner is the actual starting wealth of this game
     prevWealthRef.current = state.players[humanPlayerIndex].wealth
     prevRoundRef.current = state.round ?? 1
-    popupOpenedAtRef.current = null
     setPopupQueue([])
     setServerResult(null)
     gameSeqRef.current += 1
@@ -229,7 +264,7 @@ export function Game() {
   }, [refreshProfile])
 
   const handleGameOver = useCallback((finalState: GameState) => {
-    clearSnapshot(snapKey)
+    clearSave()
     setGameState(finalState)
     setUiPhase('result')
     if (levelId) {
@@ -256,11 +291,11 @@ export function Game() {
         stats: { investChoices: humanPlayer.investChoices, emiDamageTaken: humanPlayer.emiDamageTaken },
       })
     }
-  }, [profile, user, levelId, humanPlayerIndex, reportResult, snapKey])
+  }, [profile, user, levelId, humanPlayerIndex, reportResult, clearSave])
 
   const handleForfeit = () => {
     setShowForfeitModal(false)
-    clearSnapshot(snapKey)
+    clearSave()
     if (!gameState) {
       navigate('/dashboard')
       return
@@ -314,37 +349,9 @@ export function Game() {
     prevWealthRef.current = humanPlayer.wealth
   }, [gameState, uiPhase, enqueuePopup])
 
-  // App in the background (Android home / phone call / app switch; hidden tab on the web):
-  // freeze the match. Timers keep running in a backgrounded WebView, so without this the
-  // turn timer runs out and the bots play on while the player is away.
-  const [appHidden, setAppHidden] = useState(() => typeof document !== 'undefined' && document.visibilityState === 'hidden')
-  const hiddenAtRef = useRef<number | null>(null)
-  useEffect(() => {
-    const onVisibility = () => {
-      if (document.visibilityState === 'hidden') {
-        if (hiddenAtRef.current === null) hiddenAtRef.current = Date.now()
-        setAppHidden(true)
-        return
-      }
-      const hiddenAt = hiddenAtRef.current
-      hiddenAtRef.current = null
-      setAppHidden(false)
-      if (hiddenAt === null) return
-      const away = Date.now() - hiddenAt
-      // An open outcome banner already pauses the turn timer; don't count the time away twice.
-      if (popupOpenedAtRef.current !== null) popupOpenedAtRef.current += away
-      setGameState(gs => {
-        if (!gs || gs.phase === 'game_over') return gs
-        return { ...gs, startTime: gs.startTime + away, turnStartTime: gs.turnStartTime + away }
-      })
-    }
-    document.addEventListener('visibilitychange', onVisibility)
-    return () => document.removeEventListener('visibilitychange', onVisibility)
-  }, [])
-
   // Bot turn handler
   useEffect(() => {
-    if (!gameState || uiPhase !== 'playing' || gameState.phase === 'game_over' || popupInfo !== null || appHidden) return
+    if (!gameState || uiPhase !== 'playing' || gameState.phase === 'game_over' || frozen) return
     const currentPlayer = gameState.players[gameState.currentPlayerIndex]
     if (!currentPlayer.isBot) return
 
@@ -360,7 +367,7 @@ export function Game() {
     }, 2500)
 
     return () => { if (botTimerRef.current) clearTimeout(botTimerRef.current) }
-  }, [gameState, uiPhase, handleGameOver, popupInfo, appHidden])
+  }, [gameState, uiPhase, handleGameOver, frozen])
 
   const handleTimeout = useCallback(() => {
     const gs = gameStateRef.current
@@ -373,7 +380,7 @@ export function Game() {
 
   // Human player turn timer
   useEffect(() => {
-    if (!gameState || gameState.phase === 'game_over' || popupInfo !== null || appHidden) return
+    if (!gameState || gameState.phase === 'game_over' || frozen) return
     if (gameState.currentPlayerIndex !== humanPlayerIndex) return
 
     const elapsed = Date.now() - gameState.turnStartTime
@@ -384,7 +391,7 @@ export function Game() {
     }, remaining)
 
     return () => clearTimeout(timer)
-  }, [gameState, handleTimeout, popupInfo, appHidden])
+  }, [gameState, handleTimeout, frozen])
 
   const handleDrawCard = () => {
     if (!gameState || animating) return
@@ -589,14 +596,14 @@ export function Game() {
         ownerKey={progressOwnerKey(user?.id)}
         onPlayAgain={() => {
           setLevelStars(null)
-          clearSnapshot(snapKey)
+          clearSave()
           // Campaign levels restart straight away (the level intro was already confirmed).
           if (levelId) startGame()
           else { setGameState(null); setUiPhase('setup') }
         }}
         onHome={leaveToHome}
-        onNextLevel={nextLevel ? () => { clearSnapshot(snapKey); navigate(`/game/level/${nextLevel.id}`) } : undefined}
-        onOpenLibrary={() => { clearSnapshot(snapKey); navigate('/library') }}
+        onNextLevel={nextLevel ? () => { clearSave(); navigate(`/game/level/${nextLevel.id}`) } : undefined}
+        onOpenLibrary={() => { clearSave(); navigate('/library') }}
       />
     )
   }
@@ -634,6 +641,9 @@ export function Game() {
         modeTitle={modeTitle}
         modeSubtitle={modeSubtitle}
         onQuit={() => setShowForfeitModal(true)}
+        pausedAt={frozenAt}
+        onPauseChange={setBoardPaused}
+        initialSheet={restoredIntoMenu ? 'menu' : undefined}
       />
       <OutcomeBanner info={popupInfo} onNext={handlePopupContinue} />
       <ForfeitModal

@@ -13,6 +13,8 @@ import { LeaderboardView, rankLeaderboard, type LeaderboardRow } from './menus/L
 import { ContractsView, type ContractProgress, type ContractRow } from './menus/ContractsView'
 import { useHomeHero, useLibraryCount } from './menus/homeData'
 import { AVATAR_OPTIONS } from '../components/ui'
+import { ContinueMatchPrompt } from '../components/ContinueMatchPrompt'
+import { matchOwnerKey } from '../lib/matchSave'
 
 /** YYYY-MM-DD in Asia/Kolkata, offset by `days` (the server's reward calendar). */
 function istDate(days: number): string {
@@ -233,6 +235,8 @@ export function Dashboard() {
   return (
     <>
       {screen}
+      {/* Saved single-player match: offered on Home, after the daily reward. */}
+      {tab === 'home' && profile && <ContinueMatchPrompt key={profile.id} owner={matchOwnerKey(profile.id, null)} hold={showDailyReward} />}
       {showDailyReward && (
         <DailyRewardModal
           onClose={() => setShowDailyReward(false)}
