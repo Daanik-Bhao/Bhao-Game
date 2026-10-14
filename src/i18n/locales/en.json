@@ -1168,7 +1168,52 @@
       "delete": "You can delete your account any time from your profile."
     },
     "navLabel": "Legal pages",
-    "draftNote": "This document is a plain-language template and has not yet been reviewed by a lawyer. It will be updated before BHAO's wider public launch."
+    "draftNote": "This document is a plain-language template and has not yet been reviewed by a lawyer. It will be updated before BHAO's wider public launch.",
+    "deleteShort": "Delete account",
+    "deletePage": {
+      "title": "Delete your BHAO account",
+      "lede": "You can delete your BHAO account and the data linked to it at any time, in the app or by email. You don't need to reinstall the app to ask.",
+      "inApp": {
+        "title": "In the app (fastest)",
+        "step1": "Open BHAO and sign in to the account you want to delete.",
+        "step2": "Open <strong>{{profile}}</strong>: the tab at the bottom of the screen on phones, or your avatar at the top on larger screens.",
+        "step3": "Scroll down to <strong>{{zone}}</strong> and tap <strong>{{button}}</strong>.",
+        "step4": "Type {{word}} and tap <strong>{{confirm}}</strong>.",
+        "done": "Your account is deleted straight away and you are signed out."
+      },
+      "email": {
+        "title": "By email",
+        "p1": "If you can't sign in or no longer have the app, email <mail>{{email}}</mail> from the email address linked to your BHAO account, with the subject \"Delete my account\". Add your username if you know it.",
+        "p2": "We may ask you to confirm that the account is yours. We then delete it and reply to let you know."
+      },
+      "deleted": {
+        "title": "What gets deleted",
+        "account": "your account: email address, password and Google sign-in link",
+        "profile": "your username and avatar",
+        "progress": "coins, XP, rank points, stats, login streak and your leaderboard entry",
+        "matches": "match history, daily contract progress and virtual stock holdings",
+        "campaign": "campaign progress (including progress imported from guest play) and Gyaan Library progress",
+        "rooms": "your place in multiplayer rooms, and rooms you host",
+        "reports": "reports you made and reports made about you"
+      },
+      "timing": {
+        "title": "How long it takes",
+        "app": "<strong>In the app:</strong> immediately.",
+        "email": "<strong>By email:</strong> within 30 days of your request.",
+        "backups": "<strong>Backups:</strong> copies may remain in our database provider's backups for a short period until they are overwritten.",
+        "errors": "<strong>Error reports</strong> (if error tracking is on): not linked to your account, and deleted automatically by Sentry after a limited period."
+      },
+      "notStored": {
+        "title": "Not stored, or stored only on your device",
+        "chat": "Text chat and voice chat are never stored, so there is nothing to delete.",
+        "device": "Settings, guest progress and cached progress saved on your device stay there until you clear the app's storage (Android: Settings → Apps → BHAO → Storage → Clear storage), clear the browser's site data, or uninstall the app."
+      },
+      "guest": {
+        "title": "Playing as a guest?",
+        "p1": "Guests have no account on our servers. To remove guest data, clear the app's storage or the browser's site data, or uninstall the app."
+      },
+      "more": "To learn more about the data BHAO handles, read our <privacyLink>Privacy Policy</privacyLink>."
+    }
   },
   "tutorial": {
     "skip": "Skip tutorial",

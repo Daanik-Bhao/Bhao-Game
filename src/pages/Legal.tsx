@@ -1,16 +1,31 @@
 import type { ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { ArrowLeft, Info } from 'lucide-react'
 import { Button } from '../components/ui'
-import './menus.css'
+import { DELETE_CONFIRM_WORD } from '../components/deleteAccount'
 import { MIN_AGE } from '../config/age'
+import { SUPPORT_EMAIL as CONTACT_EMAIL } from '../config/contact'
+import './menus.css'
 
-const CONTACT_EMAIL = 'support@daanik.com'
 const LAST_UPDATED = '13 October 2026'
 
+/** Rich-text tags allowed in legal strings: <strong>, <em>, <mail>, <privacyLink>, <deleteLink>. */
+const RICH = {
+  strong: <strong />,
+  em: <em />,
+  mail: <a href={`mailto:${CONTACT_EMAIL}`} />,
+  privacyLink: <Link to="/privacy" />,
+  deleteLink: <Link to="/delete-account" />,
+}
+
+/** One legal string with its tags rendered; {{email}} and {{age}} are always available. */
+function Rich({ k, values }: { k: string; values?: Record<string, string | number> }) {
+  return <Trans i18nKey={k} values={{ email: CONTACT_EMAIL, age: MIN_AGE, ...values }} components={RICH} />
+}
+
 /** Legal pages (spec §E.3): paper page, sub-screen bar with back, reading column ≤ 680px / 75ch. */
-function LegalLayout({ title, children }: { title: string; children: ReactNode }) {
+function LegalLayout({ title, draft = true, children }: { title: string; draft?: boolean; children: ReactNode }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
@@ -28,14 +43,17 @@ function LegalLayout({ title, children }: { title: string; children: ReactNode }
             <Link to="/">{t('legal.home')}</Link>
             <Link to="/privacy" aria-current={location.pathname === '/privacy' ? 'page' : undefined}>{t('legal.privacyShort')}</Link>
             <Link to="/terms" aria-current={location.pathname === '/terms' ? 'page' : undefined}>{t('legal.termsShort')}</Link>
+            <Link to="/delete-account" aria-current={location.pathname === '/delete-account' ? 'page' : undefined}>{t('legal.deleteShort')}</Link>
           </nav>
           <h1 className="page-title legal__title">{title}</h1>
           <p className="legal__meta">{t('legal.lastUpdated', { date: LAST_UPDATED })}</p>
           {i18n.language !== 'en' && <p className="legal__meta">{t('legal.englishOnly')}</p>}
-          <p role="note" className="notice notice--risk legal__draft">
-            <Info size={18} strokeWidth={2.25} aria-hidden="true" />
-            <span>{t('legal.draftNote')}</span>
-          </p>
+          {draft && (
+            <p role="note" className="notice notice--risk legal__draft">
+              <Info size={18} strokeWidth={2.25} aria-hidden="true" />
+              <span>{t('legal.draftNote')}</span>
+            </p>
+          )}
           <div className="legal__body">{children}</div>
         </article>
       </main>
@@ -145,6 +163,7 @@ export function Privacy() {
         time inside the app from <em>Dashboard → Profile → Delete my account</em>, or by emailing us. Deleting your
         account also deletes reports you made and reports made about you. Error reports are kept by Sentry for a limited
         period and then deleted automatically. You can clear guest data by clearing the app's or browser's site data.
+        Steps and timelines: <Link to="/delete-account">{t('legal.deletePage.title')}</Link>.
       </p>
 
       <h2>10. {t('legal.sections.privacy.h8')}</h2>
@@ -239,6 +258,65 @@ export function Terms() {
         We may update these terms; continued use after an update means you accept it. These terms are governed by the laws
         of India.
       </p>
+    </LegalLayout>
+  )
+}
+
+const DELETED_ITEMS = ['account', 'profile', 'progress', 'matches', 'campaign', 'rooms', 'reports'] as const
+const TIMING_ITEMS = ['app', 'email', 'backups', 'errors'] as const
+
+/**
+ * Public "Delete your BHAO account" page (`/delete-account`). Google Play needs it as a web link, so it
+ * works without signing in. The in-app labels come from the keys the Profile screen itself uses, so the
+ * steps always match the UI in every language.
+ */
+export function DeleteAccountInfo() {
+  const { t } = useTranslation()
+  const p = 'legal.deletePage'
+  const labels = {
+    profile: t('nav.profile'),
+    zone: t('profile.dangerZone'),
+    button: t('profile.delete.button'),
+    confirm: t('profile.delete.confirm'),
+    word: DELETE_CONFIRM_WORD,
+  }
+  return (
+    <LegalLayout title={t(`${p}.title`)} draft={false}>
+      <p>{t(`${p}.lede`)}</p>
+
+      <h2>{t(`${p}.inApp.title`)}</h2>
+      <ol>
+        <li>{t(`${p}.inApp.step1`)}</li>
+        <li><Rich k={`${p}.inApp.step2`} values={labels} /></li>
+        <li><Rich k={`${p}.inApp.step3`} values={labels} /></li>
+        <li><Rich k={`${p}.inApp.step4`} values={labels} /></li>
+      </ol>
+      <p>{t(`${p}.inApp.done`)}</p>
+
+      <h2>{t(`${p}.email.title`)}</h2>
+      <p><Rich k={`${p}.email.p1`} /></p>
+      <p>{t(`${p}.email.p2`)}</p>
+
+      <h2>{t(`${p}.deleted.title`)}</h2>
+      <ul>
+        {DELETED_ITEMS.map(k => <li key={k}>{t(`${p}.deleted.${k}`)}</li>)}
+      </ul>
+
+      <h2>{t(`${p}.timing.title`)}</h2>
+      <ul>
+        {TIMING_ITEMS.map(k => <li key={k}><Rich k={`${p}.timing.${k}`} /></li>)}
+      </ul>
+
+      <h2>{t(`${p}.notStored.title`)}</h2>
+      <ul>
+        <li>{t(`${p}.notStored.chat`)}</li>
+        <li>{t(`${p}.notStored.device`)}</li>
+      </ul>
+
+      <h2>{t(`${p}.guest.title`)}</h2>
+      <p>{t(`${p}.guest.p1`)}</p>
+
+      <p><Rich k={`${p}.more`} /></p>
     </LegalLayout>
   )
 }

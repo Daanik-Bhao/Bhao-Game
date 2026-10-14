@@ -1168,7 +1168,52 @@
       "delete": "Apna account kabhi bhi profile se delete kar sakte ho."
     },
     "navLabel": "Legal pages",
-    "draftNote": "Ye document simple language ka draft hai aur abhi kisi lawyer ne check nahi kiya hai. BHAO ke bade launch se pehle ise update kiya jayega."
+    "draftNote": "Ye document simple language ka draft hai aur abhi kisi lawyer ne check nahi kiya hai. BHAO ke bade launch se pehle ise update kiya jayega.",
+    "deleteShort": "Account delete karo",
+    "deletePage": {
+      "title": "Apna BHAO account delete karo",
+      "lede": "Aap apna BHAO account aur usse linked data kabhi bhi delete kar sakte ho, app mein ya email se. Iske liye app dobara install karne ki zaroorat nahi hai.",
+      "inApp": {
+        "title": "App mein (sabse fast)",
+        "step1": "BHAO kholo aur us account mein sign in karo jo delete karna hai.",
+        "step2": "<strong>{{profile}}</strong> kholo: phone pe screen ke neeche wala tab, ya badi screens pe upar aapka avatar.",
+        "step3": "Neeche <strong>{{zone}}</strong> tak scroll karo aur <strong>{{button}}</strong> pe tap karo.",
+        "step4": "{{word}} type karo aur <strong>{{confirm}}</strong> pe tap karo.",
+        "done": "Aapka account turant delete ho jaata hai aur aap sign out ho jaate ho."
+      },
+      "email": {
+        "title": "Email se",
+        "p1": "Agar aap sign in nahi kar pa rahe ho ya ab aapke paas app nahi hai, toh apne BHAO account se linked email address se <mail>{{email}}</mail> pe \"Delete my account\" subject ke saath email karo. Agar aapko apna username yaad hai toh wo bhi likh do.",
+        "p2": "Hum aapse confirm karne ko keh sakte hain ki account aapka hi hai. Phir hum use delete karke reply karke aapko bata denge."
+      },
+      "deleted": {
+        "title": "Kya-kya delete hota hai",
+        "account": "aapka account: email address, password aur Google sign-in link",
+        "profile": "aapka username aur avatar",
+        "progress": "coins, XP, rank points, stats, login streak aur aapki leaderboard entry",
+        "matches": "match history, daily contract progress aur virtual stock holdings",
+        "campaign": "campaign progress (guest play se import hui progress bhi) aur Gyaan Library progress",
+        "rooms": "multiplayer rooms mein aapki jagah, aur aapke host kiye rooms",
+        "reports": "aapki ki hui reports aur aapke baare mein ki gayi reports"
+      },
+      "timing": {
+        "title": "Kitna time lagta hai",
+        "app": "<strong>App mein:</strong> turant.",
+        "email": "<strong>Email se:</strong> aapki request ke 30 din ke andar.",
+        "backups": "<strong>Backups:</strong> humare database provider ke backups mein copies thode time tak reh sakti hain jab tak wo overwrite na ho jaayein.",
+        "errors": "<strong>Error reports</strong> (agar error tracking on hai): aapke account se linked nahi hoti, aur Sentry ek limited time ke baad inhe automatically delete kar deta hai."
+      },
+      "notStored": {
+        "title": "Jo store nahi hota, ya sirf aapke device pe hota hai",
+        "chat": "Text chat aur voice chat kabhi store nahi hoti, toh delete karne ko kuch hai hi nahi.",
+        "device": "Aapke device pe saved settings, guest progress aur cached progress wahin rehti hai jab tak aap app ka storage clear nahi karte (Android: Settings → Apps → BHAO → Storage → Clear storage), browser ka site data clear nahi karte, ya app uninstall nahi karte."
+      },
+      "guest": {
+        "title": "Guest ban ke khel rahe ho?",
+        "p1": "Guests ka humare servers pe koi account nahi hota. Guest data hatane ke liye app ka storage ya browser ka site data clear karo, ya app uninstall karo."
+      },
+      "more": "BHAO kaunsa data handle karta hai, iske baare mein aur jaanne ke liye humari <privacyLink>Privacy Policy</privacyLink> padho."
+    }
   },
   "tutorial": {
     "skip": "Tutorial skip karo",

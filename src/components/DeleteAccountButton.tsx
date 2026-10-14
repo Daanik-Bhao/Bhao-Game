@@ -4,9 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { Trash2 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { Button, Input, Modal } from './ui'
+import { DELETE_CONFIRM_WORD as CONFIRM_WORD } from './deleteAccount'
 import '../pages/menus.css'
-
-const CONFIRM_WORD = 'DELETE'
 
 interface DeleteAccountButtonProps {
   /** Dev gallery: start with the dialog open */

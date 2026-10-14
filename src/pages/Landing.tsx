@@ -11,7 +11,7 @@ import './menus.css'
 import './landing.css'
 import { MIN_AGE } from '../config/age'
 
-const SUPPORT_EMAIL = 'support@daanik.com'
+import { SUPPORT_EMAIL } from '../config/contact'
 
 /** Landing `/` (spec §E.1): "fun card game that makes you smarter with money — play free now". */
 export function Landing() {
@@ -96,6 +96,7 @@ export function Landing() {
           <span className="landing-footer__brand">BHAO</span>
           <Link to="/privacy">{t('legal.privacyShort')}</Link>
           <Link to="/terms">{t('legal.termsShort')}</Link>
+          <Link to="/delete-account">{t('legal.deleteShort')}</Link>
           <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
           <span className="landing-footer__age">{t('landing.footerAge', { age: MIN_AGE })}</span>
         </footer>
