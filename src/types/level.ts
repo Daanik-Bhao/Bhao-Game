@@ -13,10 +13,13 @@ export interface LevelConfig {
   description: string
   mechanicName: string
   mechanicDescription: string
-  bossSpecialAttackTrigger?: (state: any) => boolean
+  bossSpecialAttackTrigger?: (state: BossTriggerState) => boolean
   /** Phase 5: which signature rule this level runs (src/lib/levelRules.ts). Optional for old configs. */
   rule?: LevelRuleId
 }
+
+/** What a level's boss trigger looks at: the player's corpus (₹) plus the legacy level fields. */
+export type BossTriggerState = Pick<LevelState, 'savingStreak' | 'activeInvestments'> & { corpus: number }
 
 /** Phase 5 signature mechanics, one per campaign level (docs/phase5-design.md, Track N). */
 export type LevelRuleId = 'desire_meter' | 'saving_streak' | 'lifestyle_creep' | 'grihastha'

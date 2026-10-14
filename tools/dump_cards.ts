@@ -1,14 +1,16 @@
 import fs from 'fs';
 import { ALL_CARDS } from './src/data/cards';
 import { LEVEL_SITUATION_CARDS } from './src/data/levelCards';
+import type { CardEffect } from './src/types/game';
 
-function formatEffect(effect: any) {
+function formatEffect(effect: CardEffect | undefined) {
   if (!effect) return 'None';
-  if (effect.type === 'wealth_pct') return `Wealth: ${effect.value > 0 ? '+' : ''}${effect.value}%`;
-  if (effect.type === 'wealth_change') return `Wealth: ${effect.value > 0 ? '+' : ''}₹${effect.value.toLocaleString()}`;
+  const value = effect.value ?? 0;
+  if (effect.type === 'wealth_pct') return `Wealth: ${value > 0 ? '+' : ''}${value}%`;
+  if (effect.type === 'wealth_change') return `Wealth: ${value > 0 ? '+' : ''}₹${value.toLocaleString()}`;
   if (effect.type === 'block_card') return `Blocks: ${effect.blocks?.join(', ')}`;
-  if (effect.type === 'attack_all_pct') return `All lose ${effect.value}%`;
-  if (effect.type === 'market_crash_player') return `Target loses ${effect.value}%`;
+  if (effect.type === 'attack_all_pct') return `All lose ${value}%`;
+  if (effect.type === 'market_crash_player') return `Target loses ${value}%`;
   return effect.type;
 }
 

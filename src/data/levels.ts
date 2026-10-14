@@ -22,7 +22,7 @@ export const ARTHA_YATRA_LEVELS: LevelConfig[] = [
     mechanicName: 'Desire Meter',
     mechanicDescription: 'Wants build up every year and every time you resist them. Spend on a planned treat when the meter is high — if it hits 100 you splurge on impulse, which costs far more.',
     rule: 'desire_meter',
-    bossSpecialAttackTrigger: (state: any) => state.corpus >= 1000000
+    bossSpecialAttackTrigger: (state) => state.corpus >= 1000000
   },
   {
     id: 'level_2',
@@ -40,7 +40,7 @@ export const ARTHA_YATRA_LEVELS: LevelConfig[] = [
     mechanicName: 'Saving Streak',
     mechanicDescription: 'Pay yourself first: every year you Save or Invest grows your streak, and a bigger Auto-SIP lands in your index fund. One Spend breaks the streak and the bonus.',
     rule: 'saving_streak',
-    bossSpecialAttackTrigger: (state: any) => state.savingStreak >= 3 || state.corpus >= 1800000
+    bossSpecialAttackTrigger: (state) => state.savingStreak >= 3 || state.corpus >= 1800000
   },
   {
     id: 'level_3',
@@ -58,7 +58,7 @@ export const ARTHA_YATRA_LEVELS: LevelConfig[] = [
     mechanicName: 'Lifestyle Creep & Investment Slots',
     mechanicDescription: 'Your salary rises every year, but your lifestyle quietly eats a bigger share — Save to review your budget, Spend makes it worse. You only have 3 investment slots, so choose quality assets.',
     rule: 'lifestyle_creep',
-    bossSpecialAttackTrigger: (state: any) => state.corpus >= 3000000 || state.activeInvestments?.length >= 2
+    bossSpecialAttackTrigger: (state) => state.corpus >= 3000000 || state.activeInvestments?.length >= 2
   },
   {
     id: 'level_4',

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import {
   Check, ChevronRight, FileText, Flame, Gamepad2, Globe, LogOut, Medal, Pencil, Percent, Shield, Sparkles, Trophy, Volume2,
 } from 'lucide-react'
-import { Avatar, Button, DCoin, Input, Switch, buttonClass, useToastPlacement } from '../../components/ui'
+import { Avatar, Button, DCoin, Input, Switch, buttonClass, resolveAvatar, useToastPlacement } from '../../components/ui'
 import { Gullu } from '../../components/mascot/Gullu'
 import { LanguageSwitcher } from '../../components/LanguageSwitcher'
 import { RankBadge } from '../../components/RankBadge'
@@ -110,8 +110,8 @@ export interface ProfileStats {
 
 export interface ProfileViewProps {
   profile: ProfileStats
-  /** Avatar images the player can choose from */
-  avatars: string[]
+  /** Avatar preset values (`/avatar/<id>`) the player can choose from */
+  avatars: readonly string[]
   onSaveName: (name: string) => Promise<void>
   onPickAvatar: (url: string) => Promise<void>
   onSignOut: () => void
@@ -127,6 +127,7 @@ export function ProfileView({ profile, avatars, onSaveName, onPickAvatar, onSign
   useToastPlacement('bottom')
   const [editingName, setEditingName] = useState(false)
   const [pickingAvatar, setPickingAvatar] = useState(false)
+  const current = resolveAvatar(profile.avatar_url)
   const [newName, setNewName] = useState(profile.username)
   const [busy, setBusy] = useState(false)
 
@@ -167,7 +168,7 @@ export function ProfileView({ profile, avatars, onSaveName, onPickAvatar, onSign
         <h1 className="page-title profile__title">{t('profile.title')}</h1>
 
         <section className="panel profile-head" aria-label={t('profile.title')}>
-          <Avatar name={profile.username} me size="l" imageUrl={profile.avatar_url} />
+          <Avatar name={profile.username} me size="l" avatar={profile.avatar_url} />
           <div className="profile-head__main">
             {editingName ? (
               <form className="profile-head__edit" onSubmit={e => { e.preventDefault(); void saveName() }}>
@@ -201,20 +202,23 @@ export function ProfileView({ profile, avatars, onSaveName, onPickAvatar, onSign
         </div>
         {pickingAvatar && (
           <div className="panel profile-avatars" role="group" aria-label={t('profile.chooseAvatar')}>
-            {avatars.map((a, i) => (
-              <button
-                key={a}
-                type="button"
-                className="profile-avatars__opt"
-                aria-pressed={profile.avatar_url === a}
-                aria-label={t('profile.avatarN', { n: i + 1 })}
-                disabled={busy}
-                onClick={() => void pickAvatar(a)}
-              >
-                <img src={a} alt="" loading="lazy" />
-                {profile.avatar_url === a && <span className="profile-avatars__check"><Check size={14} strokeWidth={3} aria-hidden="true" /></span>}
-              </button>
-            ))}
+            {avatars.map((a, i) => {
+              const on = !!current && resolveAvatar(a) === current
+              return (
+                <button
+                  key={a}
+                  type="button"
+                  className="profile-avatars__opt"
+                  aria-pressed={on}
+                  aria-label={t('profile.avatarN', { n: i + 1 })}
+                  disabled={busy}
+                  onClick={() => void pickAvatar(a)}
+                >
+                  <Avatar name={profile.username} size="l" avatar={a} />
+                  {on && <span className="profile-avatars__check"><Check size={14} strokeWidth={3} aria-hidden="true" /></span>}
+                </button>
+              )
+            })}
           </div>
         )}
 

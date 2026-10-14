@@ -870,7 +870,7 @@ export function processAction(state: GameState, playerIndex: number, card: GameC
   })
 }
 
-export function processDefense(state: GameState, defenderIndex: number, defenseCard: GameCard, _attackCard: GameCard): GameState {
+export function processDefense(state: GameState, defenderIndex: number, defenseCard: GameCard): GameState {
   const discard = [...state.discardPile, defenseCard]
   const hand = state.players[defenderIndex].hand.filter(c => c.id !== defenseCard.id)
   const updatedPlayers = state.players.map((p, i) =>
