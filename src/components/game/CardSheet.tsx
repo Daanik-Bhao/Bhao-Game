@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Play, Shield, Swords, X } from 'lucide-react'
 import type { GameCard, GameState } from '../../types/game'
 import { Button, Chip, Sheet } from '../ui'
-import { GameCard as GameCardView, cardFlavor, cardIcon, cardKind, cardTitle } from '../GameCard'
+import { GameCard as GameCardView, cardFlavor, cardIcon, cardKind, cardTitle, cardFullTitle } from '../GameCard'
 import { formatMoney } from '../../lib/format'
 import { getCash, getNetWorth } from '../../lib/gameEngine'
 import { ChoiceTiles } from './EconomyPanels'
@@ -24,7 +24,7 @@ function CardSheetHeader({ card }: { card: GameCard }) {
           <Chip tone={KIND_TONE[kind]} icon={<Icon size={13} strokeWidth={2.5} aria-hidden="true" />}>{t(`card.type.${kind}`)}</Chip>
           <Chip icon={<i className={`cardsheet__gem gem--${card.tier}`} aria-hidden="true" />}>{t(`card.tier.${card.tier}`)}</Chip>
         </div>
-        <h2 className="cardsheet__title">{cardTitle(card, i18n.language)}</h2>
+        <h2 className="cardsheet__title">{cardFullTitle(card, i18n.language)}</h2>
         <p className="cardsheet__flavor">{cardFlavor(card, i18n.language)}</p>
       </div>
     </div>
@@ -119,7 +119,7 @@ export function CardSheet({ m }: { m: BoardModel }) {
     <Sheet
       open={open}
       onClose={m.closeSheet}
-      title={card ? cardTitle(card, lang) : ''}
+      title={card ? cardFullTitle(card, lang) : ''}
       header={card ? <CardSheetHeader card={card} /> : undefined}
       footer={footer}
       className="cardsheet"
