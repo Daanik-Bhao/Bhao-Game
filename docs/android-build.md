@@ -25,7 +25,9 @@ Then `npm ci` in the repo.
 | --- | --- |
 | `npm run android:sync` | `npm run build` + copy `dist/` and plugins into `android/` |
 | `npm run android:apk` | sync + debug APK → `android/app/build/outputs/apk/debug/app-debug.apk` |
-| `npm run android:bundle` | sync + signed release AAB → `android/app/build/outputs/bundle/release/app-release.aab` (needs the keystore, see 3) |
+| `npm run android:bundle` | release pre-checks (keystore, versionCode, `npm run env:check`) + sync + signed release AAB → `android/app/build/outputs/bundle/release/app-release.aab` (needs the keystore, see 3) |
+| `npm run env:check` | validates `.env` (required `VITE_SUPABASE_*`, warns for optional Sentry/TURN; refuses a service_role key) |
+| `npm run supabase:deploy` | dry run of the backend deploy (migrations, edge functions, secrets); add `-- --apply` to really deploy |
 | `npm run android:assets` | regenerate launcher icons + splash from the coin art (`resources/`, `android/app/src/main/res/`) |
 
 Install a debug APK on a phone: enable USB debugging, then
