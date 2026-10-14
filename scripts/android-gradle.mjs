@@ -1,3 +1,4 @@
+/* eslint-env node */
 // Runs the Android Gradle build with JAVA_HOME / ANDROID_HOME set, so `npm run android:apk`
 // and `npm run android:bundle` work from a plain terminal on Windows (or anywhere).
 // Usage: node scripts/android-gradle.mjs apk|bundle|bundle-check

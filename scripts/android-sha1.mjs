@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-env node */
 /**
  * Prints the SHA-1 / SHA-256 certificate fingerprints of the Android signing keys and
  * where each one is used.

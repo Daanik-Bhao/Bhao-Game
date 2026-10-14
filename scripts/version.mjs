@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-env node */
 /**
  * App version: package.json "version" is the ONE source of truth.
  *

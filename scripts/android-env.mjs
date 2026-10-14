@@ -1,3 +1,4 @@
+/* eslint-env node */
 // Shared Android toolchain lookup for the scripts/android-*.mjs helpers.
 // Toolchain defaults to C:\Users\Administrator\AndroidDev (see docs/android-build.md);
 // JAVA_HOME / ANDROID_HOME (or ANDROID_SDK_ROOT) already set in the environment win,

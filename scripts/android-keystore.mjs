@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-env node */
 /**
  * Creates the Google Play UPLOAD keystore (once, by the app owner) and writes the
  * git-ignored android/keystore.properties that release builds read.
