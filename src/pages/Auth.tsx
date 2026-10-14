@@ -7,6 +7,10 @@ import { SUPABASE_NOT_CONFIGURED_MESSAGE } from '../lib/supabase'
 import { Button, Input, Tabs } from '../components/ui'
 import { Gullu } from '../components/mascot/Gullu'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
+import { YearSelect } from '../components/age/YearSelect'
+import { UnderAgeBlock } from '../components/age/AgeQuestion'
+import { ageBandFromBirthYear } from '../lib/ageBand'
+import { blockUnderAge, getUnderAgeBlock } from '../lib/ageGate'
 import googleG from './google-g.svg'
 import './menus.css'
 
@@ -18,6 +22,8 @@ export function Auth() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
+  const [birthYear, setBirthYear] = useState<number | null>(null)
+  const [underAge, setUnderAge] = useState(() => getUnderAgeBlock() !== null)
   const [error, setError] = useState('')
   // The "not configured" error comes from lib code in English; show the translated notice instead.
   const errorText = (err: unknown, fallback: string) =>
@@ -25,12 +31,12 @@ export function Auth() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-  const { login, register, loginWithGoogle, user, playAsGuest, isOnlineAvailable } = useAuth()
+  const { login, register, loginWithGoogle, authUser, playAsGuest, isOnlineAvailable } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (user) navigate('/dashboard')
-  }, [user, navigate])
+    if (authUser) navigate('/dashboard')
+  }, [authUser, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,7 +47,16 @@ export function Auth() {
         await login(email, password)
       } else {
         if (username.length < 3) { setError(t('auth.usernameShort')); setLoading(false); return }
-        await register(email, password, username)
+        if (birthYear === null) { setError(t('age.required')); setLoading(false); return }
+        // Age question (neutral year of birth): under 13 never creates an account.
+        const band = ageBandFromBirthYear(birthYear, new Date().getFullYear())
+        if (band === 'under13') {
+          blockUnderAge()
+          setUnderAge(true)
+          setLoading(false)
+          return
+        }
+        await register(email, password, username, band)
         localStorage.setItem('justRegistered', 'true')
       }
       navigate('/dashboard')
@@ -73,6 +88,9 @@ export function Auth() {
   }
 
   const switchMode = (m: 'login' | 'register') => { setMode(m); setError('') }
+
+  // A recent under-13 answer on this device: no sign-up or guest play until the cooldown ends.
+  if (underAge) return <UnderAgeBlock />
 
   return (
     <div className="page auth">
@@ -135,6 +153,15 @@ export function Auth() {
               onChange={e => setUsername(e.target.value)}
               autoComplete="username"
               required
+            />
+          )}
+          {mode === 'register' && (
+            <YearSelect
+              id="birth-year"
+              value={birthYear}
+              onChange={setBirthYear}
+              label={t('age.yearLabel')}
+              hint={t('age.signupHint')}
             />
           )}
           <Input

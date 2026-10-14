@@ -61,9 +61,14 @@ export interface GuestProfileViewProps {
   /** Existing "Exit guest mode" logic (clears the guest and goes to the landing page) */
   onExitGuest: () => void
   viewer?: AppBarProps['viewer']
+  /**
+   * A 13–17 account waiting for a parent's consent (it plays locally like a guest): shows
+   * "waiting for your parent" instead of the sign-in card, and Sign out + Delete account.
+   */
+  pendingAccount?: { onSignOut: () => void; dangerZone: ReactNode }
 }
 
-export function GuestProfileView({ name, onlineAvailable, onExitGuest, viewer }: GuestProfileViewProps) {
+export function GuestProfileView({ name, onlineAvailable, onExitGuest, viewer, pendingAccount }: GuestProfileViewProps) {
   const { t } = useTranslation()
   useToastPlacement('bottom')
   return (
@@ -71,23 +76,47 @@ export function GuestProfileView({ name, onlineAvailable, onExitGuest, viewer }:
       <AppBar active="profile" viewer={viewer} />
       <main className="page__main page__main--list">
         <h1 className="page-title profile__title">{t('profile.title')}</h1>
-        <section className="panel profile-guest">
-          <Gullu mood="wow" size={72} />
-          <h2 className="profile-guest__title">{t('profile.guestTitle')}</h2>
-          <p className="profile-guest__body">{t('profile.guestBody', { name })}</p>
-          {onlineAvailable
-            ? <Link to="/auth" className={buttonClass('primary', 'm', { block: true })}>{t('home.signIn')}</Link>
-            : <p className="caption-text">{t('guest.onlineUnavailable')}</p>}
-        </section>
+        {pendingAccount ? (
+          <section className="panel profile-guest">
+            <Gullu mood="think" size={72} />
+            <h2 className="profile-guest__title">{t('consent.profile.title')}</h2>
+            <p className="profile-guest__body">{t('consent.profile.body')}</p>
+            <Link to="/dashboard" className={buttonClass('primary', 'm', { block: true })}>{t('consent.profile.open')}</Link>
+          </section>
+        ) : (
+          <section className="panel profile-guest">
+            <Gullu mood="wow" size={72} />
+            <h2 className="profile-guest__title">{t('profile.guestTitle')}</h2>
+            <p className="profile-guest__body">{t('profile.guestBody', { name })}</p>
+            {onlineAvailable
+              ? <Link to="/auth" className={buttonClass('primary', 'm', { block: true })}>{t('home.signIn')}</Link>
+              : <p className="caption-text">{t('guest.onlineUnavailable')}</p>}
+          </section>
+        )}
 
         <SettingsList />
 
-        <section className="profile-sec">
-          <Button variant="outline" block className="btn--danger-text" icon={<LogOut size={20} aria-hidden="true" />} onClick={onExitGuest}>
-            {t('guest.exit')}
-          </Button>
-          <p className="caption-text profile-sec__note">{t('profile.exitGuestNote')}</p>
-        </section>
+        {pendingAccount ? (
+          <>
+            <section className="profile-sec">
+              <Button variant="outline" block icon={<LogOut size={20} aria-hidden="true" />} onClick={pendingAccount.onSignOut}>{t('dashboard.signOut')}</Button>
+            </section>
+            <section className="profile-sec" aria-labelledby="danger-title">
+              <h2 id="danger-title" className="section-title profile-sec__title">{t('profile.dangerZone')}</h2>
+              <div className="panel profile-danger">
+                <p className="profile-danger__text">{t('profile.dangerBody')}</p>
+                {pendingAccount.dangerZone}
+              </div>
+            </section>
+          </>
+        ) : (
+          <section className="profile-sec">
+            <Button variant="outline" block className="btn--danger-text" icon={<LogOut size={20} aria-hidden="true" />} onClick={onExitGuest}>
+              {t('guest.exit')}
+            </Button>
+            <p className="caption-text profile-sec__note">{t('profile.exitGuestNote')}</p>
+          </section>
+        )}
       </main>
       <TabBar active="profile" />
     </div>

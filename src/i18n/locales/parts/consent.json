@@ -1,0 +1,503 @@
+{
+  "en": {
+    "age": {
+      "title": "When were you born?",
+      "accountTitle": "One quick question",
+      "body": "We ask every player this once. We keep only your age group, never your year of birth.",
+      "yearLabel": "Year of birth",
+      "choose": "Choose a year",
+      "privacyHint": "Only your age group is saved.",
+      "signupHint": "We ask everyone. Only your age group is saved, not the year.",
+      "required": "Please choose your year of birth.",
+      "continue": "Continue",
+      "saveFailed": "That didn't save. Check your internet and try again.",
+      "confirmTitle": "Born in {{year}}?",
+      "confirmBody": "BHAO is for players {{age}} and older, so this account will be closed and its data deleted.",
+      "confirmYes": "Yes, that's right",
+      "changeYear": "Change the year",
+      "blockTitle": "BHAO is for ages {{age}}+",
+      "blockBody": "Thanks for telling us honestly! BHAO is made for players {{age}} and older. We'd love to see you back when you're {{age}}.",
+      "blockGrownUps": "Grown-ups with a question can write to {{email}}.",
+      "blockHome": "Back to start"
+    },
+    "consent": {
+      "child": {
+        "title": "Waiting for your parent's OK",
+        "body": "You're under 18, so a parent or guardian needs to say yes before you can play online. We'll email them a link.",
+        "emailLabel": "Parent's or guardian's email",
+        "emailHint": "We only use it to ask for their OK.",
+        "send": "Send to my parent",
+        "cancel": "Cancel",
+        "sent": "We emailed {{email}}. Ask them to open it and tap Approve. The link works for {{days}} days.",
+        "sentNow": "Sent! We emailed {{email}}. Ask them to open it and tap Approve. The link works for {{days}} days.",
+        "checkAgain": "My parent said yes, check again",
+        "resend": "Resend email",
+        "resendIn": "Resend in {{time}}",
+        "change": "Change email",
+        "loading": "Checking…",
+        "meanwhile": "Meanwhile you can play Practice, Campaign, the Tutorial and the Library on this phone.",
+        "err": {
+          "invalidEmail": "That doesn't look like an email address.",
+          "rateLimited": "Too many emails for now. Please try again later.",
+          "rateLimitedWait": "Please wait {{time}} before sending another email.",
+          "emailDown": "We couldn't send the email right now. Please try later, or ask your parent to write to {{email}}.",
+          "offlineSetup": "Online features aren't available right now. You can still play offline.",
+          "network": "No internet? Check your connection and try again.",
+          "generic": "Something went wrong. Please try again."
+        }
+      },
+      "pending": {
+        "title": "Almost there!",
+        "body": "Online games, the leaderboard and chat unlock as soon as your parent says yes.",
+        "playOffline": "Play offline meanwhile"
+      },
+      "home": {
+        "sub": "Waiting for your parent's OK · progress is saved on this phone",
+        "friendsBody": "Unlocks when your parent says yes",
+        "friendsLock": "Parent's OK"
+      },
+      "profile": {
+        "title": "Waiting for your parent",
+        "body": "Your account is ready. Online play unlocks when a parent or guardian approves it.",
+        "open": "See status"
+      },
+      "limits": {
+        "leaderboard": "Players under 18 are not shown on the public leaderboard.",
+        "rooms": "Multiplayer only in private rooms that friends join with an invite code (no matches with random players).",
+        "voice": "Voice chat is turned off.",
+        "chat": "Only the ready-made quick-chat messages; no typed chat, and typed messages from others are not shown.",
+        "tracking": "No screen recordings (session replay) and no performance tracking; only crash reports without names or emails.",
+        "money": "No ads, no purchases and no real money."
+      },
+      "parent": {
+        "pageTitle": "Parent's consent",
+        "title": "Your child wants to play BHAO",
+        "intro": "BHAO is a free card game that teaches young people in India about money: saving, investing, insurance and avoiding scams. No real money is used and nothing can be bought. Your child asked us to email you because players under 18 need a parent's or guardian's consent before they can play online.",
+        "dataTitle": "What we keep about your child",
+        "data": {
+          "account": "Their email address and login (or their Google sign-in).",
+          "profile": "Their username and avatar.",
+          "age": "Their age group (13 to 17). We never keep the year of birth.",
+          "progress": "Game results, coins, campaign stars, library progress and multiplayer match results.",
+          "reports": "Reports, if your child reports another player or is reported (with the recent chat lines).",
+          "errors": "Crash reports when the app breaks, without their name or email.",
+          "parent": "From you: your email, your name and the time you gave consent (not your year of birth)."
+        },
+        "dataNot": "Until you approve, nothing about your child's games is stored on our servers; it stays on their device.",
+        "limitsTitle": "How we keep your child safe",
+        "rightsTitle": "Your choices",
+        "rights": {
+          "withdraw": "You can withdraw consent at any time with the \"withdraw\" link in our email. That deletes your child's account and data.",
+          "access": "You can ask to see, correct or delete your child's data: email <mail>{{email}}</mail>.",
+          "grievance": "Grievance contact: <mail>{{email}}</mail>. We reply within a reasonable time."
+        },
+        "formTitle": "Your consent",
+        "nameLabel": "Your full name",
+        "yearLabel": "Your year of birth",
+        "yearHint": "To check that you are an adult. We don't save it.",
+        "declaration": "I am this child's parent or legal guardian, I am 18 or older, and I agree that BHAO may use my child's data as described above.",
+        "methodNote": "We record your consent by this email link and your declaration (notice version {{version}}).",
+        "approve": "Approve",
+        "decline": "Decline and delete the account",
+        "declineConfirmTitle": "Decline and delete?",
+        "declineConfirmBody": "Your child's BHAO account will be deleted now. Games they played offline stay on their device.",
+        "declineConfirm": "Yes, delete it",
+        "keepIt": "Go back",
+        "approvedTitle": "Thank you!",
+        "approvedBody": "Your child can now play online with the safety limits above. We've emailed you a confirmation with a link to withdraw consent at any time.",
+        "declinedTitle": "Done",
+        "declinedBody": "You declined, and your child's account has been deleted.",
+        "err": {
+          "name": "Please enter your full name.",
+          "year": "Please choose your year of birth.",
+          "notAdult": "Only an adult (18 or older) can give consent.",
+          "declaration": "Please tick the box to confirm.",
+          "generic": "Something went wrong. Please try again in a moment."
+        },
+        "problem": {
+          "expired": { "title": "This link has expired", "body": "Consent links work for 7 days. Your child can send a new one from the app, or write to <mail>{{email}}</mail>." },
+          "used": { "title": "This link was already used", "body": "Each link works once. If you want to change your answer, write to <mail>{{email}}</mail>." },
+          "invalid": { "title": "This link doesn't work", "body": "It may be incomplete, or a newer email replaced it. Please use the latest email, or write to <mail>{{email}}</mail>." },
+          "unavailable": { "title": "Not available right now", "body": "This service isn't set up yet. Please write to <mail>{{email}}</mail>." },
+          "error": { "title": "Something went wrong", "body": "Please try again later, or write to <mail>{{email}}</mail>." }
+        }
+      },
+      "withdraw": {
+        "pageTitle": "Withdraw consent",
+        "title": "Withdraw consent and delete your child's account",
+        "body": "If you withdraw consent, we delete your child's BHAO account straight away:",
+        "item1": "their login, username and age group;",
+        "item2": "their game results, coins, campaign and library progress, and rooms;",
+        "item3": "your consent record.",
+        "help": "This can't be undone. Games played offline stay on their device. Questions: <mail>{{email}}</mail>.",
+        "button": "Delete my child's account",
+        "confirmTitle": "Delete the account now?",
+        "confirmBody": "This permanently deletes your child's BHAO account and data.",
+        "confirm": "Yes, delete it",
+        "doneTitle": "Account deleted",
+        "doneBody": "Consent is withdrawn and your child's account and data are deleted.",
+        "invalid": "This link doesn't work any more (maybe the account was already deleted). Write to <mail>{{email}}</mail> and we'll help."
+      }
+    },
+    "comms": {
+      "childSafe": "Players under 18 use quick chat only. Voice and typed chat are off."
+    },
+    "legal": {
+      "privacyDoc": {
+        "account": {
+          "age": "<strong>Age group</strong>: 13 to 17 or 18+ (from the year of birth you choose; we never keep the year) and when you answered."
+        },
+        "services": {
+          "resend": "<strong>Resend</strong>: sends the consent and confirmation emails to parents (their email address and the email text)."
+        },
+        "parents": {
+          "title": "Players aged 13 to 17 and parental consent",
+          "p1": "Under India's Digital Personal Data Protection Act, 2023 everyone under 18 is a child. If you tell us you are 13 to 17, your account stays on hold until a parent or guardian agrees. You give us their email and we send them a link. Until they agree, we store only what this needs: your account, your age group and the parent's email; your games stay on your device.",
+          "p2": "The parent sees what we collect and the safety limits, and confirms that they are your parent or guardian and an adult (name and year of birth). We keep their email, name, the time and the notice version they agreed to; we don't keep their year of birth. If they decline, the account is deleted.",
+          "p3": "A parent can see, correct or delete their child's data by emailing <mail>{{email}}</mail>, and can withdraw consent at any time with the link in our email, which deletes the account.",
+          "limitsIntro": "For players aged 13 to 17:",
+          "grievance": "Grievance contact for parents and players: <mail>{{email}}</mail>."
+        }
+      },
+      "termsDoc": {
+        "account": {
+          "consent": "If you are 13 to 17, a parent or guardian must agree through the link we email them before you can play online, and some features are limited (see the Privacy Policy). A parent can withdraw consent at any time, which deletes the account."
+        }
+      }
+    }
+  },
+  "hi": {
+    "age": {
+      "title": "आपका जन्म किस साल हुआ?",
+      "accountTitle": "बस एक सवाल",
+      "body": "हम हर खिलाड़ी से यह एक बार पूछते हैं। हम सिर्फ़ आपका उम्र-समूह रखते हैं, जन्म का साल कभी नहीं।",
+      "yearLabel": "जन्म का साल",
+      "choose": "साल चुनें",
+      "privacyHint": "सिर्फ़ आपका उम्र-समूह सेव होता है।",
+      "signupHint": "हम सबसे पूछते हैं। सिर्फ़ उम्र-समूह सेव होता है, साल नहीं।",
+      "required": "कृपया अपना जन्म का साल चुनें।",
+      "continue": "आगे बढ़ें",
+      "saveFailed": "सेव नहीं हुआ। इंटरनेट देखें और फिर कोशिश करें।",
+      "confirmTitle": "{{year}} में जन्म?",
+      "confirmBody": "BHAO {{age}} साल और उससे बड़े खिलाड़ियों के लिए है, इसलिए यह अकाउंट बंद होगा और इसका डेटा मिटा दिया जाएगा।",
+      "confirmYes": "हाँ, सही है",
+      "changeYear": "साल बदलें",
+      "blockTitle": "BHAO {{age}}+ उम्र के लिए है",
+      "blockBody": "सच बताने के लिए धन्यवाद! BHAO {{age}} साल और उससे बड़े खिलाड़ियों के लिए बना है। जब आप {{age}} के हो जाएँ, तब ज़रूर वापस आइए।",
+      "blockGrownUps": "बड़ों को कोई सवाल हो तो {{email}} पर लिखें।",
+      "blockHome": "शुरुआत पर वापस"
+    },
+    "consent": {
+      "child": {
+        "title": "माता-पिता की हाँ का इंतज़ार",
+        "body": "आपकी उम्र 18 से कम है, इसलिए ऑनलाइन खेलने से पहले माता-पिता या अभिभावक की हाँ चाहिए। हम उन्हें एक लिंक ईमेल करेंगे।",
+        "emailLabel": "माता-पिता या अभिभावक का ईमेल",
+        "emailHint": "इसका इस्तेमाल सिर्फ़ उनकी हाँ पूछने के लिए होगा।",
+        "send": "माता-पिता को भेजें",
+        "cancel": "रद्द करें",
+        "sent": "हमने {{email}} पर ईमेल भेजा है। उनसे कहें कि ईमेल खोलकर Approve दबाएँ। लिंक {{days}} दिन तक चलेगा।",
+        "sentNow": "भेज दिया! हमने {{email}} पर ईमेल भेजा है। उनसे कहें कि ईमेल खोलकर Approve दबाएँ। लिंक {{days}} दिन तक चलेगा।",
+        "checkAgain": "माता-पिता ने हाँ कह दी, फिर से देखें",
+        "resend": "ईमेल फिर भेजें",
+        "resendIn": "{{time}} में फिर भेजें",
+        "change": "ईमेल बदलें",
+        "loading": "देख रहे हैं…",
+        "meanwhile": "तब तक आप इसी फ़ोन पर प्रैक्टिस, कैंपेन, ट्यूटोरियल और लाइब्रेरी खेल सकते हैं।",
+        "err": {
+          "invalidEmail": "यह ईमेल पता सही नहीं लग रहा।",
+          "rateLimited": "अभी बहुत ईमेल भेजे जा चुके हैं। कृपया थोड़ी देर बाद कोशिश करें।",
+          "rateLimitedWait": "दूसरा ईमेल भेजने से पहले {{time}} रुकें।",
+          "emailDown": "अभी ईमेल नहीं भेज पाए। बाद में कोशिश करें, या माता-पिता से {{email}} पर लिखने को कहें।",
+          "offlineSetup": "ऑनलाइन सुविधाएँ अभी उपलब्ध नहीं हैं। आप ऑफ़लाइन खेल सकते हैं।",
+          "network": "इंटरनेट नहीं है? कनेक्शन देखें और फिर कोशिश करें।",
+          "generic": "कुछ गड़बड़ हुई। कृपया फिर कोशिश करें।"
+        }
+      },
+      "pending": {
+        "title": "बस थोड़ा और!",
+        "body": "माता-पिता के हाँ कहते ही ऑनलाइन गेम, लीडरबोर्ड और चैट खुल जाएँगे।",
+        "playOffline": "तब तक ऑफ़लाइन खेलें"
+      },
+      "home": {
+        "sub": "माता-पिता की हाँ का इंतज़ार · प्रगति इस फ़ोन पर सेव है",
+        "friendsBody": "माता-पिता की हाँ के बाद खुलेगा",
+        "friendsLock": "माता-पिता की हाँ"
+      },
+      "profile": {
+        "title": "माता-पिता का इंतज़ार",
+        "body": "आपका अकाउंट तैयार है। माता-पिता या अभिभावक की मंज़ूरी के बाद ऑनलाइन खेल खुलेगा।",
+        "open": "स्थिति देखें"
+      },
+      "limits": {
+        "leaderboard": "18 से कम उम्र के खिलाड़ी सार्वजनिक लीडरबोर्ड पर नहीं दिखते।",
+        "rooms": "मल्टीप्लेयर सिर्फ़ प्राइवेट रूम में, जिनमें दोस्त इनवाइट कोड से आते हैं (अनजान खिलाड़ियों से कोई मैच नहीं)।",
+        "voice": "वॉइस चैट बंद है।",
+        "chat": "सिर्फ़ पहले से लिखे क्विक-चैट संदेश; टाइप की गई चैट नहीं, और दूसरों के टाइप किए संदेश भी नहीं दिखते।",
+        "tracking": "स्क्रीन रिकॉर्डिंग (सेशन रीप्ले) और परफ़ॉर्मेंस ट्रैकिंग नहीं; सिर्फ़ क्रैश रिपोर्ट, बिना नाम या ईमेल के।",
+        "money": "कोई विज्ञापन नहीं, कोई ख़रीदारी नहीं और असली पैसा नहीं।"
+      },
+      "parent": {
+        "pageTitle": "माता-पिता की सहमति",
+        "title": "आपका बच्चा BHAO खेलना चाहता है",
+        "intro": "BHAO एक मुफ़्त कार्ड गेम है जो भारत के युवाओं को पैसों के बारे में सिखाता है: बचत, निवेश, बीमा और धोखाधड़ी से बचना। इसमें असली पैसा इस्तेमाल नहीं होता और कुछ ख़रीदा नहीं जा सकता। आपके बच्चे ने हमसे आपको ईमेल करने को कहा, क्योंकि 18 से कम उम्र के खिलाड़ियों को ऑनलाइन खेलने से पहले माता-पिता या अभिभावक की सहमति चाहिए।",
+        "dataTitle": "हम आपके बच्चे के बारे में क्या रखते हैं",
+        "data": {
+          "account": "उनका ईमेल पता और लॉगिन (या Google साइन-इन)।",
+          "profile": "उनका यूज़रनेम और अवतार।",
+          "age": "उनका उम्र-समूह (13 से 17)। हम जन्म का साल कभी नहीं रखते।",
+          "progress": "गेम के नतीजे, कॉइन्स, कैंपेन के सितारे, लाइब्रेरी की प्रगति और मल्टीप्लेयर मैच के नतीजे।",
+          "reports": "शिकायतें, अगर आपका बच्चा किसी खिलाड़ी की शिकायत करे या उसकी शिकायत हो (हाल की चैट लाइनों के साथ)।",
+          "errors": "ऐप टूटने पर क्रैश रिपोर्ट, बिना उनके नाम या ईमेल के।",
+          "parent": "आपसे: आपका ईमेल, आपका नाम और सहमति देने का समय (आपका जन्म का साल नहीं)।"
+        },
+        "dataNot": "आपकी मंज़ूरी तक आपके बच्चे के खेलों के बारे में कुछ भी हमारे सर्वर पर सेव नहीं होता; सब उनके डिवाइस पर रहता है।",
+        "limitsTitle": "हम आपके बच्चे को सुरक्षित कैसे रखते हैं",
+        "rightsTitle": "आपके विकल्प",
+        "rights": {
+          "withdraw": "आप हमारे ईमेल में दिए \"सहमति वापस लें\" लिंक से कभी भी सहमति वापस ले सकते हैं। इससे आपके बच्चे का अकाउंट और डेटा मिट जाता है।",
+          "access": "आप अपने बच्चे का डेटा देखने, सुधारने या मिटवाने के लिए <mail>{{email}}</mail> पर ईमेल कर सकते हैं।",
+          "grievance": "शिकायत संपर्क: <mail>{{email}}</mail>। हम उचित समय में जवाब देते हैं।"
+        },
+        "formTitle": "आपकी सहमति",
+        "nameLabel": "आपका पूरा नाम",
+        "yearLabel": "आपका जन्म का साल",
+        "yearHint": "यह देखने के लिए कि आप वयस्क हैं। हम इसे सेव नहीं करते।",
+        "declaration": "मैं इस बच्चे का माता-पिता या कानूनी अभिभावक हूँ, मेरी उम्र 18 साल या उससे ज़्यादा है, और मैं सहमत हूँ कि BHAO ऊपर बताए तरीके से मेरे बच्चे का डेटा इस्तेमाल कर सकता है।",
+        "methodNote": "हम आपकी सहमति इस ईमेल लिंक और आपकी घोषणा से दर्ज करते हैं (सूचना संस्करण {{version}})।",
+        "approve": "मंज़ूर करें",
+        "decline": "मना करें और अकाउंट मिटाएँ",
+        "declineConfirmTitle": "मना करें और मिटाएँ?",
+        "declineConfirmBody": "आपके बच्चे का BHAO अकाउंट अभी मिटा दिया जाएगा। ऑफ़लाइन खेले गए गेम उनके डिवाइस पर रहेंगे।",
+        "declineConfirm": "हाँ, मिटा दें",
+        "keepIt": "वापस जाएँ",
+        "approvedTitle": "धन्यवाद!",
+        "approvedBody": "अब आपका बच्चा ऊपर दी गई सुरक्षा सीमाओं के साथ ऑनलाइन खेल सकता है। हमने आपको एक पुष्टि ईमेल भेजा है, जिसमें कभी भी सहमति वापस लेने का लिंक है।",
+        "declinedTitle": "हो गया",
+        "declinedBody": "आपने मना किया, और आपके बच्चे का अकाउंट मिटा दिया गया है।",
+        "err": {
+          "name": "कृपया अपना पूरा नाम लिखें।",
+          "year": "कृपया अपना जन्म का साल चुनें।",
+          "notAdult": "सिर्फ़ वयस्क (18 या उससे ज़्यादा उम्र) ही सहमति दे सकते हैं।",
+          "declaration": "पुष्टि के लिए कृपया बॉक्स पर टिक करें।",
+          "generic": "कुछ गड़बड़ हुई। कृपया थोड़ी देर में फिर कोशिश करें।"
+        },
+        "problem": {
+          "expired": { "title": "इस लिंक की समय-सीमा ख़त्म हो गई", "body": "सहमति लिंक 7 दिन तक चलते हैं। आपका बच्चा ऐप से नया लिंक भेज सकता है, या <mail>{{email}}</mail> पर लिखें।" },
+          "used": { "title": "यह लिंक पहले ही इस्तेमाल हो चुका है", "body": "हर लिंक एक ही बार चलता है। अपना जवाब बदलना हो तो <mail>{{email}}</mail> पर लिखें।" },
+          "invalid": { "title": "यह लिंक काम नहीं कर रहा", "body": "शायद यह अधूरा है, या किसी नए ईमेल ने इसकी जगह ले ली है। कृपया सबसे नया ईमेल इस्तेमाल करें, या <mail>{{email}}</mail> पर लिखें।" },
+          "unavailable": { "title": "अभी उपलब्ध नहीं", "body": "यह सेवा अभी सेट नहीं हुई है। कृपया <mail>{{email}}</mail> पर लिखें।" },
+          "error": { "title": "कुछ गड़बड़ हुई", "body": "कृपया बाद में फिर कोशिश करें, या <mail>{{email}}</mail> पर लिखें।" }
+        }
+      },
+      "withdraw": {
+        "pageTitle": "सहमति वापस लें",
+        "title": "सहमति वापस लें और बच्चे का अकाउंट मिटाएँ",
+        "body": "अगर आप सहमति वापस लेते हैं, तो हम आपके बच्चे का BHAO अकाउंट तुरंत मिटा देते हैं:",
+        "item1": "उनका लॉगिन, यूज़रनेम और उम्र-समूह;",
+        "item2": "उनके गेम के नतीजे, कॉइन्स, कैंपेन और लाइब्रेरी की प्रगति, और रूम;",
+        "item3": "आपकी सहमति का रिकॉर्ड।",
+        "help": "यह वापस नहीं हो सकता। ऑफ़लाइन खेले गए गेम उनके डिवाइस पर रहते हैं। सवाल: <mail>{{email}}</mail>।",
+        "button": "मेरे बच्चे का अकाउंट मिटाएँ",
+        "confirmTitle": "अकाउंट अभी मिटाएँ?",
+        "confirmBody": "इससे आपके बच्चे का BHAO अकाउंट और डेटा हमेशा के लिए मिट जाएगा।",
+        "confirm": "हाँ, मिटा दें",
+        "doneTitle": "अकाउंट मिटा दिया गया",
+        "doneBody": "सहमति वापस ले ली गई है और आपके बच्चे का अकाउंट और डेटा मिटा दिया गया है।",
+        "invalid": "यह लिंक अब काम नहीं करता (शायद अकाउंट पहले ही मिट चुका है)। <mail>{{email}}</mail> पर लिखें, हम मदद करेंगे।"
+      }
+    },
+    "comms": {
+      "childSafe": "18 से कम उम्र के खिलाड़ी सिर्फ़ क्विक चैट इस्तेमाल करते हैं। वॉइस और टाइप की गई चैट बंद है।"
+    },
+    "legal": {
+      "privacyDoc": {
+        "account": {
+          "age": "<strong>उम्र-समूह</strong>: 13 से 17 या 18+ (आपके चुने जन्म के साल से; साल हम कभी नहीं रखते) और आपने कब जवाब दिया।"
+        },
+        "services": {
+          "resend": "<strong>Resend</strong>: माता-पिता को सहमति और पुष्टि के ईमेल भेजता है (उनका ईमेल पता और ईमेल का टेक्स्ट)।"
+        },
+        "parents": {
+          "title": "13 से 17 साल के खिलाड़ी और माता-पिता की सहमति",
+          "p1": "भारत के डिजिटल पर्सनल डेटा प्रोटेक्शन एक्ट, 2023 के तहत 18 से कम उम्र का हर व्यक्ति बच्चा है। अगर आप बताते हैं कि आपकी उम्र 13 से 17 है, तो माता-पिता या अभिभावक की सहमति तक आपका अकाउंट रुका रहता है। आप हमें उनका ईमेल देते हैं और हम उन्हें एक लिंक भेजते हैं। उनकी सहमति तक हम सिर्फ़ ज़रूरी चीज़ें रखते हैं: आपका अकाउंट, उम्र-समूह और माता-पिता का ईमेल; आपके गेम आपके डिवाइस पर रहते हैं।",
+          "p2": "माता-पिता देखते हैं कि हम क्या रखते हैं और सुरक्षा सीमाएँ क्या हैं, और पुष्टि करते हैं कि वे आपके माता-पिता या अभिभावक और वयस्क हैं (नाम और जन्म का साल)। हम उनका ईमेल, नाम, समय और जिस सूचना संस्करण पर वे सहमत हुए वह रखते हैं; उनका जन्म का साल नहीं रखते। अगर वे मना करते हैं, तो अकाउंट मिटा दिया जाता है।",
+          "p3": "माता-पिता <mail>{{email}}</mail> पर ईमेल करके अपने बच्चे का डेटा देख, सुधार या मिटवा सकते हैं, और हमारे ईमेल के लिंक से कभी भी सहमति वापस ले सकते हैं, जिससे अकाउंट मिट जाता है।",
+          "limitsIntro": "13 से 17 साल के खिलाड़ियों के लिए:",
+          "grievance": "माता-पिता और खिलाड़ियों के लिए शिकायत संपर्क: <mail>{{email}}</mail>।"
+        }
+      },
+      "termsDoc": {
+        "account": {
+          "consent": "अगर आपकी उम्र 13 से 17 है, तो ऑनलाइन खेलने से पहले माता-पिता या अभिभावक को हमारे ईमेल किए लिंक से सहमति देनी होगी, और कुछ सुविधाएँ सीमित रहेंगी (प्राइवेसी पॉलिसी देखें)। माता-पिता कभी भी सहमति वापस ले सकते हैं, जिससे अकाउंट मिट जाता है।"
+        }
+      }
+    }
+  },
+  "hinglish": {
+    "age": {
+      "title": "Aapka janam kis saal hua?",
+      "accountTitle": "Bas ek sawaal",
+      "body": "Hum har player se ye ek baar poochte hain. Hum sirf aapka age group rakhte hain, janam ka saal kabhi nahi.",
+      "yearLabel": "Janam ka saal",
+      "choose": "Saal chuno",
+      "privacyHint": "Sirf aapka age group save hota hai.",
+      "signupHint": "Hum sabse poochte hain. Sirf age group save hota hai, saal nahi.",
+      "required": "Please apna janam ka saal chuno.",
+      "continue": "Aage badho",
+      "saveFailed": "Save nahi hua. Internet check karo aur phir try karo.",
+      "confirmTitle": "{{year}} mein janam?",
+      "confirmBody": "BHAO {{age}} saal aur usse bade players ke liye hai, isliye ye account band hoga aur iska data delete ho jayega.",
+      "confirmYes": "Haan, sahi hai",
+      "changeYear": "Saal badlo",
+      "blockTitle": "BHAO {{age}}+ ke liye hai",
+      "blockBody": "Sach batane ke liye thanks! BHAO {{age}} saal aur usse bade players ke liye bana hai. Jab aap {{age}} ke ho jao, tab zaroor wapas aana.",
+      "blockGrownUps": "Badon ka koi sawaal ho toh {{email}} pe likho.",
+      "blockHome": "Shuru pe wapas"
+    },
+    "consent": {
+      "child": {
+        "title": "Parent ki haan ka intezaar",
+        "body": "Aapki umar 18 se kam hai, isliye online khelne se pehle parent ya guardian ki haan chahiye. Hum unhe ek link email karenge.",
+        "emailLabel": "Parent ya guardian ka email",
+        "emailHint": "Iska use sirf unki haan poochne ke liye hoga.",
+        "send": "Parent ko bhejo",
+        "cancel": "Cancel",
+        "sent": "Humne {{email}} pe email bheja hai. Unse kaho ki email kholke Approve dabayein. Link {{days}} din tak chalega.",
+        "sentNow": "Bhej diya! Humne {{email}} pe email bheja hai. Unse kaho ki email kholke Approve dabayein. Link {{days}} din tak chalega.",
+        "checkAgain": "Parent ne haan bol di, phir se check karo",
+        "resend": "Email phir bhejo",
+        "resendIn": "{{time}} mein phir bhejo",
+        "change": "Email badlo",
+        "loading": "Check kar rahe hain…",
+        "meanwhile": "Tab tak aap isi phone pe Practice, Campaign, Tutorial aur Library khel sakte ho.",
+        "err": {
+          "invalidEmail": "Ye email address sahi nahi lag raha.",
+          "rateLimited": "Abhi bahut emails bheje ja chuke hain. Thodi der baad try karo.",
+          "rateLimitedWait": "Doosra email bhejne se pehle {{time}} ruko.",
+          "emailDown": "Abhi email nahi bhej paaye. Baad mein try karo, ya parent se {{email}} pe likhne ko kaho.",
+          "offlineSetup": "Online features abhi available nahi hain. Aap offline khel sakte ho.",
+          "network": "Internet nahi hai? Connection check karo aur phir try karo.",
+          "generic": "Kuch gadbad hui. Please phir try karo."
+        }
+      },
+      "pending": {
+        "title": "Bas thoda aur!",
+        "body": "Parent ke haan bolte hi online games, leaderboard aur chat khul jayenge.",
+        "playOffline": "Tab tak offline khelo"
+      },
+      "home": {
+        "sub": "Parent ki haan ka intezaar · progress is phone pe save hai",
+        "friendsBody": "Parent ki haan ke baad khulega",
+        "friendsLock": "Parent ki haan"
+      },
+      "profile": {
+        "title": "Parent ka intezaar",
+        "body": "Aapka account ready hai. Parent ya guardian ke approve karne ke baad online play khulega.",
+        "open": "Status dekho"
+      },
+      "limits": {
+        "leaderboard": "18 se kam umar ke players public leaderboard pe nahi dikhte.",
+        "rooms": "Multiplayer sirf private rooms mein, jinme dost invite code se aate hain (random players se koi match nahi).",
+        "voice": "Voice chat band hai.",
+        "chat": "Sirf ready-made quick-chat messages; typed chat nahi, aur doosron ke typed messages bhi nahi dikhte.",
+        "tracking": "Screen recording (session replay) aur performance tracking nahi; sirf crash reports, bina naam ya email ke.",
+        "money": "Koi ads nahi, koi purchase nahi aur real money nahi."
+      },
+      "parent": {
+        "pageTitle": "Parent ki consent",
+        "title": "Aapka bachcha BHAO khelna chahta hai",
+        "intro": "BHAO ek free card game hai jo India ke young logon ko paise ke baare mein sikhata hai: saving, investing, insurance aur scams se bachna. Isme real money use nahi hota aur kuch khareeda nahi ja sakta. Aapke bachche ne humse aapko email karne ko kaha, kyunki 18 se kam umar ke players ko online khelne se pehle parent ya guardian ki consent chahiye.",
+        "dataTitle": "Hum aapke bachche ke baare mein kya rakhte hain",
+        "data": {
+          "account": "Unka email address aur login (ya Google sign-in).",
+          "profile": "Unka username aur avatar.",
+          "age": "Unka age group (13 se 17). Hum janam ka saal kabhi nahi rakhte.",
+          "progress": "Game results, coins, campaign stars, library progress aur multiplayer match results.",
+          "reports": "Reports, agar aapka bachcha kisi player ko report kare ya use report kiya jaye (recent chat lines ke saath).",
+          "errors": "App crash hone pe crash reports, bina unke naam ya email ke.",
+          "parent": "Aapse: aapka email, aapka naam aur consent dene ka time (aapka janam ka saal nahi)."
+        },
+        "dataNot": "Aapke approve karne tak aapke bachche ke games ke baare mein kuch bhi hamare server pe save nahi hota; sab unke device pe rehta hai.",
+        "limitsTitle": "Hum aapke bachche ko safe kaise rakhte hain",
+        "rightsTitle": "Aapke options",
+        "rights": {
+          "withdraw": "Aap hamare email ke \"withdraw\" link se kabhi bhi consent wapas le sakte ho. Isse aapke bachche ka account aur data delete ho jata hai.",
+          "access": "Apne bachche ka data dekhne, sahi karne ya delete karwane ke liye <mail>{{email}}</mail> pe email karo.",
+          "grievance": "Grievance contact: <mail>{{email}}</mail>. Hum reasonable time mein reply karte hain."
+        },
+        "formTitle": "Aapki consent",
+        "nameLabel": "Aapka poora naam",
+        "yearLabel": "Aapka janam ka saal",
+        "yearHint": "Ye check karne ke liye ki aap adult ho. Hum ise save nahi karte.",
+        "declaration": "Main is bachche ka parent ya legal guardian hoon, meri umar 18 ya usse zyada hai, aur main agree karta/karti hoon ki BHAO upar bataye tareeke se mere bachche ka data use kar sakta hai.",
+        "methodNote": "Hum aapki consent is email link aur aapke declaration se record karte hain (notice version {{version}}).",
+        "approve": "Approve karo",
+        "decline": "Mana karo aur account delete karo",
+        "declineConfirmTitle": "Mana karke delete karein?",
+        "declineConfirmBody": "Aapke bachche ka BHAO account abhi delete ho jayega. Offline khele gaye games unke device pe rahenge.",
+        "declineConfirm": "Haan, delete karo",
+        "keepIt": "Wapas jao",
+        "approvedTitle": "Thank you!",
+        "approvedBody": "Ab aapka bachcha upar di gayi safety limits ke saath online khel sakta hai. Humne aapko ek confirmation email bheja hai, jisme kabhi bhi consent wapas lene ka link hai.",
+        "declinedTitle": "Ho gaya",
+        "declinedBody": "Aapne mana kiya, aur aapke bachche ka account delete ho gaya hai.",
+        "err": {
+          "name": "Please apna poora naam likho.",
+          "year": "Please apna janam ka saal chuno.",
+          "notAdult": "Sirf adult (18 ya usse zyada) hi consent de sakte hain.",
+          "declaration": "Confirm karne ke liye please box tick karo.",
+          "generic": "Kuch gadbad hui. Thodi der mein phir try karo."
+        },
+        "problem": {
+          "expired": { "title": "Ye link expire ho gaya", "body": "Consent links 7 din tak chalte hain. Aapka bachcha app se naya link bhej sakta hai, ya <mail>{{email}}</mail> pe likho." },
+          "used": { "title": "Ye link pehle hi use ho chuka hai", "body": "Har link ek hi baar chalta hai. Apna jawab badalna ho toh <mail>{{email}}</mail> pe likho." },
+          "invalid": { "title": "Ye link kaam nahi kar raha", "body": "Shayad ye adhoora hai, ya kisi naye email ne iski jagah le li. Please latest email use karo, ya <mail>{{email}}</mail> pe likho." },
+          "unavailable": { "title": "Abhi available nahi", "body": "Ye service abhi set up nahi hui hai. Please <mail>{{email}}</mail> pe likho." },
+          "error": { "title": "Kuch gadbad hui", "body": "Please baad mein try karo, ya <mail>{{email}}</mail> pe likho." }
+        }
+      },
+      "withdraw": {
+        "pageTitle": "Consent wapas lo",
+        "title": "Consent wapas lo aur bachche ka account delete karo",
+        "body": "Agar aap consent wapas lete ho, toh hum aapke bachche ka BHAO account turant delete kar dete hain:",
+        "item1": "unka login, username aur age group;",
+        "item2": "unke game results, coins, campaign aur library progress, aur rooms;",
+        "item3": "aapki consent ka record.",
+        "help": "Ye undo nahi ho sakta. Offline khele gaye games unke device pe rehte hain. Sawaal: <mail>{{email}}</mail>.",
+        "button": "Mere bachche ka account delete karo",
+        "confirmTitle": "Account abhi delete karein?",
+        "confirmBody": "Isse aapke bachche ka BHAO account aur data hamesha ke liye delete ho jayega.",
+        "confirm": "Haan, delete karo",
+        "doneTitle": "Account delete ho gaya",
+        "doneBody": "Consent wapas le li gayi hai aur aapke bachche ka account aur data delete ho gaya hai.",
+        "invalid": "Ye link ab kaam nahi karta (shayad account pehle hi delete ho chuka hai). <mail>{{email}}</mail> pe likho, hum help karenge."
+      }
+    },
+    "comms": {
+      "childSafe": "18 se kam umar ke players sirf quick chat use karte hain. Voice aur typed chat band hai."
+    },
+    "legal": {
+      "privacyDoc": {
+        "account": {
+          "age": "<strong>Age group</strong>: 13 se 17 ya 18+ (aapke chune janam ke saal se; saal hum kabhi nahi rakhte) aur aapne kab jawab diya."
+        },
+        "services": {
+          "resend": "<strong>Resend</strong>: parents ko consent aur confirmation emails bhejta hai (unka email address aur email ka text)."
+        },
+        "parents": {
+          "title": "13 se 17 saal ke players aur parent ki consent",
+          "p1": "India ke Digital Personal Data Protection Act, 2023 ke under 18 se kam umar ka har insaan bachcha hai. Agar aap batate ho ki aapki umar 13 se 17 hai, toh parent ya guardian ki haan tak aapka account hold pe rehta hai. Aap humein unka email dete ho aur hum unhe ek link bhejte hain. Unki haan tak hum sirf zaroori cheezein rakhte hain: aapka account, age group aur parent ka email; aapke games aapke device pe rehte hain.",
+          "p2": "Parent dekhte hain ki hum kya rakhte hain aur safety limits kya hain, aur confirm karte hain ki wo aapke parent ya guardian aur adult hain (naam aur janam ka saal). Hum unka email, naam, time aur jis notice version pe wo agree hue wo rakhte hain; unka janam ka saal nahi rakhte. Agar wo mana karte hain, toh account delete ho jata hai.",
+          "p3": "Parent <mail>{{email}}</mail> pe email karke apne bachche ka data dekh, sahi ya delete karwa sakte hain, aur hamare email ke link se kabhi bhi consent wapas le sakte hain, jisse account delete ho jata hai.",
+          "limitsIntro": "13 se 17 saal ke players ke liye:",
+          "grievance": "Parents aur players ke liye grievance contact: <mail>{{email}}</mail>."
+        }
+      },
+      "termsDoc": {
+        "account": {
+          "consent": "Agar aapki umar 13 se 17 hai, toh online khelne se pehle parent ya guardian ko hamare email kiye link se consent deni hogi, aur kuch features limited rahenge (Privacy Policy dekho). Parent kabhi bhi consent wapas le sakte hain, jisse account delete ho jata hai."
+        }
+      }
+    }
+  }
+}

@@ -83,6 +83,11 @@ export interface Profile {
   guild_id: string | null
   last_login_date: string | null
   login_streak: number
+  /** Age band from the age question ('under13' is never stored). Null = not asked yet. */
+  age_band?: '13to17' | 'adult' | null
+  age_recorded_at?: string | null
+  /** Server-derived: unknown (no age yet) | not_required (adult) | pending_consent | active_minor. */
+  consent_status?: 'unknown' | 'not_required' | 'pending_consent' | 'active_minor'
   created_at: string
   updated_at: string
 }
