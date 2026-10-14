@@ -3,8 +3,9 @@
 Ready-to-paste material for the Play Console listing, content rating, Data safety form and
 User Generated Content (UGC) declarations. Everything here was checked against the code at the
 time of writing (October 2026): `src/lib/supabase.ts`, `src/lib/auth.ts`, `src/main.tsx` (Sentry),
-`supabase/migrations/*`, `src/lib/roomChat.ts`, `src/lib/voiceChat.ts`, `src/lib/reports.ts` and the
-`localStorage` keys in `src/`. If the code changes (new SDK, analytics, ads, purchases), update this
+`supabase/migrations/*`, `src/lib/roomChat.ts`, `src/lib/voiceChat.ts`, `src/lib/reports.ts`,
+`src/lib/guestMerge.ts`, `src/lib/libraryProgress.ts`, `src/components/ui/avatarPresets.ts` and the
+`localStorage` keys in `src/`. Last re-checked 14 October 2026. If the code changes (new SDK, analytics, ads, purchases), update this
 file and the Data safety form together.
 
 Play policies change. Anything marked **(verify)** should be checked in Play Console before you submit.
@@ -75,6 +76,8 @@ SAFE AND FAIR
 
 BHAO is for players 13 and older. It is an educational game and not financial advice.
 ```
+
+(The age line must match `MIN_AGE` in `src/config/age.ts`; see `docs/age-policy.md`.)
 
 Hindi:
 ```
@@ -177,10 +180,14 @@ Also in **App content**:
 
 ## 4. Target audience and content
 
+- The minimum age lives in one place, `MIN_AGE` in `src/config/age.ts` (currently **13**); the in-app
+  legal text and Landing footer read it. **The owner has not decided** between "18+ only" and
+  "13+ with verifiable parental consent" (DPDP Act 2023): see `docs/age-policy.md`. The answers below are
+  for today's `MIN_AGE = 13`; if it becomes 18, select only "18 and over" and update section 1.
 - **Target age groups: 13–15, 16–17, 18 and over.** Do **not** select any group under 13.
 - Why 13+: multiplayer has real-time text chat and peer-to-peer voice chat with other players,
   including strangers. Apps that target children under 13 must meet the Families policy, which
-  restricts open chat with strangers. The in-app policy states a minimum age of 13
+  restricts open chat with strangers. The in-app policy states the minimum age from `MIN_AGE`
   (Privacy Policy section 11, Terms section 3).
 - "Could your store listing unintentionally appeal to children?" Answer honestly. The art is cartoony,
   so Play may ask; explain the money-management theme, the 13+ minimum, chat moderation (filters,
@@ -192,23 +199,34 @@ Also in **App content**:
 
 ## 5. Data safety form
 
+Re-checked against the code on 14 October 2026, including the guest-progress import
+(`20261014000000_guest_campaign_import.sql`, `src/lib/guestMerge.ts`), server-side Gyaan Library progress
+(`20261014000100_library_progress.sql`, `src/lib/libraryProgress.ts`) and in-app avatar presets
+(`src/components/ui/avatarPresets.ts`).
+
 ### What the app actually does with data
 
 | Where | What | Source in code |
 |---|---|---|
-| Supabase Auth | Email + password (hashed by Supabase) or Google sign-in (email, Google account id) | `src/lib/auth.ts` |
-| Supabase DB `profiles`, `leaderboard` | Username, avatar URL, coins, XP, rank points, games played/won, streaks, daily-login date | migrations `create_profiles_table`, `economy_profiles`, `create_leaderboard` |
-| `matches`, `match_results`, `campaign_progress`, `player_contracts`, `user_stocks` | Match results, campaign stars, daily contract progress, virtual stock holdings | economy / campaign / market migrations |
-| `multiplayer_rooms`, `room_players`, `multiplayer_room_state`, `room_player_hands` | Room membership, seat, last-seen heartbeat, game state | multiplayer migrations |
-| `player_reports` | Reporter id, reported id, room id, reason, optional details text, reported player's last ≤10 chat lines | `20261013300000_player_reports.sql`, `src/lib/reports.ts` |
+| Supabase Auth | Email + password (hashed by Supabase), or Google sign-in. With Google, Supabase stores the identity data Google returns (email, name, profile-picture URL, Google account id); the app itself only uses the email. | `src/lib/auth.ts`, `src/lib/nativeAuth.ts` |
+| `profiles`, `leaderboard` | Username, avatar **preset id** (`/avatar/<id>`, a built-in picture: nothing is uploaded), coins, XP, rank points, games played/won, win streaks, last login date + login streak, placement games | `create_profiles_table`, `economy_profiles`, `create_leaderboard` |
+| `matches`, `match_results` | Per match: mode, room or level id, start/finish time, result, placement, final net worth, coins/XP/RP gained, choice statistics (`stats` jsonb) | `20261013000300_matches_and_results.sql` |
+| `campaign_progress` | Per level: stars, best net worth, completion time, `imported` flag (stars that came from a guest import) | `20261013200000_campaign_progress.sql`, `20261014000000_guest_campaign_import.sql` |
+| `campaign_guest_imports` | One row per account **only if the player accepts** the "bring your guest progress" offer: import time, levels offered, levels accepted. The guest's completed levels (id, stars, net worth) are sent once through `import_guest_campaign_progress`. Declining sends nothing. | `20261014000000_guest_campaign_import.sql`, `src/lib/guestMerge.ts`, `src/components/GuestMergePrompt.tsx` |
+| `library_progress` | Gyaan Library: concept ids unlocked / opened, unlock time, update time (signed-in players; guest unlocks are added on the same accepted import) | `20261014000100_library_progress.sql`, `src/lib/libraryProgress.ts` |
+| `player_contracts`, `user_stocks` | Daily contract progress, virtual stock holdings | contracts / market migrations |
+| `multiplayer_rooms`, `room_players`, `multiplayer_room_state`, `room_player_hands` | Room membership, seat, last-seen heartbeat, game state, cards in hand | multiplayer migrations |
+| `player_reports` | Reporter id, reported id, room id, time, reason, optional details text (≤ 500 chars), reported player's last ≤ 10 chat lines | `20261013300000_player_reports.sql`, `src/lib/reports.ts` |
 | Supabase Realtime broadcast | Text chat, quick chat, pokes, voice signalling. **Not stored.** | `src/lib/roomChat.ts`, `src/hooks/useRoomComms.ts` |
-| WebRTC peer-to-peer | Voice audio between players' devices, encrypted (DTLS-SRTP). **Not recorded, never reaches our servers** (unless a TURN relay is configured, which forwards encrypted packets only). Peers and Google STUN see the IP address. | `src/lib/voiceChat.ts` |
-| Sentry (if `VITE_SENTRY_DSN` set) | Crash/error events, 10% performance traces, and Session Replay **only on error** (text and inputs masked). `sendDefaultPii: false`. No user id is attached. | `src/main.tsx`, `src/App.tsx` |
-| On device (`localStorage`) | Supabase session, language, sound setting, guest profile, tutorial done flag, campaign and library progress, `justRegistered` flag | various |
-| Third-party loads | Google Fonts; DiceBear avatar images (the URL includes the player's display name as a seed) | `index.html`, game board components |
+| WebRTC peer-to-peer | Voice audio between players' devices, encrypted (DTLS-SRTP). **Not recorded, never reaches our servers.** A TURN relay is used only if `VITE_TURN_URL` is set; it forwards encrypted packets only. Peers and Google STUN see the IP address. | `src/lib/voiceChat.ts` |
+| Sentry (only if `VITE_SENTRY_DSN` is set) | Crash/error events, 10% performance traces, Session Replay **only on error** (all text and inputs masked, media blocked: SDK defaults). `sendDefaultPii: false`; no user id, username or email is attached. | `src/main.tsx`, `src/App.tsx` |
+| Hosting / API request logs | Supabase and Vercel see the request IP address and user agent in their infrastructure logs (service providers, not used by the app) | n/a |
+| On device (`localStorage`) | Supabase session, `language`, sound and `bhao.reduceMotion` settings, `bhao_guest_profile` (guest name), `bhao_tutorial_done`, `bhao_campaign_*` and `bhao_library_progress:*` (guest and signed-in copies), `bhao_guest_merge:*` / `bhao_guest_merge_claimed` (import offer answered), `justRegistered` | various |
+| Third-party loads | **None** for content: fonts are self-hosted (`public/fonts`, `src/styles/fonts.css`) and avatars are in-app presets. (Google Fonts and DiceBear are gone.) The WhatsApp invite button opens `wa.me` with the invite text only when the player taps it. | `src/styles/fonts.css`, `avatarPresets.ts`, `src/pages/lobby/LobbyViews.tsx` |
 
 No location, contacts, photos, files, SMS, call logs, calendar, advertising ID, payment info, or health
-data. No ads SDK. No analytics SDK besides Sentry.
+data. No ads SDK. No analytics SDK besides Sentry. Android permissions: `INTERNET`, `RECORD_AUDIO`
+(voice chat, requested only on "Join voice"), `MODIFY_AUDIO_SETTINGS`, `VIBRATE`.
 
 ### Form answers
 
@@ -217,13 +235,18 @@ data. No ads SDK. No analytics SDK besides Sentry.
 **Is all of the user data collected by your app encrypted in transit?** Yes (HTTPS/WSS to Supabase and
 Sentry; WebRTC voice is always encrypted).
 
-**Do you provide a way for users to request that their data be deleted?** Yes. In-app:
-Dashboard → Profile → Delete my account (`delete_own_account` RPC deletes the auth user and cascades
-to all tables, including reports). Also by email to support@daanik.com.
-Play also asks for a **web link** where users can request deletion without reinstalling the app:
-use your hosted privacy page (e.g. `https://<your-domain>/privacy`, section 9) which explains both the
-in-app path and the email option. **(verify)** that Play accepts it; if not, add a small
-"Delete your BHAO account" web page with the same steps.
+**Do you provide a way for users to request that their data be deleted?** Yes.
+- In-app: **Profile → Danger zone → Delete account**, type `DELETE`, **Delete forever**.
+  The `delete_own_account` RPC deletes the auth user; every user table cascades from `auth.users`
+  (profiles, leaderboard, matches, match results, campaign progress, `campaign_guest_imports`,
+  `library_progress`, contracts, stocks, rooms the user hosts, room seats and hands, reports made by
+  or about the user). Takes effect immediately.
+- By email: support@daanik.com, completed within 30 days (the public page promises this: someone must
+  own the inbox and do it, via Supabase → Authentication → Users → Delete user).
+- **Web deletion link (required by Play):** `https://game-final-xi.vercel.app/delete-account`
+  (replace the domain if production moves). Public, no sign-in, served by the SPA rewrite in
+  `vercel.json`. It explains the in-app steps (labels taken from the real UI strings), the email option,
+  what is deleted, the timelines, and what stays on the device.
 
 Data types to declare (all: **Collected = Yes, Shared = No**, processed by service providers on your
 behalf, which Play does not count as "sharing"):
@@ -231,30 +254,31 @@ behalf, which Play does not count as "sharing"):
 | Data type (Play name) | Required or optional | Purposes | Notes |
 |---|---|---|---|
 | Personal info → **Email address** | Optional (only if you create an account) | Account management | Supabase Auth. |
+| Personal info → **Name** | Optional | App functionality, Account management | The username shown to other players, and the name Google returns at Google sign-in (stored by Supabase Auth, not shown in the game). |
 | Personal info → **User IDs** | Optional | Account management, App functionality | Supabase user id; Google account id when signing in with Google. |
-| Personal info → **Name** | Optional | App functionality | The username/display name, shown to other players. Declare it: Play counts in-game names that identify a person. |
-| Messages → **Other in-app messages** | Optional | App functionality (safety and moderation) | Only stored when someone **reports** a player: the reported player's last ≤10 chat lines plus the reporter's optional details. Normal chat is not stored, and ephemeral relaying doesn't count as collection, but report storage does. |
-| Audio → **Voice or sound recordings** | **Do not declare** | | Voice is peer-to-peer and never sent to or stored by us. Mention it in the privacy policy (done). **(verify)**: if you later add a TURN relay you run yourself, it still only relays encrypted packets in memory; that is not collection. |
-| App activity → **App interactions** | Optional (account) | App functionality | Match results, campaign stars, contracts, rank points, coins. |
-| App activity → **Other user-generated content** | Optional | App functionality | Report "details" text (if you prefer, declare it here instead of under Messages; don't double-count). |
-| App info and performance → **Crash logs** | Required if Sentry is enabled | Analytics (app stability) | Sentry. |
-| App info and performance → **Diagnostics** | Required if Sentry is enabled | Analytics | Sentry performance traces (10%) and error replays. |
-| Device or other IDs | No | | No advertising ID, no Android ID read. Sentry generates a random session/replay id; it is not a device id. **(verify)** against Sentry's current Play guidance. |
+| Messages → **Other in-app messages** | Optional | App functionality (safety and moderation) | Only stored when someone **reports** a player: the reported player's last ≤ 10 chat lines. Normal chat is relayed, not stored (ephemeral). |
+| App activity → **App interactions** | Optional (account) | App functionality | Match results, campaign stars (incl. imported guest progress), Gyaan Library unlocked/seen concepts, contracts, rank points, coins, login streak. |
+| App activity → **Other user-generated content** | Optional | App functionality (safety and moderation) | The optional free-text "details" of a report. Usernames could also go here; don't double-count with Name. |
+| App info and performance → **Crash logs** | Required (automatic) when Sentry is enabled | Analytics (app stability) | Sentry error events. Users can't opt out in the app. |
+| App info and performance → **Diagnostics** | Required (automatic) when Sentry is enabled | Analytics | Sentry performance traces (10%) and on-error replays. |
+| Audio → **Voice or sound recordings** | **Do not declare** | | Voice is peer-to-peer and never sent to or stored by us. Explained in the privacy policy. **(verify)**: a TURN relay only forwards encrypted packets in memory; that is not collection. |
+| Photos and videos | **Do not declare** | | No photo access or upload. Avatars are built-in presets. (Google sign-in's profile-picture URL sits in Supabase Auth metadata; it is a link, unused by the app.) **(verify)** |
+| Location | **Do not declare** | | No location permission. IP addresses in provider logs are not used to derive location. **(verify)** Play's current wording on IP addresses. |
+| Device or other IDs | **Do not declare** | | No advertising ID, no Android ID read. Sentry's random session/replay id is not a device id. **(verify)** against Sentry's current Play guidance. |
 
 If Sentry is not enabled in the production build (no DSN), drop the two Sentry rows.
 
-**Ephemeral processing:** Play allows "processed ephemerally" for data held only in memory to serve a
-request. Chat/pokes travel over Supabase Realtime and are not stored, so they don't need declaring;
-the report flow is what stores message content.
+**Ephemeral processing:** chat, quick chat, pokes and voice signalling travel over Supabase Realtime
+in memory and are not stored, so they don't need declaring; the report flow is what stores message
+content.
 
-**Security practices to tick:** Data is encrypted in transit ✔. Users can request deletion ✔.
-Do not claim "independent security review" unless you have one.
+**Security practices to tick:** Data is encrypted in transit ✔. Users can request deletion ✔ (with the
+web link above). Do not claim "independent security review" unless you have one.
 
 **Recommended changes before submitting** (small, privacy-positive):
 1. In Sentry project settings, turn on "Prevent storing of IP addresses" (the SDK already sends no PII,
    but Sentry's ingest still sees the request IP).
-2. Consider self-hosting default avatars instead of DiceBear: the image URL sends the player's display
-   name to a third party. If you keep it, mention DiceBear in the privacy policy's third-party list.
+2. Keep the privacy policy, `/delete-account` and this table in sync whenever a table or SDK is added.
 
 ---
 
@@ -348,14 +372,24 @@ Practical plan for a personal account:
 
 ## 9. Pre-submission checklist
 
-- [ ] Privacy policy URL (hosted `/privacy`) entered in Play Console and reachable without login.
-- [ ] Account deletion: in-app path works on the Android build; web deletion link entered.
-- [ ] Data safety form filled from section 5.
-- [ ] Content rating questionnaire done (section 3); target audience 13+ (section 4).
+- [ ] Privacy policy URL entered in Play Console and reachable without login:
+      `https://game-final-xi.vercel.app/privacy` (replace the domain if production moves).
+- [ ] Account deletion URL entered (Data safety → "Delete account URL"):
+      `https://game-final-xi.vercel.app/delete-account`. Open it in a private window to confirm it loads
+      without signing in.
+- [ ] Account deletion works in-app on the Android build (Profile → Danger zone → Delete account), and
+      someone owns support@daanik.com deletion requests (the public page promises 30 days).
+- [ ] Data safety form filled from section 5 (Email, Name, User IDs, Other in-app messages, App
+      interactions, Other user-generated content, plus Crash logs and Diagnostics if Sentry is on).
+- [ ] Production Supabase has every migration applied, including `player_reports`,
+      `guest_campaign_import` and `library_progress`; someone owns report review (section 6).
+- [ ] Minimum age decided (`docs/age-policy.md`), `MIN_AGE` in `src/config/age.ts` set to match, and
+      the target audience (section 4), store text (section 1) and content rating (section 3) agree with it.
+- [ ] Content rating questionnaire done (section 3).
 - [ ] Ads: No. App access: provide a test account (email + password) for reviewers, since multiplayer
       and ranked need sign-in. Note that voice/chat need a second player; mention that in the notes.
-- [ ] `player_reports` migration applied to production Supabase; someone owns report review.
 - [ ] Microphone permission (`RECORD_AUDIO`) is only requested when joining voice; Play may ask why
       the app needs the microphone: "Optional in-game voice chat between players in a multiplayer room.
       Audio is peer-to-peer and not recorded."
+- [ ] Sentry "Prevent storing of IP addresses" turned on (if Sentry is enabled).
 - [ ] Graphics from section 7 uploaded.
