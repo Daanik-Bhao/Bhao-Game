@@ -1,13 +1,14 @@
 # Minimum age: decision note
 
-**Status (2026-10-14): owner chose to keep 13+ for now, with no age check or parental-consent flow yet.**
-This leaves the DPDP risk described below open; revisit before the wide launch (Option B is the
-compliant way to keep 13+). This note compares the two realistic options and what each one
+**Status (2026-10-14): owner chose Option B, keep 13+ and add verifiable parental consent for 13–17.
+Implemented in code (see "Option B as built" at the end); not deployed yet (Supabase keys pending), and the
+open legal questions listed there still need a lawyer.** The comparison below is kept for the record.
+This note compares the two realistic options and what each one
 needs in code, in Play Console and in the legal text. It is an engineering summary, **not legal advice**:
 have a lawyer who knows India's Digital Personal Data Protection Act, 2023 (DPDP Act) and the DPDP
 Rules review the choice before the wider launch.
 
-## Where we are today
+## Where we were before Option B (kept for context)
 
 - `src/config/age.ts` → `MIN_AGE = 13`. It is the only place the number lives: the Landing footer, the
   Privacy Policy, the Terms and the "In short" box read it through i18n (`{{age}}`).
@@ -62,9 +63,84 @@ Again: this is a product/engineering comparison, not legal advice. **Consult a l
 
 ## Checklist when the decision is made
 
-- [ ] `src/config/age.ts` → `MIN_AGE` (and nothing else; grep for a hard-coded age before shipping).
-- [ ] Age question / consent flow built and translated (en, hi, hinglish).
-- [ ] Privacy Policy §11 and Terms §3 reviewed (they read `MIN_AGE`; Option B needs new sections).
-- [ ] docs/play-store.md: store listing age line (§1), target audience (§4), Data safety (§5) if new data
-      (birth year, parent contact) is stored.
+- [x] `src/config/age.ts` → `MIN_AGE` stays 13 (Option B).
+- [x] Age question / consent flow built and translated (en, hi, hinglish).
+- [x] Privacy Policy §11–12 and Terms §3 updated (new section on parental consent, child limits,
+      grievance contact). **Still needs the lawyer's review.**
+- [x] docs/play-store.md: store listing age line (§1), target audience (§4), Data safety (§5: parent
+      email/name, age band), UGC notes for minors (§6), checklist (§9).
 - [ ] Play Console: Target audience and content, and the store listing text, updated in the same release.
+- [ ] Resend set up and the three function secrets deployed (docs/launch-steps.md Step 3b).
+- [ ] Lawyer review of the open questions below.
+
+## Option B as built (2026-10-14)
+
+### Flows
+
+**Age question** (`src/components/age/*`, `src/lib/ageBand.ts`, `src/lib/ageGate.ts`). A neutral year-of-birth
+picker (no "Are you 13+?" yes/no). Asked once per device before the first guest game, inside the email
+sign-up form, after the first Google sign-in (before any profile is written: the profile is created by the
+`create_my_profile` RPC with the band) and once for older accounts with no age record (`set_my_age_band`).
+Only the band (`under13` / `13to17` / `adult`) and a timestamp are kept; the year never leaves the picker.
+Edges: turning 13 this year counts as 13 (lenient); turning 18 this year still counts as a child
+(conservative). Legal pages, `/delete-account`, `/parent-consent*`, Landing and Auth are never behind the gate.
+
+**Under 13**: no account (an account that answers under 13 is deleted by `set_my_age_band('under13')`, after a
+confirm step), a friendly "come back when you're 13" page, and a 24-hour cooldown on the device
+(`bhao_age_block`) that also blocks the sign-up page and signs out new unanswered accounts. Soft measure only:
+clearing the app's data resets it.
+
+**13–17, pending** (`profiles.consent_status = 'pending_consent'`). The server stores only the account (auth
+email), age band, a neutral `player########` username and the parent email the child enters. The app treats
+the account as this device's guest: Practice, Campaign, Tutorial and Library run on local storage only. Every
+online feature (ranked, multiplayer, leaderboard, sync, guest-merge import) shows "Waiting for your parent's
+OK" with send / resend (cooldown) / change email / check again. Server triggers reject game-data writes for
+`unknown` and `pending_consent` accounts (`consent_required`). The name the child typed at sign-up stays on the
+device and is applied after consent.
+
+**Parent** (`supabase/functions/parent-consent`, `/parent-consent?token=…`). The child's request creates a
+single-use consent token (7 days) and a long-lived withdraw token; only SHA-256 hashes are stored; one
+bilingual (English + Hindi) email is sent through Resend. Rate limits on the server: 60 s between sends, 5 per
+child per day, 5 per parent address per day. The public page (en / hi / hinglish) explains BHAO, exactly what
+is collected, the child limits and the parent's choices, then asks for the parent's full name, year of birth
+(must show 18+; checked, not stored) and a declaration checkbox. **Approve** → `parental_consents` row (child,
+parent email, name, method `email_link_declaration`, notice version, time, optional IP HMAC) and
+`active_minor`; a confirmation email with a fresh withdraw link follows. **Decline** → the child account is
+deleted (shared `delete_account_by_id`).
+
+**Withdraw** (`/parent-consent/withdraw?token=…`, link in every consent and confirmation email): confirm →
+the child account and its data are deleted and the child's withdraw tokens revoked. Parents can also write to
+support@daanik.com (`src/config/contact.ts`), named as grievance contact on the page, in the emails and in the
+Privacy Policy.
+
+### Child-safe defaults for `active_minor`
+
+| Limit | Where enforced |
+|---|---|
+| No Sentry Session Replay / performance tracing | `src/lib/telemetry.ts` decides before `Sentry.init` from the stored band: only a known adult gets them (unknown age = off). A minor signing in mid-session stops replay and new traces. |
+| Hidden from the public leaderboard | Server RLS (minors' leaderboard and profile rows visible only to themselves); UI note. |
+| Multiplayer only in private invite-code rooms | Server: `multiplayer_rooms.is_public` (all rooms are private today) + guard rejecting minors creating/joining public rooms. No public/quick match exists in the UI. |
+| No voice chat | Client only (`useRoomComms` childSafe: no voice mesh, no mic button). Voice signalling is Realtime broadcast, which has no server hook today. |
+| Quick-chat presets only | Client only: no typing box, typed messages from others dropped on the minor's device. Same reason. |
+
+### Open legal questions (for the lawyer)
+
+1. **Is "email link + declaration" verifiable enough?** The DPDP Rules describe verifiable consent (e.g. using
+   reliable identity/age details already held, or a virtual token from an authorised entity such as
+   DigiLocker). Ours proves control of an email inbox plus a self-declared name and adult year of birth.
+   `TODO(dpdp)` in `src/config/consent.ts` and the function: add a stronger method as a new
+   `parental_consents.method` value if required. **(verify)** which Rules apply to us and from when.
+2. **Self-declared age.** A child can enter a false year. Is a neutral self-declared age question, with no
+   proof, acceptable for the "under 13 = no account" and "18+ = no consent" decisions?
+3. **Retention of consent proof.** When a parent withdraws or declines, the consent record is deleted with
+   the account (data minimisation). Do we need to keep proof of consent (and of withdrawal) for some period?
+4. **Existing accounts that turn out to be 13–17** keep their earlier game data while waiting for consent
+   (writes are blocked). Should it be deleted if no consent arrives within some time? No automatic expiry yet.
+5. **Pending data**: we store the child's auth email and the parent email before consent, which the flow needs.
+   Confirm this is allowed, and how long an unanswered pending account may be kept.
+6. **Chat/voice limits are client-enforced** (Realtime broadcast). Is that an adequate safeguard, or must the
+   server enforce them (Realtime Authorization / a relay)?
+7. **Grievance officer**: the DPDP Act expects a contact for grievances; we name support@daanik.com. Does it
+   need a named person / response timeline in the policy?
+8. **Behavioural monitoring**: we turned off replay/tracing for minors. Are plain crash reports for minors fine?
+9. The parent's IP is stored only as an HMAC (optional). Keep or drop?

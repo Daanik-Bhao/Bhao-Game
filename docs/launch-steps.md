@@ -42,6 +42,39 @@ Commands repo folder mein chalani hain (PowerShell ya Git Bash):
 **Kya check karna hai:** Last line mein `OK` aaye (errors 0). Sentry/TURN ke `warn` theek hain.
 Agar `SERVICE_ROLE` ka error aaye to galat key daali hai — anon/publishable key daalo.
 
+### Step 2b. Resend setup (parent consent emails) — Step 3 se PEHLE
+13–17 saal ke players ke liye parent ko consent ka email jaata hai. Ye email **Resend** bhejta hai.
+1. https://resend.com pe account banao (free plan kaafi hai shuru mein).
+2. Resend → **Domains → Add Domain** → apna domain daalo (jaise `daanik.com`).
+   Resend jo DNS records (SPF/DKIM, TXT/MX/CNAME) dikhaye, unhe apne domain ke DNS panel mein add karo.
+   Status **Verified** hone tak ruko (kuch minute se kuch ghante lag sakte hain).
+3. Resend → **API Keys → Create API Key** (permission: "Sending access"). Key `re_...` copy karo —
+   ye sirf ek baar dikhti hai.
+4. `.env.local` mein (ya PowerShell mein `$env:...` se) ye teen values bharo — ye **function secrets** hain,
+   app mein bundle nahi hoti:
+   ```
+   RESEND_API_KEY=re_....
+   CONSENT_FROM_EMAIL=BHAO <consent@daanik.com>
+   PUBLIC_SITE_URL=https://aapki-site.com
+   ```
+   - `CONSENT_FROM_EMAIL` ka domain wahi hona chahiye jo Resend mein Verified hai.
+   - `PUBLIC_SITE_URL` ke end mein `/` mat lagao. Email ke links `<PUBLIC_SITE_URL>/parent-consent?token=...`
+     banenge, isliye ye website (Vercel) ka asli URL hona chahiye.
+5. Step 3 ka `npm run supabase:deploy -- --apply` inhe khud `supabase secrets set` se daal dega.
+
+**Kya check karna hai:**
+- Dry run (`npm run supabase:deploy`) ki "Function secrets" list mein teeno keys dikhein (masked).
+  Koi khaali ho to warning aayegi aur parent ko email nahi jayega (app "email set up nahi hai" bolega).
+- Deploy ke baad test: ek naya account banao, janam ka saal aisa chuno ki umar 13–17 bane, apna doosra
+  email "parent" ke roop mein daalo → email aana chahiye (spam folder bhi dekho) → link kholo → Approve →
+  app mein "My parent said yes, check again" dabao → online features khul jaane chahiye.
+- Withdraw link (email ke neeche) se account delete hota hai — test account pe ek baar check karo.
+- support@daanik.com inbox koi roz dekhe: parents yahi likhenge (grievance contact).
+- Parent page pe "Something went wrong" / 401 aaye aur aap naye `sb_publishable_...` keys use kar rahe ho,
+  to `parent-consent` function ko JWT check ke bina deploy karo:
+  `npx supabase functions deploy parent-consent --no-verify-jwt --project-ref <ref>` (parent ke paas login
+  nahi hota; function khud token check karta hai).
+
 ### Step 3. Database + functions deploy karo (`supabase:deploy`)
 1. Access token banao: https://supabase.com/dashboard/account/tokens → **Generate new token**.
 2. Isi PowerShell window mein (file mein save mat karo):
@@ -53,8 +86,8 @@ Agar `SERVICE_ROLE` ka error aaye to galat key daali hai — anon/publishable ke
    ```
    npm run supabase:deploy
    ```
-   Check karo: project ref sahi hai, ~23 migrations aur 2 functions (`game-action`,
-   `save-game-result`) list mein hain, `missing:` line nahi hai.
+   Check karo: project ref sahi hai, ~26 migrations aur 3 functions (`game-action`,
+   `parent-consent`, `save-game-result`) list mein hain, `missing:` line nahi hai.
 4. Ab asli deploy:
    ```
    npm run supabase:deploy -- --apply
@@ -62,9 +95,9 @@ Agar `SERVICE_ROLE` ka error aaye to galat key daali hai — anon/publishable ke
    `db push` confirm maange to `Y` dabao.
 
 **Kya check karna hai:**
-- Last line: `Done: project <ref> is up to date (2 function(s) deployed)`.
+- Last line: `Done: project <ref> is up to date (3 function(s) deployed)`.
 - Supabase → **Table Editor** mein `profiles`, `leaderboard`, `matches`, `player_reports` jaisi tables dikhein.
-- Supabase → **Edge Functions** mein `game-action` aur `save-game-result` dono "Active" dikhein.
+- Supabase → **Edge Functions** mein `game-action`, `parent-consent` aur `save-game-result` teeno "Active" dikhein.
 - Error aaye to message padho: "password" wala error = galat DB password; "older than remote"
   wala = `npm run supabase:deploy -- --apply --include-all`.
 
