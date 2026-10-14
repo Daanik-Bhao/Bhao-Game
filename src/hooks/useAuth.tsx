@@ -170,14 +170,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [nativeSignInDone, state.user, state.loading, navigate])
 
-  // A real account always wins over guest mode.
-  // TODO: offer to merge guest campaign progress into the account on first sign-in.
+  // A real account always wins over guest mode. Guest progress itself stays on the
+  // device (owner key 'guest'); <GuestMergePrompt> (rendered by App for signed-in
+  // users, src/lib/guestMerge.ts) offers once per account to bring it in.
   useEffect(() => {
     if (state.user && guestProfile) {
       setGuestProfile(null)
       saveGuest(null)
     }
   }, [state.user, guestProfile])
+
+  // Gyaan Library follows the account across devices: pull + union on sign-in.
+  // Lazy import keeps the concept data out of the main bundle; never blocks the UI.
+  const userId = state.user?.id
+  useEffect(() => {
+    if (!userId || !isSupabaseConfigured) return
+    import('../lib/libraryProgress')
+      .then(m => m.syncLibraryProgress(userId))
+      .catch(() => { /* offline / chunk error: the next sign-in catches up */ })
+  }, [userId])
 
   const login = async (email: string, password: string) => {
     await signIn(email, password)

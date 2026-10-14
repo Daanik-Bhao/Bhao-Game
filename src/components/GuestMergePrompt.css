@@ -1,0 +1,3 @@
+/* Guest progress merge dialog (inside the D.6 modal). Tokens only. */
+.guest-merge__list { list-style: none; margin: 0; padding: var(--sp-3) var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-2); background: var(--bg-sunken); border-radius: var(--r-md); font: 600 var(--fs-body)/var(--lh-body) var(--font-body); color: var(--text); }
+.guest-merge__note { margin: 0; font: 400 var(--fs-ui)/var(--lh-ui) var(--font-body); color: var(--text-muted); }
