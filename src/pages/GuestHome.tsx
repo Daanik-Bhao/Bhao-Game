@@ -5,6 +5,8 @@ import { progressOwnerKey } from '../lib/campaignProgress'
 import { HomeView } from './menus/HomeView'
 import { GuestProfileView } from './menus/ProfileView'
 import { useHomeHero, useLibraryCount } from './menus/homeData'
+import { ContinueMatchPrompt } from '../components/ContinueMatchPrompt'
+import { matchOwnerKey } from '../lib/matchSave'
 
 /**
  * Home for guests (`/dashboard`, spec §E.4): offline modes only, a nudge to sign in, and the
@@ -30,5 +32,10 @@ export function GuestHome() {
     )
   }
 
-  return <HomeView name={name} signedIn={false} hero={hero} library={library} onlineAvailable={isOnlineAvailable} />
+  return (
+    <>
+      <HomeView name={name} signedIn={false} hero={hero} library={library} onlineAvailable={isOnlineAvailable} />
+      <ContinueMatchPrompt owner={matchOwnerKey(null, guestProfile?.id)} />
+    </>
+  )
 }

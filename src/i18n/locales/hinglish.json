@@ -466,7 +466,9 @@
       "equipped": "{{card}} lag gaya. Ab ek card khelo.",
       "extraCard": "Ek extra card mila: −{{n}} Daanik Coins",
       "notEnoughCoins": "Daanik Coins kam hain"
-    }
+    },
+    "pausedNote": "Game paused hai. Aapka turn timer aur bots aapka wait kar rahe hain.",
+    "pauseLive": "Friends match: menu khula hone par bhi game chalta rehta hai. Aapka turn timer nahi rukta."
   },
   "econ": {
     "risk": {
@@ -1776,5 +1778,12 @@
     "done": "Guest progress aapke account mein add ho gaya",
     "already": "Is account mein guest progress pehle hi add ho chuka hai",
     "failed": "Abhi progress add nahi ho paaya. Hum baad mein phir poochenge."
+  },
+  "resumeMatch": {
+    "title": "Apna match continue karein?",
+    "body": "Aapka ek {{mode}} match adhura hai. {{year}} · net worth {{netWorth}}.",
+    "hint": "Naya match shuru karne par saved match hat jayega.",
+    "continue": "Continue karo",
+    "startNew": "Naya shuru karo"
   }
 }

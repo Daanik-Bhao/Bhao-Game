@@ -466,7 +466,9 @@
       "equipped": "{{card}} equipped. Now play a card.",
       "extraCard": "Extra card drawn: −{{n}} Daanik Coins",
       "notEnoughCoins": "Not enough Daanik Coins"
-    }
+    },
+    "pausedNote": "Game paused. Your turn timer and the bots wait for you.",
+    "pauseLive": "Friends match: the game keeps running while this menu is open. Your turn timer does not stop."
   },
   "econ": {
     "risk": {
@@ -1776,5 +1778,12 @@
     "done": "Guest progress added to your account",
     "already": "This account already has guest progress added",
     "failed": "Couldn't add progress right now. We'll ask again later."
+  },
+  "resumeMatch": {
+    "title": "Continue your match?",
+    "body": "You have an unfinished {{mode}} match. {{year}} · net worth {{netWorth}}.",
+    "hint": "Starting a new match deletes the saved one.",
+    "continue": "Continue",
+    "startNew": "Start new"
   }
 }

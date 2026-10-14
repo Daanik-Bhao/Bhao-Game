@@ -177,6 +177,7 @@ textarea.field__input { padding: 12px 14px; min-height: 96px; resize: vertical; 
 .modal__gullu { align-self: center; }
 .modal__title { font: 800 var(--fs-title)/var(--lh-title) var(--font-display); color: var(--text); }
 .modal__body { font: 400 var(--fs-body)/var(--lh-body) var(--font-body); color: var(--text-muted); }
+.modal__hint { margin: 0; font: 400 var(--fs-ui)/var(--lh-ui) var(--font-body); color: var(--text-muted); }
 .modal__actions { display: flex; flex-direction: column; gap: var(--sp-3); margin-top: var(--sp-2); }
 @media (min-width: 600px) {
   .modal__actions { flex-direction: row-reverse; }

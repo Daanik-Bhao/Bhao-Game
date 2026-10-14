@@ -8,6 +8,7 @@ import { LESSON_COUNT, STEPS, StepCtx, tutorialCardTitle } from '../components/t
 import { TutorialModal } from '../components/TutorialModal'
 import { Button, Modal } from '../components/ui'
 import { useBackButton, useKeepAwake } from '../hooks/useBackButton'
+import { useAppHidden } from '../hooks/useAppHidden'
 import {
   advanceTurn, canEquip, doBotTurn, equipDefense, getNetWorth, passTurn, previewDecision, processDecision,
   seededRng, setRng, startDrawPhase,
@@ -45,6 +46,11 @@ export function TutorialGame() {
   const [confirmExit, setConfirmExit] = useState(false)
   const gsRef = useRef(gs)
   gsRef.current = gs
+  // Pause menu (or the rules opened from it), the exit dialog or the app in the background:
+  // Rahul waits. (Turn timers don't run in the tutorial, see FROZEN_TURN_START.)
+  const [boardPaused, setBoardPaused] = useState(false)
+  const appHidden = useAppHidden()
+  const paused = boardPaused || confirmExit || appHidden
 
   const step = STEPS[Math.min(stepIdx, STEPS.length - 1)]
   const ctx: StepCtx = useMemo(() => ({ gs, uiPhase }), [gs, uiPhase])
@@ -92,14 +98,14 @@ export function TutorialGame() {
 
   // Rahul's turn: only while the current step lets him play.
   useEffect(() => {
-    if (stage !== 'play' || !step.allowBot) return
+    if (stage !== 'play' || !step.allowBot || paused) return
     if (gs.phase === 'game_over' || !gs.players[gs.currentPlayerIndex]?.isBot) return
     const t = setTimeout(() => {
       const next = doBotTurn(gsRef.current, TUTORIAL_BOT_POLICY).state
       setGs({ ...next, turnStartTime: FROZEN_TURN_START() })
     }, BOT_DELAY_MS)
     return () => clearTimeout(t)
-  }, [gs, stage, step.allowBot])
+  }, [gs, stage, step.allowBot, paused])
 
   // Action / wait steps advance when the board reaches the expected state.
   useEffect(() => {
@@ -247,6 +253,7 @@ export function TutorialGame() {
         onEquip={handleEquip}
         modeTitle={t('tutorial.modeTitle')}
         onQuit={() => setConfirmExit(true)}
+        onPauseChange={setBoardPaused}
       />
       <CoachMark
         stepKey={step.id}
