@@ -90,6 +90,29 @@ client (package + SHA-1) is only required if the app later switches to native Go
 then register the Play App Signing SHA-1 (Play Console → Test and release → App integrity),
 the upload SHA-1 and the debug SHA-1.
 
+## Release build config (checked 2026-10)
+
+- **R8 on** (`minifyEnabled true`, `shrinkResources true`, `proguard-android-optimize.txt`).
+  It only shrinks the Java side (AndroidX + Capacitor, release APK ~2.3 MB vs 5.3 MB debug);
+  the web game in `assets/public` is untouched. Plugins are loaded by reflection, so
+  `android/app/proguard-rules.pro` keeps `com.getcapacitor.**`, every `@CapacitorPlugin` /
+  `Plugin` subclass, the `@JavascriptInterface` bridge and Cordova classes. Verified on an
+  emulator: all plugins registered, navigation and the back button (App plugin) work.
+  After each bundle upload `app/build/outputs/mapping/release/mapping.txt` to Play Console
+  (App bundle explorer → the version → Downloads → ReTrace mapping file) for readable crashes.
+  If a new plugin misbehaves only in release builds, add a `-keep class <its package>.** { *; }`.
+- **16 KB page size**: the app ships **no native `.so` libraries** (Capacitor and all plugins
+  are pure Java/Kotlin; the WebView comes from the system), so Play's 16 KB requirement is met
+  automatically. `zipalign -c -P 16 4` passes on the APK. Re-check if a plugin with native code
+  is added: `C:\Users\Administrator\AndroidDev\sdk\build-tools\36.0.0\zipalign.exe -c -P 16 -v 4 app.apk`.
+- **targetSdk 36 / compileSdk 36, minSdk 24**: meets Play's target-API rule (35+ required
+  for new apps and updates since 31 Aug 2025).
+- **Edge-to-edge**: Android 15+ forces edge-to-edge for targetSdk 35+; `MainActivity` pads the
+  WebView by the system-bar/cutout insets, so nothing is hidden under the bars. Play Console may
+  still show an advisory "uses deprecated APIs for edge-to-edge" (`statusBarColor` /
+  `navigationBarColor` in `styles.xml` and Capacitor's StatusBar plugin); those calls are no-ops on
+  Android 15+ and only used on older versions. It is a warning, not a rejection.
+
 ## Notes
 
 - The service worker (PWA offline cache) is not registered inside the app; the web files

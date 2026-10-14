@@ -13,7 +13,9 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import { spawnSync } from 'child_process'
-import { ANDROID_DIR, KEYSTORE_PROPERTIES, androidEnv, jdkTool } from './android-env.mjs'
+import {
+  ANDROID_DIR, KEYSTORE_PROPERTIES, androidEnv, jdkTool, readProperties, resolveStoreFile,
+} from './android-env.mjs'
 import { readAppVersion, readReleaseBuilds, recordReleaseBuild, RELEASE_BUILDS } from './version.mjs'
 
 const TARGETS = {
@@ -56,6 +58,35 @@ function checkVersion() {
   return { versionName, versionCode }
 }
 
+/** Plain-words checks that the upload key is set up before a release build. */
+function checkKeystore() {
+  const howTo = 'To fix it, run:  npm run android:keystore\n' +
+    '(one time only; it creates your upload key and android/keystore.properties).\n' +
+    'Already have a key from before? Restore the .jks from your backup and write\n' +
+    'android/keystore.properties (see android/keystore.properties.example).'
+  if (!fs.existsSync(KEYSTORE_PROPERTIES)) {
+    fail('CANNOT BUILD THE PLAY STORE BUNDLE: the upload key is not set up on this computer.\n' +
+      'Google Play only accepts app bundles signed with your upload key, and the file\n' +
+      'android/keystore.properties (which says where the key is) does not exist.\n\n' + howTo)
+  }
+  const p = readProperties(KEYSTORE_PROPERTIES)
+  const missing = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword'].filter(k => !p[k])
+  if (missing.length) {
+    fail(`CANNOT BUILD: android/keystore.properties is incomplete (missing: ${missing.join(', ')}).\n\n${howTo}`)
+  }
+  if ([p.storePassword, p.keyPassword].includes('CHANGE_ME')) {
+    fail('CANNOT BUILD: android/keystore.properties still has the example password CHANGE_ME.\n' +
+      'Put in the real keystore password.')
+  }
+  const store = resolveStoreFile(p.storeFile)
+  if (!fs.existsSync(store)) {
+    fail(`CANNOT BUILD: the upload key file was not found at\n  ${store}\n` +
+      'It was moved or deleted. Restore it from your backup to that path (or fix storeFile\n' +
+      'in android/keystore.properties). Do NOT create a new key if the app is already on Play:\n' +
+      'a new key needs an upload key reset by Google (Play Console -> App integrity).')
+  }
+}
+
 const target = TARGETS[process.argv[2]]
 if (!target) fail(`usage: node scripts/android-gradle.mjs ${Object.keys(TARGETS).join('|')}`)
 if (!fs.existsSync(ANDROID_DIR)) fail('android/ not found. Run from the repo root.')
@@ -70,10 +101,7 @@ if (!fs.existsSync(path.join(env.ANDROID_HOME, 'platforms'))) {
 
 let version = null
 if (target.release) {
-  if (!fs.existsSync(KEYSTORE_PROPERTIES)) {
-    fail('android/keystore.properties is missing, so a release build would be unsigned.\n' +
-      'Create the upload keystore and keystore.properties first (docs/android-build.md).')
-  }
+  checkKeystore()
   version = checkVersion()
   if (target.checkOnly) {
     console.log('[android] release pre-checks passed')
@@ -105,4 +133,8 @@ if (version) {
   recordReleaseBuild(version)
   console.log(`[android] recorded versionCode ${version.versionCode} in ${path.relative(process.cwd(), RELEASE_BUILDS)}.`)
   console.log('[android] Commit package.json + android/release-builds.json so the next build cannot reuse it.')
+  const mapping = path.join(ANDROID_DIR, 'app/build/outputs/mapping/release/mapping.txt')
+  if (fs.existsSync(mapping)) {
+    console.log(`[android] R8 mapping (upload to Play Console with this release): ${path.relative(process.cwd(), mapping)}`)
+  }
 }

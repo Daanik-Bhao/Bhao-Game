@@ -1,21 +1,32 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# R8 rules for the release build (minifyEnabled true in build.gradle).
+# The app is a Capacitor WebView: native code is AndroidX + Capacitor + its plugins.
+# Capacitor's own consumer rules (node_modules/@capacitor/android/capacitor/proguard-rules.pro)
+# already keep plugins; the rules below repeat them for this app so a plugin that ships
+# without consumer rules still works, and keep the JS bridge.
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Readable crash stack traces (line numbers) in Play Console / Sentry, with the
+# mapping.txt uploaded to Play Console.
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+# Plugin discovery reads annotations at runtime.
+-keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Capacitor core + bridge: the WebView calls into it by name (@JavascriptInterface),
+# and plugins are instantiated from capacitor.plugins.json by class name.
+-keep class com.getcapacitor.** { *; }
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Every Capacitor plugin (official @capacitor/* and @capacitor-community/*).
+-keep @com.getcapacitor.annotation.CapacitorPlugin public class * { *; }
+-keep public class * extends com.getcapacitor.Plugin { *; }
+-keep class com.capacitorjs.plugins.** { *; }
+-keep class com.getcapacitor.community.** { *; }
+
+# Cordova compatibility layer (capacitor-cordova-android-plugins).
+-keep class org.apache.cordova.** { *; }
+-keep public class * extends org.apache.cordova.CordovaPlugin { *; }
+
+# App activity (also referenced from the manifest).
+-keep class com.daanik.bhao.** { *; }
