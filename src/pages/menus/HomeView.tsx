@@ -90,6 +90,8 @@ export function HomeView({
         </div>
 
         <div className="home__col home__col--hero">
+          {/* Waiting for a parent: the consent card comes first, it is the one thing to do. */}
+          {notice && <div className="home-notice">{notice}</div>}
           <HeroCard hero={hero} />
         </div>
 
@@ -133,7 +135,7 @@ export function HomeView({
               {leaderboard && <LeaderboardCard data={leaderboard} onOpen={onOpenLeaderboard} />}
               {contracts && <ContractsCard data={contracts} onOpen={onOpenContracts} />}
             </div>
-          ) : notice ? notice : (
+          ) : notice ? null : (
             <div className="panel home-keep">
               <Gullu mood="wow" size={52} />
               <div className="home-keep__text">

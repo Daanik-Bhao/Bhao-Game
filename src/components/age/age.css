@@ -26,7 +26,8 @@
 .parent-page__hero { display: flex; align-items: center; gap: var(--sp-4); margin-bottom: var(--sp-3); }
 .parent-page__hero .page-title { margin: 0; }
 .parent-page__foot { margin-top: var(--sp-8); }
-.parent-page__foot a { display: inline-flex; align-items: center; min-height: var(--tap-min); }
+.parent-page__bar .wordmark { display: inline-flex; align-items: center; min-height: var(--tap-min); }
+.parent-page__foot a { display: inline-flex; align-items: center; justify-content: center; min-height: var(--tap-min); min-width: var(--tap-min); }
 .parent-form { display: flex; flex-direction: column; gap: var(--sp-4); padding: var(--sp-5); margin: var(--sp-7) 0 var(--sp-5); }
 .parent-form--plain { padding: 0; background: none; border: 0; box-shadow: none; }
 .legal__body .parent-form__title { display: flex; align-items: center; gap: var(--sp-3); margin: 0; font: 700 var(--fs-subtitle)/var(--lh-subtitle) var(--font-display); }
@@ -39,3 +40,6 @@
 
 .child-safe-note { display: flex; align-items: flex-start; gap: var(--sp-3); margin: 0; padding: 10px 14px; border-radius: var(--r-sm); background: var(--defence-soft); color: var(--text); font: 400 var(--fs-ui)/var(--lh-ui) var(--font-body); }
 .child-safe-note > svg { flex: none; margin-top: 1px; }
+
+/* Consent card above the Home hero while a 13–17 account waits for its parent. */
+.home-notice { margin-bottom: var(--sp-5); }

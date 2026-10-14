@@ -160,7 +160,7 @@ describe('parent consent page', () => {
     api.declineConsent.mockResolvedValue({ ok: true })
     renderParent('/parent-consent?token=tok9')
     await screen.findByRole('heading', { name: 'Your child wants to play BHAO' })
-    fireEvent.click(screen.getByRole('button', { name: 'Decline and delete the account' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Decline' }))
     expect(api.declineConsent).not.toHaveBeenCalled()
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Yes, delete it' })) })
     expect(api.declineConsent).toHaveBeenCalledWith('tok9')
