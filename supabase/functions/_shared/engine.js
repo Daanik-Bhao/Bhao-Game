@@ -50,11 +50,11 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-002",
-    name: "School Trip ka Chakkar",
+    name: "School Trip Trouble",
     nameHi: "स्कूल ट्रिप का चक्कर",
     type: "decision",
     tier: "common",
-    flavor: "School trip costs ₹2,000 extra. You have only ₹800. Kya plan hai? (Planning beats panic)",
+    flavor: "School trip costs ₹2,000 extra. You have only ₹800. What's the plan? (Planning beats panic)",
     flavorHi: "स्कूल ट्रिप में ₹2,000 अतिरिक्त खर्च है। आपके पास सिर्फ ₹800 हैं। क्या योजना है? (Planning beats panic)",
     options: [
       {
@@ -99,7 +99,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "जन्मदिन का उपहार",
     type: "decision",
     tier: "common",
-    flavor: "Relatives gifted ₹2,100 on your birthday. 'Padhai ke liye hai beta.' (Gift money is seed money)",
+    flavor: "Relatives gifted ₹2,100 on your birthday. 'It's for your studies, dear.' (Gift money is seed money)",
     flavorHi: "रिश्तेदारों ने जन्मदिन पर ₹2,100 दिए। 'पढ़ाई के लिए है बेटा।' (Gift money is seed money)",
     options: [
       {
@@ -144,7 +144,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "कैंटीन प्रलोभन",
     type: "decision",
     tier: "common",
-    flavor: "Daily canteen costs ₹60, Maa's tiffin is free. That's ₹1,200 a month. (Small daily habits = big yearly numbers)",
+    flavor: "Daily canteen costs ₹60, Mom's tiffin is free. That's ₹1,200 a month. (Small daily habits = big yearly numbers)",
     flavorHi: "रोज़ कैंटीन में ₹60 लगते हैं, माँ का टिफिन मुफ़्त है। यानी महीने में ₹1,200। (छोटी दैनिक आदतें = बड़ी वार्षिक संख्याएँ)",
     options: [
       {
@@ -234,7 +234,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "योग्यता छात्रवृत्ति",
     type: "decision",
     tier: "common",
-    flavor: "School gave you a ₹5,000 merit scholarship. Sab pooch rahe hain kya kiya? (Reward learning with more learning)",
+    flavor: "School gave you a ₹5,000 merit scholarship. Everyone's asking what you'll do with it. (Reward learning with more learning)",
     flavorHi: "स्कूल ने ₹5,000 की मेरिट स्कॉलरशिप दी। सब पूछ रहे हैं क्या किया? (Reward learning with more learning)",
     options: [
       {
@@ -287,7 +287,7 @@ var LEVEL_SITUATION_CARDS = [
         label: "Save",
         description: "Skip 3 weekends, save ₹1,200",
         effect: { type: "wealth_pct", value: 5, target: "self" },
-        mentorInsight: "Real friends stay even when you skip a plan. Suggest a cheaper hangout like a park or ghar pe movie instead.",
+        mentorInsight: "Real friends stay even when you skip a plan. Suggest a cheaper hangout like a park or a movie at home instead.",
         shortDescription: "Skip weekends to save",
         shortDescriptionHi: "बचत करने के लिए सप्ताहांत छोड़ें"
       },
@@ -369,7 +369,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "₹200 खो गए",
     type: "decision",
     tier: "common",
-    flavor: "Bhai, ₹200 gir gaye pocket se. Kya karte? (Losing money teaches more than earning)",
+    flavor: "Oops, ₹200 slipped out of your pocket. What now? (Losing money teaches more than earning)",
     flavorHi: "भाई, ₹200 जेब से गिर गए। क्या करते? (Losing money teaches more than earning)",
     options: [
       {
@@ -459,7 +459,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "सड़क पर पैसा खोजें",
     type: "decision",
     tier: "common",
-    flavor: "₹500 note mil gaya footpath pe. No one's around. (Found money isn't free money)",
+    flavor: "You spot a ₹500 note on the footpath. No one's around. (Found money isn't free money)",
     flavorHi: "फुटपाथ पर ₹500 का नोट मिला। आसपास कोई नहीं है। (पाया गया पैसा मुफ़्त पैसा नहीं है)",
     options: [
       {
@@ -500,11 +500,11 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-012",
-    name: "Borrow Karna Padega",
-    nameHi: "Borrow Karna Padega",
+    name: "Friend Needs a Loan",
+    nameHi: "दोस्त को उधार चाहिए",
     type: "decision",
     tier: "common",
-    flavor: "Friend needs ₹1,000. You have ₹1,500. Kya bologe? (Generosity with boundaries)",
+    flavor: "Friend needs ₹1,000. You have ₹1,500. What do you say? (Generosity with boundaries)",
     flavorHi: "दोस्त को ₹1,000 की जरूरत है। आपके पास ₹1,500 हैं। क्या बोलोगे? (सीमाओं के साथ उदारता)",
     options: [
       {
@@ -594,13 +594,13 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "टिफिन बनाम कैंटीन",
     type: "decision",
     tier: "common",
-    flavor: "Maa ne tiffin diya. Yaar bol raha hai 'canteen chal!' (Maa ka tiffin > peer pressure)",
+    flavor: "Mom packed your tiffin. Your friend says 'Come to the canteen!' (Mom's tiffin > peer pressure)",
     flavorHi: "माँ ने टिफिन दिया. यार बोल रहा है 'कैंटीन चल!' (मां का टिफिन > साथियों का दबाव)",
     options: [
       {
         type: "save",
         label: "Save",
-        description: "Eat Maa's tiffin, save ₹50 a day",
+        description: "Eat Mom's tiffin, save ₹50 a day",
         effect: { type: "wealth_pct", value: 5, target: "self" },
         mentorInsight: "₹50 a day is ₹1,500 a month. Saying no to small peer pressure is practice for saying no to bigger money traps.",
         shortDescription: "Eat tiffin and save",
@@ -684,7 +684,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "ज़ोमैटो ज़ोंबी",
     type: "decision",
     tier: "common",
-    flavor: "Hostel mess ya Zomato roz? ₹60 vs ₹250 per meal. (Convenience has a monthly price tag)",
+    flavor: "Hostel mess or Zomato every day? ₹60 vs ₹250 per meal. (Convenience has a monthly price tag)",
     flavorHi: "हॉस्टल मेस या रोज़ ज़ोमैटो? ₹60 बनाम ₹250 प्रति भोजन। (सुविधा का मासिक मूल्य टैग है)",
     options: [
       {
@@ -729,7 +729,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "प्रथम इंटर्नशिप वेतन",
     type: "decision",
     tier: "common",
-    flavor: "₹15,000 pehli kamai from your internship! Sab bol rahe hain 'treat de!' (First salary = first investment)",
+    flavor: "₹15,000 first earnings from your internship! Everyone says 'Give us a treat!' (First salary = first investment)",
     flavorHi: "इंटर्नशिप से ₹15,000 पहली कमाई! सब बोल रहे हैं 'ट्रीट दे!' (First salary = first investment)",
     options: [
       {
@@ -864,7 +864,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "क्रिप्टो भाई सलाह",
     type: "decision",
     tier: "common",
-    flavor: "Dosto ne kaha: '₹5,000 lagao, ek hafte mein double ho jaayega!' (FOMO is the most expensive emotion)",
+    flavor: "Friends say: 'Put in ₹5,000, it'll double in a week!' (FOMO is the most expensive emotion)",
     flavorHi: "दोस्तों ने कहा: '₹5,000 लगाओ, एक हफ्ते में डबल हो जाएगा!' (FOMO is the most expensive emotion)",
     options: [
       {
@@ -909,7 +909,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "कौशल बढ़ाएं या शांत रहें",
     type: "decision",
     tier: "common",
-    flavor: "Coding bootcamp costs ₹8,000. Ya Netflix aur sona. (Skills compound like money)",
+    flavor: "Coding bootcamp costs ₹8,000. Or Netflix and sleep. (Skills compound like money)",
     flavorHi: "कोडिंग बूटकैंप ₹8,000 का है। या नेटफ्लिक्स और सोना। (कौशल पैसे की तरह बढ़ते हैं)",
     options: [
       {
@@ -954,7 +954,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "फ्रीलांस विंडफॉल",
     type: "decision",
     tier: "common",
-    flavor: "Client paid ₹3,000 for a logo design. Tu hi toh best hai! (Freelance income = freedom when saved)",
+    flavor: "Client paid ₹3,000 for a logo design. You're the best! (Freelance income = freedom when saved)",
     flavorHi: "ग्राहक ने लोगो डिज़ाइन के लिए ₹3,000 चुकाए। तू ही तो सबसे अच्छा है! (स्वतंत्र आय = बचत होने पर स्वतंत्रता)",
     options: [
       {
@@ -999,7 +999,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "क्रेडिट कार्ड ट्रैप (कॉलेज)",
     type: "decision",
     tier: "common",
-    flavor: "Bank ka representative on campus. 'Free credit card lo bhai!' (Free credit card isn't free anything)",
+    flavor: "A bank rep on campus: 'Take a free credit card, bro!' (Free credit card isn't free anything)",
     flavorHi: "परिसर में बैंक का प्रतिनिधि। 'फ्री क्रेडिट कार्ड लो भाई!' (मुफ़्त क्रेडिट कार्ड कुछ भी मुफ़्त नहीं है)",
     options: [
       {
@@ -1044,7 +1044,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "समूह परियोजना विधेयक",
     type: "decision",
     tier: "common",
-    flavor: "Group project material costs ₹1,200. Kaun pay karega pehle? (Money agreements before work begins)",
+    flavor: "Group project material costs ₹1,200. Who pays first? (Money agreements before work begins)",
     flavorHi: "ग्रुप प्रोजेक्ट का सामान ₹1,200 का है। कौन पे करेगा पहले? (Money agreements before work begins)",
     options: [
       {
@@ -1089,7 +1089,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "सदस्यता अधिभार",
     type: "decision",
     tier: "common",
-    flavor: "Three streaming apps = ₹800 a month. Sab use hota hai? (Audit subscriptions every quarter)",
+    flavor: "Three streaming apps = ₹800 a month. Do you even use them all? (Audit subscriptions every quarter)",
     flavorHi: "तीन स्ट्रीमिंग ऐप = ₹800 महीना। सब यूज़ होता है? (हर तिमाही सदस्यताओं की जाँच करें)",
     options: [
       {
@@ -1134,7 +1134,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "कैफ़े अध्ययन की आदत",
     type: "decision",
     tier: "common",
-    flavor: "Café pe study karna cool lagta hai. ₹250 per visit. (Ambience doesn't help you pass exams)",
+    flavor: "Studying at a café feels cool. ₹250 per visit. (Ambience doesn't help you pass exams)",
     flavorHi: "कैफ़े पे स्टडी करना कूल लगता है। ₹250 प्रति विज़िट। (माहौल आपको परीक्षा पास करने में मदद नहीं करता)",
     options: [
       {
@@ -1224,8 +1224,8 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "सहकर्मी दबाव यात्रा",
     type: "decision",
     tier: "common",
-    flavor: "Friends ne Goa plan kiya. Budget: ₹15,000 each. Tune abhi tak socha bhi nahi. (FOMO trips hurt more than FOMO feelings)",
-    flavorHi: "Friends ne Goa plan kiya. Budget: ₹15,000 each. Tune abhi tak socha bhi nahi. (FOMO trips hurt more than FOMO feelings)",
+    flavor: "Friends planned a Goa trip. Budget: ₹15,000 each. You haven't even thought about it yet. (FOMO trips hurt more than FOMO feelings)",
+    flavorHi: "दोस्तों ने गोवा का प्लान बनाया। बजट: हर एक का ₹15,000। तुमने अभी तक सोचा भी नहीं। (FOMO वाली ट्रिप FOMO की भावना से ज़्यादा चोट देती है)",
     options: [
       {
         type: "save",
@@ -1314,7 +1314,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "ओलंपियाड पुरस्कार जीता",
     type: "decision",
     tier: "common",
-    flavor: "₹10,000 Olympiad prize money! Parents bol rahe hain 'well done beta'. (Celebrate smart - the achievement is yours, not the spend)",
+    flavor: "₹10,000 Olympiad prize money! Parents say 'Well done!' (Celebrate smart - the achievement is yours, not the spend)",
     flavorHi: "₹10,000 ओलंपियाड पुरस्कार राशि! माता-पिता बोल रहे हैं 'शाबाश बेटा'। (स्मार्ट जश्न मनाएं - उपलब्धि आपकी है, खर्च की नहीं)",
     options: [
       {
@@ -1359,7 +1359,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "लैपटॉप टूटना",
     type: "decision",
     tier: "common",
-    flavor: "Laptop slow ho gaya. ₹3,000 repair ya ₹60,000 ka naya? (Repair before replace. Always.)",
+    flavor: "Your laptop has slowed down. ₹3,000 repair or ₹60,000 for a new one? (Repair before replace. Always.)",
     flavorHi: "लैपटॉप स्लो हो गया. ₹3,000 की मरम्मत या ₹60,000 का नया? (बदलने से पहले मरम्मत करें। हमेशा।)",
     options: [
       {
@@ -1404,7 +1404,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "अंशकालिक नौकरी की पेशकश",
     type: "decision",
     tier: "common",
-    flavor: "₹8,000/month part-time job offer. Time toh lagega. (Earning is step 1. Saving is step 2.)",
+    flavor: "₹8,000/month part-time job offer. It will eat into your time. (Earning is step 1. Saving is step 2.)",
     flavorHi: "₹8,000 महीने की पार्ट-टाइम नौकरी का ऑफर। टाइम तो लगेगा. (कमाई चरण 1 है। बचत चरण 2 है।)",
     options: [
       {
@@ -1449,7 +1449,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "मेस शुल्क में बढ़ोतरी",
     type: "decision",
     tier: "common",
-    flavor: "Hostel mess ne fees ₹1,500 badha di. Baaki budget tighten karo. (Budget is a living document - adjust it)",
+    flavor: "Hostel mess raised fees by ₹1,500. Tighten the rest of your budget. (Budget is a living document - adjust it)",
     flavorHi: "हॉस्टल मेस ने फीस ₹1,500 बढ़ा दी। बाकी बजट टाइट करो. (बजट एक जीवित दस्तावेज़ है - इसे समायोजित करें)",
     options: [
       {
@@ -1551,12 +1551,12 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-036",
-    name: "Pehli Salary!",
-    nameHi: "Pehli Salary!",
+    name: "First Salary!",
+    nameHi: "पहली सैलरी!",
     type: "decision",
     tier: "common",
-    flavor: "₹35,000 pehli salary! HR bol raha hai - 'Treat dena!' (50-30-20 rule starts from salary #1)",
-    flavorHi: "₹35,000 pehli salary! HR bol raha hai - 'Treat dena!' (50-30-20 rule starts from salary #1)",
+    flavor: "₹35,000 first salary! HR says 'Treat us!' (50-30-20 rule starts from salary #1)",
+    flavorHi: "₹35,000 की पहली सैलरी! HR कह रहा है - 'ट्रीट दो!' (50-30-20 नियम पहली सैलरी से शुरू होता है)",
     options: [
       {
         type: "save",
@@ -1600,8 +1600,8 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "पीएफ ऑप्ट इन या आउट",
     type: "decision",
     tier: "common",
-    flavor: "HR ne form diya - PF opt in ya out? 'Cash mein zyada milega bhai.' (PF is your future self's thank you note)",
-    flavorHi: "HR ne form diya - PF opt in ya out? 'Cash mein zyada milega bhai.' (PF is your future self's thank you note)",
+    flavor: "HR hands you a form: opt in or out of PF? 'You'll get more cash in hand, bro.' (PF is your future self's thank you note)",
+    flavorHi: "HR ने फ़ॉर्म दिया - PF में ऑप्ट इन या आउट? 'कैश में ज़्यादा मिलेगा भाई।' (PF आपके भविष्य की ओर से शुक्रिया है)",
     options: [
       {
         type: "save",
@@ -1645,7 +1645,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "फ़ोन छीनना",
     type: "decision",
     tier: "common",
-    flavor: "Phone chura liya kisi ne! Replacement: ₹20,000. (Gadget insurance costs a few hundred a month. Think.)",
+    flavor: "Someone snatched your phone! Replacement: ₹20,000. (Gadget insurance costs a few hundred a month. Think.)",
     flavorHi: "फ़ोन चुरा लिया किसी ने! नया फ़ोन: ₹20,000. (गैजेट बीमा कुछ सौ रुपये महीने का होता है। सोचिए।)",
     options: [
       {
@@ -1690,8 +1690,8 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "वेतन वृद्धि का समय",
     type: "decision",
     tier: "common",
-    flavor: "Boss ne hint diya - appraisal aane wala hai. (Not negotiating is expensive)",
-    flavorHi: "Boss ne hint diya - appraisal aane wala hai. (Not negotiating is expensive)",
+    flavor: "Your boss hints that appraisals are coming up. (Not negotiating is expensive)",
+    flavorHi: "बॉस ने इशारा दिया - अप्रेज़ल आने वाला है। (मोलभाव न करना महँगा पड़ता है)",
     options: [
       {
         type: "save",
@@ -1735,8 +1735,8 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "जीवनशैली रेंगना",
     type: "decision",
     tier: "common",
-    flavor: "Salary badi toh sab kuch upgrade kar liya - rent, phone, food. (When income rises, savings rate should too)",
-    flavorHi: "Salary badi toh sab kuch upgrade kar liya - rent, phone, food. (When income rises, savings rate should too)",
+    flavor: "Your salary went up, so you upgraded everything - rent, phone, food. (When income rises, savings rate should too)",
+    flavorHi: "सैलरी बढ़ी तो सब कुछ अपग्रेड कर लिया - किराया, फ़ोन, खाना। (आय बढ़े तो बचत दर भी बढ़नी चाहिए)",
     options: [
       {
         type: "save",
@@ -1780,8 +1780,8 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "साल के अंत का बोनस",
     type: "decision",
     tier: "common",
-    flavor: "₹50,000 performance bonus! Dost bol raha hai Manali chalte hain. (Bonus should work harder than you do)",
-    flavorHi: "₹50,000 performance bonus! Dost bol raha hai Manali chalte hain. (Bonus should work harder than you do)",
+    flavor: "₹50,000 performance bonus! A friend says 'Let's go to Manali!' (Bonus should work harder than you do)",
+    flavorHi: "₹50,000 का परफ़ॉर्मेंस बोनस! दोस्त कह रहा है मनाली चलते हैं। (बोनस को आपसे ज़्यादा मेहनत करनी चाहिए)",
     options: [
       {
         type: "save",
@@ -1852,7 +1852,7 @@ var LEVEL_SITUATION_CARDS = [
       {
         type: "spend",
         label: "Spend",
-        description: "Pay the bill because 'tu junior hai'",
+        description: "Pay the bill because 'you're the junior'",
         effect: { type: "wealth_pct", value: -6, target: "self" },
         mentorInsight: "Paying to fit in becomes an expected habit. Social pressure is one of the biggest reasons young earners overspend.",
         shortDescription: "Pay bill for senior colleagues",
@@ -1870,7 +1870,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "घर से काम की बचत",
     type: "decision",
     tier: "common",
-    flavor: "WFH bachata hai ₹4,000 a month on commute & food. (Savings windfalls should be redirected, not spent)",
+    flavor: "WFH saves ₹4,000 a month on commute & food. (Savings windfalls should be redirected, not spent)",
     flavorHi: "WFH से आवागमन और भोजन पर ₹4,000 महीना बचता है। (बचत के अप्रत्याशित लाभ को पुनर्निर्देशित किया जाना चाहिए, खर्च नहीं किया जाना चाहिए)",
     options: [
       {
@@ -1956,11 +1956,11 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-045",
-    name: "Job Switch ka Mania",
+    name: "Job Switch Mania",
     nameHi: "जॉब स्विच उन्माद",
     type: "decision",
     tier: "common",
-    flavor: "30% hike at the new company. Joining bonus bhi hai. (Hikes should boost savings more than lifestyle)",
+    flavor: "30% hike at the new company. There's a joining bonus too. (Hikes should boost savings more than lifestyle)",
     flavorHi: "नई कंपनी में 30% हाइक। जॉइनिंग बोनस भी है. (हाइक से जीवनशैली से ज्यादा बचत को बढ़ावा मिलना चाहिए)",
     options: [
       {
@@ -2005,7 +2005,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "ऑफिस लंच ट्रैप",
     type: "decision",
     tier: "common",
-    flavor: "₹250 office lunch order, every day. Mahine mein ₹5,000+! (Convenience spending is the sneakiest)",
+    flavor: "₹250 office lunch order, every day. That's ₹5,000+ a month! (Convenience spending is the sneakiest)",
     flavorHi: "रोज़ ₹250 का ऑफिस लंच ऑर्डर। महीने में ₹5,000 से ज़्यादा! (सुविधा व्यय सबसे गुप्त है)",
     options: [
       {
@@ -2095,7 +2095,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "एमबीए निर्णय",
     type: "decision",
     tier: "common",
-    flavor: "₹20 lakh MBA loan. Worth it ya nahi? (Education loans need a repayment plan, not just hope)",
+    flavor: "₹20 lakh MBA loan. Worth it or not? (Education loans need a repayment plan, not just hope)",
     flavorHi: "₹20 लाख का एमबीए ऋण. क्या यह इसके लायक है या नहीं? (शिक्षा ऋण के लिए पुनर्भुगतान योजना की आवश्यकता है, न कि केवल आशा की)",
     options: [
       {
@@ -2140,8 +2140,8 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "टेलीग्राम स्टॉक टिप",
     type: "decision",
     tier: "common",
-    flavor: "'Yaar ek tip hai. 3x ho jaayega 1 mahine mein!' (Free tips are the most expensive advice)",
-    flavorHi: "'Yaar ek tip hai. 3x ho jaayega 1 mahine mein!' (Free tips are the most expensive advice)",
+    flavor: "'Bro, I've got a tip. It'll triple in 1 month!' (Free tips are the most expensive advice)",
+    flavorHi: "'यार, एक टिप है। 1 महीने में 3 गुना हो जाएगा!' (मुफ़्त टिप सबसे महँगी सलाह होती है)",
     options: [
       {
         type: "save",
@@ -2230,7 +2230,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "टैक्स रिफंड आश्चर्य",
     type: "decision",
     tier: "common",
-    flavor: "₹15,000 income tax refund arrived. 'Iska toh plan hi nahi tha!' (Unexpected income = unexpected future security)",
+    flavor: "₹15,000 income tax refund arrived. 'I never planned for this!' (Unexpected income = unexpected future security)",
     flavorHi: "₹15,000 इनकम टैक्स रिफंड आ गया. 'इसका तो प्लान ही नहीं था!' (अप्रत्याशित आय = अप्रत्याशित भविष्य की सुरक्षा)",
     options: [
       {
@@ -2275,7 +2275,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "FOMO निवेश",
     type: "decision",
     tier: "common",
-    flavor: "Sab bol rahe hain us startup mein invest karo. Unverified. (FOMO is not a financial strategy)",
+    flavor: "Everyone says you should invest in that startup. Unverified. (FOMO is not a financial strategy)",
     flavorHi: "सब बोल रहे हैं हमें स्टार्टअप में निवेश करो। असत्यापित. (FOMO कोई वित्तीय रणनीति नहीं है)",
     options: [
       {
@@ -2320,7 +2320,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "किराये पर बातचीत",
     type: "decision",
     tier: "common",
-    flavor: "Landlord ₹3,000 extra maang raha hai. Compare karo. (Everything in India is negotiable)",
+    flavor: "Landlord wants ₹3,000 more. Compare other options. (Everything in India is negotiable)",
     flavorHi: "मकान मालिक ₹3,000 अतिरिक्त मांग रहा है। तुलना करो. (भारत में हर चीज़ पर मोलभाव हो सकता है)",
     options: [
       {
@@ -2410,7 +2410,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "भूली हुई सदस्यताएँ",
     type: "decision",
     tier: "common",
-    flavor: "4 apps auto-renewing. Total: ₹1,500 a month. Kab subscribe kiya? (Audit your apps every 3 months)",
+    flavor: "4 apps auto-renewing. Total: ₹1,500 a month. When did you even subscribe? (Audit your apps every 3 months)",
     flavorHi: "4 ऐप्स अपने आप रिन्यू हो रहे हैं। कुल: ₹1,500 महीना. कब सब्सक्राइब किया? (हर 3 महीने में अपने ऐप्स का ऑडिट करें)",
     options: [
       {
@@ -2455,7 +2455,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "स्वास्थ्य बीमा भ्रम",
     type: "decision",
     tier: "common",
-    flavor: "Office plan only ya personal plan bhi add karein? (One surgery will make you wish you had more cover)",
+    flavor: "Office plan only, or add a personal plan too? (One surgery will make you wish you had more cover)",
     flavorHi: "केवल ऑफिस प्लान, या पर्सनल प्लान भी जोड़ें? (एक सर्जरी से आप चाहेंगे कि आपके पास और अधिक कवर हो)",
     options: [
       {
@@ -2500,7 +2500,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "निवेश करें या यात्रा करें?",
     type: "decision",
     tier: "common",
-    flavor: "₹2 lakh saved. Europe trip ya mutual fund? (Travel is beautiful. Compound interest is more beautiful.)",
+    flavor: "₹2 lakh saved. Europe trip or mutual fund? (Travel is beautiful. Compound interest is more beautiful.)",
     flavorHi: "₹2 लाख बचाए. यूरोप यात्रा या म्यूचुअल फंड? (यात्रा सुंदर है। चक्रवृद्धि ब्याज अधिक सुंदर है।)",
     options: [
       {
@@ -2586,7 +2586,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-059",
-    name: "Ghar Ka Sapna: Home Loan",
+    name: "Dream Home: Home Loan",
     nameHi: "घर का सपना: होम लोन",
     type: "decision",
     tier: "common",
@@ -2631,7 +2631,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-060",
-    name: "Prepay EMI ya SIP?",
+    name: "Prepay EMI or SIP?",
     nameHi: "EMI प्रीपे या SIP?",
     type: "decision",
     tier: "epic",
@@ -2676,7 +2676,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-061",
-    name: "Term Plan ya ULIP?",
+    name: "Term Plan or ULIP?",
     nameHi: "टर्म प्लान या ULIP?",
     type: "decision",
     tier: "common",
@@ -2766,7 +2766,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-063",
-    name: "Emergency Fund: Abhi Se",
+    name: "Emergency Fund: Start Now",
     nameHi: "इमरजेंसी फंड: अभी से",
     type: "decision",
     tier: "rare",
@@ -2811,7 +2811,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-064",
-    name: "Bachche Ki Padhai Fund",
+    name: "Child's Education Fund",
     nameHi: "बच्चे की पढ़ाई फंड",
     type: "decision",
     tier: "common",
@@ -2856,7 +2856,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-065",
-    name: "NPS, PPF ya Kuch Nahi?",
+    name: "NPS, PPF or Nothing?",
     nameHi: "NPS, PPF या कुछ नहीं?",
     type: "decision",
     tier: "epic",
@@ -2901,7 +2901,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-066",
-    name: "ESOP Ka Jackpot",
+    name: "ESOP Jackpot",
     nameHi: "ESOP का जैकपॉट",
     type: "decision",
     tier: "rare",
@@ -2991,7 +2991,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-068",
-    name: "Market Crash: Ruko Ya Bhaago?",
+    name: "Market Crash: Hold or Run?",
     nameHi: "मार्केट क्रैश: रुको या भागो?",
     type: "decision",
     tier: "common",
@@ -3036,7 +3036,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-069",
-    name: "Virasat: Inheritance",
+    name: "Family Inheritance",
     nameHi: "विरासत: इनहेरिटेंस",
     type: "decision",
     tier: "rare",
@@ -3126,7 +3126,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-071",
-    name: "FIRE Ka Hisaab",
+    name: "Doing the FIRE Math",
     nameHi: "FIRE का हिसाब",
     type: "decision",
     tier: "common",
@@ -3171,7 +3171,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-072",
-    name: "Sona: Gehne ya Paper Gold?",
+    name: "Gold: Jewellery or Paper Gold?",
     nameHi: "सोना: गहने या पेपर गोल्ड?",
     type: "decision",
     tier: "rare",
@@ -3216,7 +3216,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-073",
-    name: "80C Ka Jugaad",
+    name: "Smart 80C Tax Saving",
     nameHi: "80C का जुगाड़",
     type: "decision",
     tier: "common",
@@ -3261,7 +3261,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-074",
-    name: "Naukri Chhod Ke Business?",
+    name: "Quit Your Job for Business?",
     nameHi: "नौकरी छोड़कर बिज़नेस?",
     type: "decision",
     tier: "common",
@@ -3396,7 +3396,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-077",
-    name: "Hike Mila! Lifestyle Up?",
+    name: "Got a Hike! Upgrade Lifestyle?",
     nameHi: "हाइक मिला! लाइफस्टाइल अप?",
     type: "decision",
     tier: "common",
@@ -3445,7 +3445,7 @@ var LEVEL_SITUATION_CARDS = [
     nameHi: "रिटायरमेंट कॉर्पस चेक",
     type: "decision",
     tier: "rare",
-    flavor: "A retirement calculator says you'll need several crores at 60. You're 32 and think 'abhi toh jawani hai'. (The earlier you start, the less you need to invest)",
+    flavor: "A retirement calculator says you'll need several crores at 60. You're 32 and think 'I'm still young'. (The earlier you start, the less you need to invest)",
     flavorHi: "रिटायरमेंट कैलकुलेटर कहता है 60 तक कई करोड़ चाहिए। आप 32 के हैं और सोचते हैं 'अभी तो जवानी है'। (जितनी जल्दी शुरू करेंगे, उतना कम लगाना पड़ेगा)",
     options: [
       {
@@ -3486,7 +3486,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-079",
-    name: "Maa-Papa Ka Sahara",
+    name: "Supporting Your Parents",
     nameHi: "माँ-पापा का सहारा",
     type: "decision",
     tier: "common",
@@ -3531,7 +3531,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-080",
-    name: "Doosra Flat: Investment?",
+    name: "Second Flat: Investment?",
     nameHi: "दूसरा फ्लैट: निवेश?",
     type: "decision",
     tier: "epic",
@@ -3606,7 +3606,7 @@ var LEVEL_SITUATION_CARDS = [
       },
       {
         type: "spend",
-        label: "Baad Mein",
+        label: "Later",
         description: "I'm young. I'll do it later",
         shortDescriptionHi: "टाल दें",
         shortDescription: "Postpone it",
@@ -3666,7 +3666,7 @@ var LEVEL_SITUATION_CARDS = [
   },
   {
     id: "dc_s-083",
-    name: "Bachche Ki Tabiyat",
+    name: "Child Falls Sick",
     nameHi: "बच्चे की तबीयत",
     type: "decision",
     tier: "common",
@@ -3758,6 +3758,7 @@ var DECISION_CARDS = [
   {
     id: "dc_daily_convenience_habit_4",
     name: "Daily Convenience Habit",
+    shortName: "Daily Treats",
     nameHi: "दैनिक सुविधा की आदत",
     type: "decision",
     tier: "rare",
@@ -3884,6 +3885,7 @@ var DECISION_CARDS = [
   {
     id: "dc_virtual_microtransactions_13",
     name: "Virtual Microtransactions",
+    shortName: "In-Game Buys",
     nameHi: "आभासी सूक्ष्म लेनदेन",
     type: "decision",
     tier: "rare",
@@ -3970,6 +3972,7 @@ var DECISION_CARDS = [
   {
     id: "dc_information_access_choice_19",
     name: "Information Access Choice",
+    shortName: "Info Access",
     nameHi: "सूचना पहुंच विकल्प",
     type: "decision",
     tier: "common",
@@ -4016,6 +4019,7 @@ var DECISION_CARDS = [
   {
     id: "dc_secondary_income_boost_22",
     name: "Secondary Income Boost",
+    shortName: "Side Income",
     nameHi: "द्वितीयक आय वृद्धि",
     type: "decision",
     tier: "rare",
@@ -4030,7 +4034,9 @@ var DECISION_CARDS = [
   {
     id: "dc_introductory_credit_offer_23",
     name: "Introductory Credit Offer",
+    shortName: "Credit Offer",
     nameHi: "परिचयात्मक क्रेडिट प्रस्ताव",
+    shortNameHi: "क्रेडिट ऑफ़र",
     type: "decision",
     tier: "epic",
     flavor: 'You are offered a premium credit card with a "Free First Year" and a ₹5,000 joining voucher.',
@@ -4106,6 +4112,7 @@ var DECISION_CARDS = [
   {
     id: "dc_out_of_budget_social_trip_28",
     name: "Out-of-Budget Social Trip",
+    shortName: "Costly Trip",
     nameHi: "बजट से बाहर सामाजिक यात्रा",
     shortNameHi: "महंगी ट्रिप",
     type: "decision",
@@ -4151,6 +4158,7 @@ var DECISION_CARDS = [
   {
     id: "dc_essential_equipment_failure_31",
     name: "Essential Equipment Failure",
+    shortName: "Broken Gear",
     nameHi: "आवश्यक उपकरण विफलता",
     type: "decision",
     tier: "rare",
@@ -4208,6 +4216,7 @@ var DECISION_CARDS = [
     id: "dc_paid_masterclass_35",
     name: "Paid Masterclass",
     nameHi: "सशुल्क मास्टरक्लास",
+    shortNameHi: "पेड क्लास",
     type: "decision",
     tier: "rare",
     flavor: "A reputed expert is holding a one-day masterclass on personal finance or career growth for ₹2,000.",
@@ -4309,6 +4318,7 @@ var DECISION_CARDS = [
   {
     id: "dc_networking_dinner_bill_42",
     name: "Networking Dinner Bill",
+    shortName: "Work Dinner",
     nameHi: "नेटवर्किंग डिनर बिल",
     type: "decision",
     tier: "rare",
@@ -4394,6 +4404,7 @@ var DECISION_CARDS = [
   {
     id: "dc_expensive_degree_choice_48",
     name: "Expensive Degree Choice",
+    shortName: "Costly Degree",
     nameHi: "महँगी डिग्री का चुनाव",
     type: "decision",
     tier: "epic",
@@ -4424,6 +4435,7 @@ var DECISION_CARDS = [
   {
     id: "dc_fitness_subscription_choice_50",
     name: "Fitness Subscription Choice",
+    shortName: "Gym Plan",
     nameHi: "फिटनेस सदस्यता विकल्प",
     type: "decision",
     tier: "common",
@@ -4885,6 +4897,7 @@ var DECISION_CARDS = [
   {
     id: "dc_expensive_hobby_gear_82",
     name: "Expensive Hobby Gear",
+    shortName: "Hobby Gear",
     nameHi: "महँगा हॉबी गियर",
     type: "decision",
     tier: "common",
@@ -4970,6 +4983,7 @@ var DECISION_CARDS = [
   {
     id: "dc_colleague_s_farewell_gift_88",
     name: "Colleague's Farewell Gift",
+    shortName: "Farewell Gift",
     nameHi: "सहकर्मी का विदाई उपहार",
     type: "decision",
     tier: "common",
@@ -4998,6 +5012,7 @@ var DECISION_CARDS = [
   {
     id: "dc_fire_movement_choice_90",
     name: "FIRE Movement Choice",
+    shortName: "FIRE Plan",
     nameHi: "अग्नि आंदोलन विकल्प",
     type: "decision",
     tier: "epic",
@@ -5359,6 +5374,7 @@ var DECISION_CARDS = [
   {
     id: "dc_leveraged_trading_gamble_115",
     name: "Leveraged Trading Gamble",
+    shortName: "Leverage Bet",
     nameHi: "लीवरेज्ड ट्रेडिंग जुआ",
     type: "decision",
     tier: "epic",
@@ -5373,6 +5389,7 @@ var DECISION_CARDS = [
   {
     id: "dc_premium_broadband_pitch_116",
     name: "Premium Broadband Pitch",
+    shortName: "Internet Upsell",
     nameHi: "प्रीमियम ब्रॉडबैंड पिच",
     type: "decision",
     tier: "common",
@@ -5515,6 +5532,7 @@ var DECISION_CARDS = [
   {
     id: "dc_family_emergency_support_126",
     name: "Family Emergency Support",
+    shortName: "Family Crisis",
     nameHi: "पारिवारिक आपातकालीन सहायता",
     shortNameHi: "परिवार की मदद",
     type: "decision",
@@ -5618,6 +5636,7 @@ var DECISION_CARDS = [
   {
     id: "dc_guru_s_mastermind_group_133",
     name: "Guru's Mastermind Group",
+    shortName: "Guru's Group",
     nameHi: "गुरु का मास्टरमाइंड ग्रुप",
     type: "decision",
     tier: "rare",
@@ -5720,6 +5739,7 @@ var DECISION_CARDS = [
   {
     id: "dc_bootstrapping_a_business_140",
     name: "Bootstrapping a Business",
+    shortName: "Self-Funding",
     nameHi: "एक व्यवसाय को बूटस्ट्रैपिंग करना",
     shortNameHi: "अपना बिज़नेस",
     type: "decision",
@@ -5765,6 +5785,7 @@ var DECISION_CARDS = [
   {
     id: "dc_comprehensive_pet_insurance_181",
     name: "Comprehensive Pet Insurance",
+    shortName: "Pet Insurance",
     nameHi: "व्यापक पालतू पशु बीमा",
     type: "decision",
     tier: "rare",
@@ -5780,6 +5801,7 @@ var DECISION_CARDS = [
     id: "dc_diversified_portfolio_183",
     name: "Diversified Portfolio",
     nameHi: "विविध पोर्टफ़ोलियो",
+    shortNameHi: "विविध निवेश",
     type: "decision",
     tier: "epic",
     flavor: "You are reviewing your investments. A guru suggests putting everything in one stock.",
@@ -6264,7 +6286,7 @@ var ACTION_CARDS = [
     flavor: "Someone keys your opponent's car overnight.",
     flavorHi: "कोई आपके प्रतिद्वंद्वी की कार में रातों-रात चाबी लगा देता है।",
     effect: { type: "wealth_pct", value: -10, target: "target" },
-    shortName: "Scratched Car",
+    shortName: "Keyed Car",
     shortNameHi: "खरोंच वाली कार",
     shortFlavor: "Vandalism. (Attack)",
     shortFlavorHi: "बर्बरता. (आक्रमण करना)"
@@ -6752,7 +6774,8 @@ var LEGENDARY_CARDS = [
     id: "leg_bankruptcy_shield",
     name: "Bankruptcy Shield",
     nameHi: "दिवालियापन ढाल (Bankruptcy Shield)",
-    shortNameHi: "दिवालिया ढाल",
+    shortName: "Safety Net",
+    shortNameHi: "सुरक्षा जाल",
     type: "defense",
     tier: "legendary",
     mentorInsight: "Insurance, an emergency fund and avoiding high-interest debt are your real-life safety net. They decide how far a bad year can knock you down.",

@@ -9,18 +9,6 @@ function card(type: GameCard['type'], effect?: CardEffect, extra: Partial<GameCa
   return { id: 'x', name: 'Test', type, tier: 'common', flavor: '', effect, ...extra }
 }
 
-describe('softHyphenate (long card-name words)', () => {
-  it('adds soft hyphens only inside long Latin words', async () => {
-    const { softHyphenate } = await import('../../components/GameCard')
-    const SHY = String.fromCharCode(0xad)
-    expect(softHyphenate('Performance Bonus')).toBe(`Per${SHY}for${SHY}mance Bonus`)
-    expect(softHyphenate('Kuber')).toBe('Kuber')
-    expect(softHyphenate('Compound')).toBe(`Com${SHY}pound`)
-    expect(softHyphenate('दिवाली बोनस')).toBe('दिवाली बोनस')
-    expect(softHyphenate('Performance').split(SHY).join('')).toBe('Performance')
-  })
-})
-
 describe('cardHeadline', () => {
   it('decision cards with options are "choose" (three dots)', () => {
     const c = ALL_CARDS.find(x => x.type === 'decision' && x.options?.length)!

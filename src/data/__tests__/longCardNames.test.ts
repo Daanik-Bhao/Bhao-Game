@@ -121,7 +121,7 @@ describe('short card names fit a hand card', () => {
   })
 
   it('no hand-card word joined by "/" is wider than one line (it can only break mid-letter)', () => {
-    // softHyphenate only splits plain Latin words; "Joining/Signing" overflowed on the Android build.
+    // Card names hyphenate Latin syllables only (lib/hyphenate); "Joining/Signing" overflowed on the Android build.
     const bad: string[] = []
     for (const c of CARDS) {
       for (const [lang, limit] of [['en', SHORT_NAME_LIMIT.en.word], ['hi', SHORT_NAME_LIMIT.hi.word]] as const) {

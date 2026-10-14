@@ -114,7 +114,7 @@ export function LeaderboardView({ rows, loading, meId, meName, onRefresh, onBack
           </>
         )}
       </main>
-      <TabBar active="home" />
+      <TabBar />
     </div>
   )
 }

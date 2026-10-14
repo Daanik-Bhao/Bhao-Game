@@ -35,9 +35,10 @@ button.gcard { cursor: pointer; appearance: none; }
 
 /* Band: type colour + icon (+ label on full cards) */
 .gcard__band { flex: none; height: 26px; background: var(--_band); color: var(--_bandfg); display: flex; align-items: center; justify-content: center; gap: 6px; }
-.gcard--full .gcard__band { height: 36px; justify-content: flex-start; padding: 0 26px 0 10px; }
+.gcard--full .gcard__band { height: 36px; justify-content: flex-start; gap: 5px; padding: 0 26px 0 10px; }
 .gcard--sheet .gcard__band, .gcard--mini .gcard__band { height: 28px; justify-content: flex-start; padding: 0 8px; }
-.gcard__type { font: 700 12px/1 var(--font-body); text-transform: var(--tt-caps); letter-spacing: var(--ls-caps); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* Caps with a tighter tracking than --ls-caps so "LIFE EVENT" fits the 128 px full card's band */
+.gcard__type { font: 700 12px/1 var(--font-body); text-transform: var(--tt-caps); letter-spacing: min(var(--ls-caps), 0.02em); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 
 /* Tier gem: rotated square, top-right */
 .gcard__gem { position: absolute; top: 7px; right: 5px; width: 10px; height: 10px; transform: rotate(45deg); border-radius: 2px; border: 1.5px solid var(--gem-outline); }
@@ -52,13 +53,14 @@ button.gcard { cursor: pointer; appearance: none; }
 .gcard__lock { position: absolute; top: 7px; left: 5px; color: var(--_bandfg); }
 
 /* Name: never ellipsis; hand max 3 lines (12px when a word is ≥ 9 characters) */
-.gcard__name { flex: 1 1 auto; min-height: 0; overflow: hidden; font: 700 13px/1.05 var(--font-display); padding: 4px 5px 0; overflow-wrap: break-word; word-break: normal; hyphens: auto; color: var(--ink-900); }
+.gcard__name { flex: 1 1 auto; min-height: 0; overflow: hidden; font: 700 13px/1.05 var(--font-display); padding: 4px 5px 0; overflow-wrap: break-word; word-break: normal; hyphens: manual; color: var(--ink-900); }
 .gcard__name.is-long { font-size: 12px; }
 /* Android Chrome ships a Hindi hyphenation dictionary and split short words ("सु-धार");
    Hindi isn't hyphenated in print, and over-long words still wrap via overflow-wrap. */
 html.lang-hi .gcard__name { line-height: 1.18; hyphens: manual; }
 .gcard__name.is-fit { font-size: 12px; }
 .gcard--sheet .gcard__name, .gcard--mini .gcard__name { font-size: 14px; padding: 6px 7px 0; }
+.gcard--sheet .gcard__name.is-fit { font-size: 12px; }
 .gcard--full .gcard__name { flex: none; font-size: 18px; line-height: 1.1; padding: 8px 10px 0; }
 .gcard--full .gcard__name.is-long-name + .gcard__flavor { -webkit-line-clamp: 2; }
 html.lang-hi .gcard--full .gcard__name { line-height: 1.25; }

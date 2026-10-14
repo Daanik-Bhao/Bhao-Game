@@ -13,16 +13,20 @@ import { Button, EmptyState, ToggleChip, useToastPlacement } from '../components
 import { TabBar } from '../components/nav/TabBar'
 import '../components/learning/learning.css'
 
-/** Small progress ring with "4 / 22" inside (spec §E.8 header). */
+/**
+ * Small progress ring with "4/22" inside (spec §E.8 header). 56 px, stroke 4 at r 24, so the
+ * inner radius is 22 px: the widest label "22/22" (12 px Baloo 800, 33.2 × 12 px, half-diagonal
+ * 17.7 px) keeps ~4 px clear of the ring (it touched the old 48 px ring, inner radius 17).
+ */
 function ProgressRing({ value, total, label }: { value: number; total: number; label: string }) {
-  const r = 19
+  const r = 24
   const c = 2 * Math.PI * r
   const k = total > 0 ? value / total : 0
   return (
     <span className="lib-ring" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={value} aria-label={label}>
-      <svg width="48" height="48" viewBox="0 0 48 48" aria-hidden="true">
-        <circle cx="24" cy="24" r={r} className="lib-ring__track" />
-        <circle cx="24" cy="24" r={r} className="lib-ring__fill" strokeDasharray={c} strokeDashoffset={c * (1 - k)} />
+      <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">
+        <circle cx="28" cy="28" r={r} className="lib-ring__track" />
+        <circle cx="28" cy="28" r={r} className="lib-ring__fill" strokeDasharray={c} strokeDashoffset={c * (1 - k)} />
       </svg>
       <span className="lib-ring__text num" aria-hidden="true">{value}/{total}</span>
     </span>

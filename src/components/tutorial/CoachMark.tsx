@@ -61,6 +61,17 @@ function resolveTarget(target: StepTarget, handIds: string[]): { box: Box | null
   return { box: null, el: null }
 }
 
+const sameViewport = (a: Viewport, b: Viewport) =>
+  a.w === b.w && a.h === b.h && (['top', 'right', 'bottom', 'left'] as const).every(k => (a.safe?.[k] ?? 0) === (b.safe?.[k] ?? 0))
+
+/** Safe-area insets in px, read from a fixed probe padded with env(safe-area-inset-*). */
+function safeInsets(probe: HTMLElement | null): Viewport['safe'] {
+  if (!probe) return undefined
+  const cs = getComputedStyle(probe)
+  const px = (v: string) => parseFloat(v) || 0
+  return { top: px(cs.paddingTop), right: px(cs.paddingRight), bottom: px(cs.paddingBottom), left: px(cs.paddingLeft) }
+}
+
 const sameBox = (a: Box | null, b: Box | null) =>
   a === b || (!!a && !!b && Math.abs(a.top - b.top) < 1 && Math.abs(a.left - b.left) < 1 && Math.abs(a.width - b.width) < 1 && Math.abs(a.height - b.height) < 1)
 
@@ -86,27 +97,37 @@ const MAX_W = 300
 
 export interface Placement { side: Side; top: number; left: number; width: number; maxHeight: number; arrow: number }
 
+/** Viewport size plus the safe-area insets (env(safe-area-inset-*)) the bubble must stay inside. */
+export interface Viewport { w: number; h: number; safe?: Partial<Record<'top' | 'right' | 'bottom' | 'left', number>> }
+
 /**
  * Bubble placement (spec §E.10): prefer above the target, else below, else beside it.
  * The bubble NEVER overlaps the target box: when no side fits the natural height, the
  * roomiest side is used and the bubble gets a max-height (it scrolls inside).
  * Pure (exported for tests).
  */
-export function placeBubble(spot: Box | null, size: { w: number; h: number }, vp: { w: number; h: number }): Placement {
-  const width = Math.min(MAX_W, vp.w - MARGIN * 2)
+export function placeBubble(spot: Box | null, size: { w: number; h: number }, vp: Viewport): Placement {
+  const safe = { top: 0, right: 0, bottom: 0, left: 0, ...vp.safe }
+  // Usable area: the viewport minus the safe-area insets (notch, gesture bar) minus MARGIN.
+  const minX = safe.left + MARGIN
+  const maxX = vp.w - safe.right - MARGIN
+  const minY = safe.top + MARGIN
+  const maxY = vp.h - safe.bottom - MARGIN
+  const width = Math.min(MAX_W, maxX - minX)
   const h = size.h
   if (!spot) {
-    return { side: 'none', top: Math.max(MARGIN, vp.h - h - 24), left: (vp.w - width) / 2, width, maxHeight: vp.h - MARGIN * 2, arrow: 0 }
+    const maxHeight = maxY - minY
+    return { side: 'none', top: Math.max(minY, maxY + MARGIN - Math.min(h, maxHeight) - 24), left: minX + (maxX - minX - width) / 2, width, maxHeight, arrow: 0 }
   }
-  const clampX = (l: number) => Math.max(MARGIN, Math.min(vp.w - width - MARGIN, l))
-  const clampY = (t: number, hh: number) => Math.max(MARGIN, Math.min(vp.h - hh - MARGIN, t))
+  const clampX = (l: number) => Math.max(minX, Math.min(maxX - width, l))
+  const clampY = (t: number, hh: number) => Math.max(minY, Math.min(maxY - hh, t))
   const cx = spot.left + spot.width / 2
   const cy = spot.top + spot.height / 2
   const room = {
-    above: spot.top - GAP - MARGIN,
-    below: vp.h - (spot.top + spot.height) - GAP - MARGIN,
-    right: vp.w - (spot.left + spot.width) - GAP - MARGIN,
-    left: spot.left - GAP - MARGIN,
+    above: spot.top - GAP - minY,
+    below: maxY - (spot.top + spot.height) - GAP,
+    right: maxX - (spot.left + spot.width) - GAP,
+    left: spot.left - GAP - minX,
   }
   const make = (side: Side, maxHeight: number): Placement => {
     const hh = Math.min(h, maxHeight)
@@ -121,7 +142,7 @@ export function placeBubble(spot: Box | null, size: { w: number; h: number }, vp
   }
   if (room.above >= h) return make('above', room.above)
   if (room.below >= h) return make('below', room.below)
-  const sideH = vp.h - MARGIN * 2
+  const sideH = maxY - minY
   if (room.right >= width && sideH >= h) return make('right', sideH)
   if (room.left >= width && sideH >= h) return make('left', sideH)
   // Nothing fits the natural height: take the roomiest side and scroll inside.
@@ -136,9 +157,11 @@ export function placeBubble(spot: Box | null, size: { w: number; h: number }, vp
 export function CoachMark({ stepKey, kind, title, body, todo, target, handIds, lesson, lessons, notice, onNext, onSkip }: CoachMarkProps) {
   const { t } = useTranslation()
   const [box, setBox] = useState<Box | null>(null)
-  const [vp, setVp] = useState({ w: window.innerWidth, h: window.innerHeight })
+  const [vp, setVp] = useState<Viewport>({ w: window.innerWidth, h: window.innerHeight })
   const bubbleRef = useRef<HTMLDivElement>(null)
   const innerRef = useRef<HTMLDivElement>(null)
+  const footRef = useRef<HTMLDivElement>(null)
+  const probeRef = useRef<HTMLDivElement>(null)
   const [bubbleH, setBubbleH] = useState(180)
   const targetRef = useRef(target)
   targetRef.current = target
@@ -155,7 +178,8 @@ export function CoachMark({ stepKey, kind, title, body, todo, target, handIds, l
         try { el.scrollIntoView({ block: 'nearest', inline: 'center' }) } catch { /* old browsers */ }
       }
       setBox(prev => (sameBox(prev, next) ? prev : next))
-      setVp(prev => (prev.w === window.innerWidth && prev.h === window.innerHeight ? prev : { w: window.innerWidth, h: window.innerHeight }))
+      const next2 = { w: window.innerWidth, h: window.innerHeight, safe: safeInsets(probeRef.current) }
+      setVp(prev => (sameViewport(prev, next2) ? prev : next2))
     }
     measure()
     const id = window.setInterval(measure, 150)
@@ -166,24 +190,26 @@ export function CoachMark({ stepKey, kind, title, body, todo, target, handIds, l
     }
   }, [stepKey])
 
-  // Natural height of the content (independent of any max-height applied).
+  // Natural height of the content (independent of any max-height applied) + the action row.
   useLayoutEffect(() => {
     const el = innerRef.current
     if (!el) return
-    const h = el.scrollHeight + 2 // + bubble border
+    const h = el.scrollHeight + (footRef.current?.offsetHeight ?? 0) + 2 // + bubble border
     setBubbleH(prev => (Math.abs(prev - h) < 1 ? prev : h))
   })
 
   const spot = box ? { top: box.top - RING, left: box.left - RING, width: box.width + RING * 2, height: box.height + RING * 2 } : null
   const pos = placeBubble(spot, { w: MAX_W, h: bubbleH }, vp)
+  const scrolls = bubbleH > pos.maxHeight + 1
 
   return (
     <div className={`tut-layer tut-${kind}`} role="dialog" aria-live="polite" aria-label={title}>
+      <div ref={probeRef} className="tut-safe-probe" aria-hidden="true" />
       {kind === 'next' && <div className="tut-blocker" onClick={e => e.stopPropagation()} />}
       {spot ? <div className="tut-spot" style={spot} /> : kind !== 'wait' && <div className="tut-dim" />}
       <div
         ref={bubbleRef}
-        className={`tut-bubble paper tut-bubble--${pos.side}`}
+        className={`tut-bubble paper tut-bubble--${pos.side}${scrolls ? ' is-scrolling' : ''}`}
         style={{ top: pos.top, left: pos.left, width: pos.width, maxHeight: pos.maxHeight, '--arrow': `${pos.arrow}px` } as CSSProperties}
         data-side={pos.side}
       >
@@ -199,12 +225,13 @@ export function CoachMark({ stepKey, kind, title, body, todo, target, handIds, l
               {notice && <p className="tut-notice" role="alert">{notice}</p>}
               {kind === 'action' && todo && <p className="tut-todo"><Hand size={16} aria-hidden="true" /> {todo}</p>}
               {kind === 'wait' && <p className="tut-wait"><span className="tut-spinner" aria-hidden="true" /> {t('tutorial.watching')}</p>}
-              <div className="tut-actions">
-                {kind === 'next' && <Button size="s" onClick={onNext} autoFocus>{t('tutorial.next')}</Button>}
-                <Button variant="ghost" size="s" onClick={onSkip} className="btn--muted">{t('tutorial.skipTutorial')}</Button>
-              </div>
             </div>
           </motion.div>
+        </div>
+        {/* Outside the scroll area: Next / Skip stay visible when the text has to scroll. */}
+        <div ref={footRef} className="tut-actions">
+          {kind === 'next' && <Button size="s" onClick={onNext} autoFocus>{t('tutorial.next')}</Button>}
+          <Button variant="ghost" size="s" onClick={onSkip} className="btn--muted">{t('tutorial.skipTutorial')}</Button>
         </div>
       </div>
     </div>

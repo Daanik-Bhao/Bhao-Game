@@ -152,7 +152,9 @@ button.deck { cursor: pointer; }
 .hand--tablet { gap: var(--sp-3); }
 .hand--tablet .gcard, .hand--tablet .hand__empty { --card-w: 96px; --card-h: 140px; }
 .hand--tablet .gcard--full .gcard__name { font-size: 15px; padding: 6px 8px 0; }
-.hand--tablet .gcard--full .gcard__band { height: 30px; }
+.hand--tablet .gcard--full .gcard__band { height: 30px; justify-content: center; padding: 0; }
+/* 96 px is a narrow card (spec §D.14: < 110 px shows the icon only; the type is in the accessible name) */
+.hand--tablet .gcard--full .gcard__type { display: none; }
 .hand--tablet .gcard--full .gcard__value { font-size: 18px; padding: 0 8px 8px; }
 @media (max-width: 374px) { .hand { gap: 4px; padding-left: 2px; padding-right: 2px; } .hand__empty { --card-w: 68px; --card-h: 100px; } }
 
@@ -268,5 +270,11 @@ body:has(.dk-board) .toast-region--top { top: calc(80px + env(safe-area-inset-to
   .cardsheet__flavor { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   .cardsheet .choice__why { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .cardsheet .gcard--sheet { --card-w: 72px; --card-h: 104px; }
+  /* At hand-card height the preview uses hand-card metrics, so a 3-line name (Devanagari line
+     height included) fits above the value instead of losing its last line. */
+  .cardsheet .gcard--sheet .gcard__band { height: 26px; }
+  .cardsheet .gcard--sheet .gcard__name { font-size: 13px; padding: 4px 5px 0; }
+  .cardsheet .gcard--sheet .gcard__name.is-fit { font-size: 12px; }
+  .cardsheet .gcard--sheet .gcard__value { font-size: 16px; padding: 0 5px 5px; }
 }
 
