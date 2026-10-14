@@ -39,6 +39,14 @@ export function cardTitle(card: GameCardType, lang: string): string {
     : (card.shortName || card.name)
 }
 
+/**
+ * Full card name for the current language (ignores shortName). Used where there is room or
+ * nothing is visual: the card sheet / inspect header and the card's accessible name.
+ */
+export function cardFullTitle(card: GameCardType, lang: string): string {
+  return lang === 'hi' ? (card.nameHi || card.name) : card.name
+}
+
 export function cardFlavor(card: GameCardType, lang: string): string {
   return lang === 'hi'
     ? (card.shortFlavorHi || card.flavorHi || card.shortFlavor || card.flavor)
@@ -144,7 +152,7 @@ export function GameCard({
   const typeLabel = t(`card.type.${kind}`)
   const tierLabel = t(`card.tier.${card.tier}`)
   const label = ariaLabel ?? [
-    t('card.aria', { name: title, type: typeLabel, tier: tierLabel, headline: headline.spoken }),
+    t('card.aria', { name: cardFullTitle(card, lang), type: typeLabel, tier: tierLabel, headline: headline.spoken }),
     state === 'locked' ? (lockedReason ?? t('card.locked')) : '',
   ].filter(Boolean).join(' ')
 

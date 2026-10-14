@@ -69,7 +69,7 @@ export const BUILTIN_LIFE_EVENTS: GameCard[] = [
     effect: { type: 'wealth_pct', value: -20, target: 'self' },
   },
   {
-    id: 'le_chit_fund_scheme', name: 'Double-Your-Money Scheme', nameHi: 'पैसा डबल स्कीम', type: 'action', tier: 'rare', lifeEvent: true, category: 'fraud', lureAsset: 'scam',
+    id: 'le_chit_fund_scheme', name: 'Double-Your-Money Scheme', nameHi: 'पैसा डबल स्कीम', shortName: 'Money Doubler',type: 'action', tier: 'rare', lifeEvent: true, category: 'fraud', lureAsset: 'scam',
     flavor: 'A neighbour\'s "chit fund" promises to double your money in a year. Everyone in the building has joined.',
     flavorHi: 'पड़ोसी की "चिट फंड" स्कीम एक साल में पैसा डबल करने का वादा करती है।',
     mentorInsight: 'Unregistered schemes paying old investors with new investors\' money collapse sooner or later. Check SEBI/RBI registration before investing.',
