@@ -8,6 +8,7 @@ import {
 import type { EventCategory, GameCard as GameCardType } from '../types/game'
 import { cardHeadline } from '../lib/cardHeadline'
 import { asLang } from '../i18n/lang'
+import { hyphenateText } from '../lib/hyphenate'
 import './GameCard.css'
 
 export type CardSize = 'hand' | 'full' | 'sheet' | 'mini'
@@ -83,9 +84,26 @@ export interface GameCardProps {
   dataTarget?: string
 }
 
+/** True when a word of the element's text wraps across lines (hyphenated or broken). */
+function splitsAWord(el: HTMLElement): boolean {
+  const node = el.firstChild
+  if (!node || node.nodeType !== Node.TEXT_NODE || typeof document.createRange !== 'function') return false
+  const text = node.textContent ?? ''
+  const range = document.createRange()
+  if (typeof range.getClientRects !== 'function') return false
+  for (const m of text.matchAll(/[^\s/\u200B]+/g)) {
+    range.setStart(node, m.index ?? 0)
+    range.setEnd(node, (m.index ?? 0) + m[0].length)
+    const tops = new Set(Array.from(range.getClientRects()).filter(r => r.width > 0).map(r => Math.round(r.top)))
+    if (tops.size > 1) return true
+  }
+  return false
+}
+
 /**
- * Card name. Hand cards that would need more than 3 lines at 13 px drop to 12 px (same rule
- * as long words, spec §D.14). Names that still don't fit are a content task (shorter shortName).
+ * Card name. Hand cards that would need more than 3 lines at 13 px, or would split a word
+ * across lines, drop to 12 px (same rule as long words, spec §D.14). Long words break only at
+ * syllable points (lib/hyphenate). Names that still don't fit are a content task (shortName).
  */
 function CardName({ title, className, fit }: { title: string; className: string; fit: boolean }) {
   const ref = useRef<HTMLSpanElement>(null)
@@ -95,30 +113,13 @@ function CardName({ title, className, fit }: { title: string; className: string;
     setSmall(false)
     const check = () => {
       const el = ref.current
-      if (el && el.scrollHeight > el.clientHeight + 1) setSmall(true)
+      if (el && (el.scrollHeight > el.clientHeight + 1 || splitsAWord(el))) setSmall(true)
     }
     const raf = requestAnimationFrame(check)
     document.fonts?.ready.then(() => requestAnimationFrame(check)).catch(() => {})
     return () => cancelAnimationFrame(raf)
   }, [title, fit])
-  return <span ref={ref} className={`${className}${small ? ' is-fit' : ''}`} aria-hidden="true">{softHyphenate(title)}</span>
-}
-
-/**
- * Long Latin words get soft hyphens (U+00AD) every 3 letters (keeping 3+ letters on each side),
- * so a word that can't fit a narrow card breaks as "Perfor-mance" instead of "Performanc e".
- * Chrome on Windows/Android has no hyphenation dictionary for hyphens:auto. Exported for tests.
- */
-export function softHyphenate(text: string): string {
-  return text.split(' ').map(w => {
-    if (w.length < 8 || !/^[A-Za-z]+$/.test(w)) return w
-    let out = ''
-    for (let i = 0; i < w.length; i++) {
-      if (i >= 3 && w.length - i >= 3 && i % 3 === 0) out += String.fromCharCode(0xad)
-      out += w[i]
-    }
-    return out
-  }).join(' ')
+  return <span ref={ref} className={`${className}${small ? ' is-fit' : ''}`} aria-hidden="true">{hyphenateText(title)}</span>
 }
 
 const LIFT = { type: 'spring' as const, stiffness: 500, damping: 32 }

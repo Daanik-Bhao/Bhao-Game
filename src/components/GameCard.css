@@ -48,7 +48,7 @@ button.gcard { cursor: pointer; appearance: none; }
 .gcard__lock { position: absolute; top: 31px; right: 5px; color: var(--ink-700); }
 
 /* Name: never ellipsis; hand max 3 lines (12px when a word is ≥ 9 characters) */
-.gcard__name { flex: 1 1 auto; min-height: 0; overflow: hidden; font: 700 13px/1.05 var(--font-display); padding: 4px 5px 0; overflow-wrap: break-word; word-break: normal; hyphens: auto; color: var(--ink-900); }
+.gcard__name { flex: 1 1 auto; min-height: 0; overflow: hidden; font: 700 13px/1.05 var(--font-display); padding: 4px 5px 0; overflow-wrap: break-word; word-break: normal; hyphens: manual; color: var(--ink-900); }
 .gcard__name.is-long { font-size: 12px; }
 html.lang-hi .gcard__name { line-height: 1.18; }
 .gcard__name.is-fit { font-size: 12px; }

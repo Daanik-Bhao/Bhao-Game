@@ -47,6 +47,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_daily_convenience_habit_4",
     name: "Daily Convenience Habit",
+    shortName: "Daily Treats",
     nameHi: "दैनिक सुविधा की आदत",
     type: 'decision',
     tier: 'rare',
@@ -173,6 +174,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_virtual_microtransactions_13",
     name: "Virtual Microtransactions",
+    shortName: "In-Game Buys",
     nameHi: "आभासी सूक्ष्म लेनदेन",
     type: 'decision',
     tier: 'rare',
@@ -259,6 +261,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_information_access_choice_19",
     name: "Information Access Choice",
+    shortName: "Info Access",
     nameHi: "सूचना पहुंच विकल्प",
     type: 'decision',
     tier: 'common',
@@ -305,6 +308,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_secondary_income_boost_22",
     name: "Secondary Income Boost",
+    shortName: "Side Income",
     nameHi: "द्वितीयक आय वृद्धि",
     type: 'decision',
     tier: 'rare',
@@ -319,7 +323,9 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_introductory_credit_offer_23",
     name: "Introductory Credit Offer",
+    shortName: "Credit Offer",
     nameHi: "परिचयात्मक क्रेडिट प्रस्ताव",
+    shortNameHi: "क्रेडिट ऑफ़र",
     type: 'decision',
     tier: 'epic',
     flavor: "You are offered a premium credit card with a \"Free First Year\" and a ₹5,000 joining voucher.",
@@ -394,6 +400,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_out_of_budget_social_trip_28",
     name: "Out-of-Budget Social Trip",
+    shortName: "Costly Trip",
     nameHi: "बजट से बाहर सामाजिक यात्रा",
     shortNameHi: "महंगी ट्रिप",
     type: 'decision',
@@ -423,7 +430,9 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_competition_award_winnings_30",
     name: "Competition/Award Winnings",
+    shortName: "Prize Money",
     nameHi: "प्रतियोगिता/पुरस्कार जीतें",
+    shortNameHi: "इनाम की राशि",
     type: 'decision',
     tier: 'common',
     flavor: "You win a local competition with a ₹25,000 cash prize.",
@@ -437,6 +446,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_essential_equipment_failure_31",
     name: "Essential Equipment Failure",
+    shortName: "Broken Gear",
     nameHi: "आवश्यक उपकरण विफलता",
     type: 'decision',
     tier: 'rare',
@@ -494,6 +504,7 @@ export const DECISION_CARDS: GameCard[] = [
     id: "dc_paid_masterclass_35",
     name: "Paid Masterclass",
     nameHi: "सशुल्क मास्टरक्लास",
+    shortNameHi: "पेड क्लास",
     type: 'decision',
     tier: 'rare',
     flavor: "A reputed expert is holding a one-day masterclass on personal finance or career growth for ₹2,000.",
@@ -595,6 +606,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_networking_dinner_bill_42",
     name: "Networking Dinner Bill",
+    shortName: "Work Dinner",
     nameHi: "नेटवर्किंग डिनर बिल",
     type: 'decision',
     tier: 'rare',
@@ -680,6 +692,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_expensive_degree_choice_48",
     name: "Expensive Degree Choice",
+    shortName: "Costly Degree",
     nameHi: "महँगी डिग्री का चुनाव",
     type: 'decision',
     tier: 'epic',
@@ -710,6 +723,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_fitness_subscription_choice_50",
     name: "Fitness Subscription Choice",
+    shortName: "Gym Plan",
     nameHi: "फिटनेस सदस्यता विकल्प",
     type: 'decision',
     tier: 'common',
@@ -1171,6 +1185,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_expensive_hobby_gear_82",
     name: "Expensive Hobby Gear",
+    shortName: "Hobby Gear",
     nameHi: "महँगा हॉबी गियर",
     type: 'decision',
     tier: 'common',
@@ -1256,6 +1271,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_colleague_s_farewell_gift_88",
     name: "Colleague's Farewell Gift",
+    shortName: "Farewell Gift",
     nameHi: "सहकर्मी का विदाई उपहार",
     type: 'decision',
     tier: 'common',
@@ -1284,6 +1300,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_fire_movement_choice_90",
     name: "FIRE Movement Choice",
+    shortName: "FIRE Plan",
     nameHi: "अग्नि आंदोलन विकल्प",
     type: 'decision',
     tier: 'epic',
@@ -1645,6 +1662,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_leveraged_trading_gamble_115",
     name: "Leveraged Trading Gamble",
+    shortName: "Leverage Bet",
     nameHi: "लीवरेज्ड ट्रेडिंग जुआ",
     type: 'decision',
     tier: 'epic',
@@ -1659,6 +1677,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_premium_broadband_pitch_116",
     name: "Premium Broadband Pitch",
+    shortName: "Internet Upsell",
     nameHi: "प्रीमियम ब्रॉडबैंड पिच",
     type: 'decision',
     tier: 'common',
@@ -1801,6 +1820,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_family_emergency_support_126",
     name: "Family Emergency Support",
+    shortName: "Family Crisis",
     nameHi: "पारिवारिक आपातकालीन सहायता",
     shortNameHi: "परिवार की मदद",
     type: 'decision',
@@ -1904,6 +1924,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_guru_s_mastermind_group_133",
     name: "Guru's Mastermind Group",
+    shortName: "Guru's Group",
     nameHi: "गुरु का मास्टरमाइंड ग्रुप",
     type: 'decision',
     tier: 'rare',
@@ -2006,6 +2027,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_bootstrapping_a_business_140",
     name: "Bootstrapping a Business",
+    shortName: "Self-Funding",
     nameHi: "एक व्यवसाय को बूटस्ट्रैपिंग करना",
     shortNameHi: "अपना बिज़नेस",
     type: 'decision',
@@ -2051,6 +2073,7 @@ export const DECISION_CARDS: GameCard[] = [
   {
     id: "dc_comprehensive_pet_insurance_181",
     name: "Comprehensive Pet Insurance",
+    shortName: "Pet Insurance",
     nameHi: "व्यापक पालतू पशु बीमा",
     type: 'decision',
     tier: 'rare',
@@ -2066,6 +2089,7 @@ export const DECISION_CARDS: GameCard[] = [
     id: "dc_diversified_portfolio_183",
     name: "Diversified Portfolio",
     nameHi: "विविध पोर्टफ़ोलियो",
+    shortNameHi: "विविध निवेश",
     type: 'decision',
     tier: 'epic',
     flavor: "You are reviewing your investments. A guru suggests putting everything in one stock.",
@@ -2537,7 +2561,7 @@ export const ACTION_CARDS: GameCard[] = [
     flavor: "Someone keys your opponent's car overnight.",
     flavorHi: "कोई आपके प्रतिद्वंद्वी की कार में रातों-रात चाबी लगा देता है।",
     effect: { type: 'wealth_pct', value: -10, target: 'target' },
-      shortName: "Scratched Car",
+      shortName: "Keyed Car",
       shortNameHi: "खरोंच वाली कार",
       shortFlavor: "Vandalism. (Attack)",
       shortFlavorHi: "बर्बरता. (आक्रमण करना)"
