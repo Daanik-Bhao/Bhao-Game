@@ -96,7 +96,7 @@ export function TutorialSummary({ skipped, yourNetWorth, rahulNetWorth, onPlay, 
       <div className="sticky-cta">
         <div className="sticky-cta__inner">
           <Button variant="outline" icon={<House size={20} aria-hidden="true" />} onClick={onBack}>{t('common.home')}</Button>
-          <Button icon={<Play size={20} aria-hidden="true" />} onClick={onPlay} data-autofocus>{t('tutorial.summary.play')}</Button>
+          <Button icon={<Play size={20} aria-hidden="true" />} onClick={onPlay} className="tut-summary__primary" data-autofocus>{t('tutorial.summary.play')}</Button>
         </div>
       </div>
     </div>

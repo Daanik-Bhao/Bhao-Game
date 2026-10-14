@@ -63,6 +63,9 @@ html[data-reduce-motion="true"] .turn-ring.is-danger .turn-ring__num { animation
 /* ---------- Table centre ---------- */
 .table-centre { position: relative; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; align-items: center; padding: var(--sp-5) var(--sp-5) 0; overflow: hidden; }
 .table-centre__pill { position: absolute; top: var(--sp-3); left: var(--sp-3); z-index: var(--z-raised); }
+/* Portrait phones: the centred deck + last-played pair is wider than the gap beside the pill, so an
+   absolute pill sat on top of the deck ("Desire 60%" over BHAO). Keep it in flow above the cards. */
+.table-centre:not(.table-centre--landscape) > .table-centre__pill { position: static; flex: none; margin-bottom: var(--sp-3); }
 .table-centre__cards { flex: none; display: flex; align-items: flex-start; justify-content: center; gap: 18px; }
 
 .deck { position: relative; flex: none; width: var(--deck-w, 92px); height: var(--deck-h, 132px); padding: 0; border: 0; background: none; color: inherit; font: inherit; }
