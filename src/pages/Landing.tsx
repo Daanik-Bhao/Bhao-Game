@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Globe, GraduationCap, Play, Sparkles, Sprout, Trophy, Users } from 'lucide-react'
 import { Button, buttonClass } from '../components/ui'
@@ -6,6 +6,7 @@ import { Gullu } from '../components/mascot/Gullu'
 import { GameCard } from '../components/GameCard'
 import { AppBar } from '../components/nav/AppBar'
 import { useAuth } from '../hooks/useAuth'
+import { isNative } from '../lib/native'
 import type { GameCard as GameCardType } from '../types/game'
 import './menus.css'
 import './landing.css'
@@ -15,7 +16,7 @@ const SUPPORT_EMAIL = 'support@daanik.com'
 /** Landing `/` (spec §E.1): "fun card game that makes you smarter with money — play free now". */
 export function Landing() {
   const navigate = useNavigate()
-  const { user, isGuest, playAsGuest } = useAuth()
+  const { user, isGuest, loading, playAsGuest } = useAuth()
   const { t, i18n } = useTranslation()
 
   // "Play free, no sign-up": guest login → home (or straight home when already signed in / guest).
@@ -35,6 +36,10 @@ export function Landing() {
     card('diwali', { type: 'decision', tier: 'rare', effect: { type: 'wealth_change', value: 50000, target: 'self' } }),
     card('health', { type: 'defense', tier: 'rare', blocksCategories: ['medical'], effect: { type: 'block_card', target: 'self' } }),
   ]
+
+  // Android app: every cold start opens at '/'. A returning guest or signed-in player goes
+  // straight home instead of seeing the marketing page (and a "Sign in" link) each launch.
+  if (isNative() && !loading && (user || isGuest)) return <Navigate to="/dashboard" replace />
 
   return (
     <div className="page landing">
