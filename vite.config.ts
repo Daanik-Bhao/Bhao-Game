@@ -80,27 +80,14 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Precache the app shell (JS/CSS/HTML + small static assets). The large
-        // /avatars artwork is cached lazily at runtime instead.
+        // Precache the app shell (JS/CSS/HTML + small static assets).
         globPatterns: ['**/*.{js,css,html,svg,woff2}', 'icons/*.png'],
-        globIgnores: ['avatars/**'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
-        runtimeCaching: [
-          {
-            urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith('/avatars/'),
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'bhao-avatars',
-              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-        ],
       },
     }),
   ],
