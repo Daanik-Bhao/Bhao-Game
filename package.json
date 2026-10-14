@@ -17,6 +17,7 @@
     "android:sync": "npm run build && npx cap sync android",
     "android:apk": "npm run android:sync && node scripts/android-gradle.mjs apk",
     "android:bundle": "node scripts/android-gradle.mjs bundle-check && npm run android:sync && node scripts/android-gradle.mjs bundle",
+    "android:keystore": "node scripts/android-keystore.mjs",
     "version:show": "node scripts/version.mjs",
     "version:bump": "node scripts/version.mjs bump"
   },

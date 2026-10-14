@@ -40,14 +40,17 @@ Google Play needs every upload signed with your **upload key**. Create it yourse
 back it up (password manager + an offline copy). If you lose it you must ask Google to reset it.
 
 ```bash
-mkdir -p /c/Users/Administrator/AndroidDev/keys
-/c/Users/Administrator/AndroidDev/jdk21/bin/keytool -genkeypair -v \
-  -keystore /c/Users/Administrator/AndroidDev/keys/bhao-release.jks \
-  -alias bhao -keyalg RSA -keysize 4096 -validity 10000
+npm run android:keystore
 ```
 
-Copy `android/keystore.properties.example` to `android/keystore.properties` and fill in the
-path and passwords. `keystore.properties`, `*.jks` and `*.keystore` are git-ignored; never commit them.
+It asks for a path (default `C:\Users\Administrator\AndroidDev\keys\bhao-upload.jks`, outside
+the repo), an alias (default `bhao-upload`), your name/organisation and a password (typed twice,
+hidden), runs the JDK's `keytool` (RSA 4096, PKCS12, one password for store and key) and writes
+`android/keystore.properties`. It never overwrites an existing keystore or properties file.
+(Manual alternative: create a keystore with `keytool -genkeypair` and copy
+`android/keystore.properties.example` to `android/keystore.properties`.)
+
+`keystore.properties`, `*.jks`, `*.keystore` and `*.p12` are git-ignored; never commit them.
 Without that file debug builds still work; `npm run android:bundle` refuses to run.
 
 ## 4. Upload to Google Play
