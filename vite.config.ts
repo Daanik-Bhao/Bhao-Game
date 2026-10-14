@@ -1,9 +1,13 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const THEME_COLOR = '#004030'
-const BACKGROUND_COLOR = '#EEEFE0'
+const ROOT = path.dirname(fileURLToPath(import.meta.url))
+
+const THEME_COLOR = '#0E4D3F'
+const BACKGROUND_COLOR = '#FFF8EC'
 
 // Service-worker registration, emitted as /registerSW.js instead of vite-plugin-pwa's
 // own (injectRegister: false below). Same behaviour on the web, but it never registers
@@ -43,8 +47,9 @@ function registerServiceWorker(): Plugin {
 
 export default defineConfig({
   server: {
-    // Agent worktrees under .claude/ are full repo copies; don't watch them
-    watch: { ignored: ['**/.claude/**'] },
+    // Agent worktrees under .claude/ are full repo copies; don't watch them. Matched relative to
+    // this project's root, so a dev server started inside a worktree still watches its own files.
+    watch: { ignored: (file: string) => path.relative(ROOT, file).split(path.sep).join('/').startsWith('.claude/') },
   },
   plugins: [
     react(),
@@ -92,20 +97,6 @@ export default defineConfig({
             options: {
               cacheName: 'bhao-avatars',
               expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            urlPattern: ({ url }) => url.origin === 'https://fonts.googleapis.com',
-            handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'google-fonts-stylesheets' },
-          },
-          {
-            urlPattern: ({ url }) => url.origin === 'https://fonts.gstatic.com',
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-webfonts',
-              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },

@@ -1,50 +1,43 @@
 import { useTranslation } from 'react-i18next'
 import type { ReportCard } from '../../types/learning'
-import { formatRupees } from './conceptInfo'
+import { formatMoney } from '../../lib/format'
+import { useLang } from '../../i18n/lang'
 
-/** Three-bar comparison: the player's own asset mix vs a plain FD vs an index-fund SIP. */
-export function ProjectionBars({ projection, hindi }: { projection: ReportCard['projection']; hindi: boolean }) {
+/** "If you did this for real" — the player's own mix vs an FD vs an index-fund SIP (spec §E.20 (6)). */
+export function ProjectionBars({ projection }: { projection: ReportCard['projection']; hindi?: boolean }) {
   const { t } = useTranslation()
+  const lang = useLang()
   const invested = projection.monthlyAmount * 12 * projection.years
+  const money = (v: number) => formatMoney(v, { compact: v >= 100000, lang })
   const rows = [
-    { key: 'mix', label: t('report.proj.yourMix'), value: projection.yourMixValue, color: '#FFD050', you: true },
-    { key: 'fd', label: t('report.proj.fd'), value: projection.fdValue, color: '#94a3b8', you: false },
-    { key: 'index', label: t('report.proj.index'), value: projection.indexValue, color: '#30A060', you: false },
+    { key: 'mix', label: t('report.proj.yourMix'), value: projection.yourMixValue, tone: 'spend' },
+    { key: 'fd', label: t('report.proj.fd'), value: projection.fdValue, tone: 'defence' },
+    { key: 'index', label: t('report.proj.index'), value: projection.indexValue, tone: 'save' },
   ]
   const max = Math.max(invested, ...rows.map(r => r.value), 1)
 
   return (
-    <div>
-      <p className="rc-proj-sub">
-        {t('report.proj.sub', { monthly: formatRupees(projection.monthlyAmount, hindi), years: projection.years, total: formatRupees(invested, hindi) })}
-      </p>
-      <ul className="rc-bars">
+    <div className="proj">
+      <p className="proj__sub">{t('report.proj.sub', { monthly: money(projection.monthlyAmount), years: projection.years, total: money(invested) })}</p>
+      <ul className="proj__rows">
         {rows.map(r => {
           const pct = Math.max(2, (Math.max(0, r.value) / max) * 100)
           return (
-            <li key={r.key} className="rc-bar-row">
-              <div className="rc-bar-head">
-                <span className={r.you ? 'rc-bar-label you' : 'rc-bar-label'}>{r.label}</span>
-                <span className="rc-bar-value">{formatRupees(r.value, hindi)}</span>
+            <li key={r.key} className="proj__row">
+              <div className="proj__head">
+                <span className={r.key === 'mix' ? 'proj__label is-you' : 'proj__label'}>{r.label}</span>
+                <b className="num proj__value">{money(r.value)}</b>
               </div>
-              <div className="rc-bar-track">
-                <div className="rc-bar-fill" style={{ width: `${pct}%`, background: r.color }} />
-                {invested > 0 && (
-                  <div
-                    className="rc-bar-invested"
-                    style={{ left: `${(invested / max) * 100}%` }}
-                    title={t('report.proj.putIn')}
-                  />
-                )}
+              <div className="proj__track" role="img" aria-label={`${r.label}: ${money(r.value)}`}>
+                <i className={`proj__fill tone-${r.tone}`} style={{ width: `${pct}%` }} />
+                {invested > 0 && <span className="proj__putin" style={{ left: `${(invested / max) * 100}%` }} aria-hidden="true" />}
               </div>
             </li>
           )
         })}
       </ul>
       {invested > 0 && (
-        <div className="rc-bar-legend" aria-hidden="true">
-          <span className="rc-bar-legend-tick" /> {t('report.proj.legend')}
-        </div>
+        <p className="proj__legend" aria-hidden="true"><span className="proj__putin-key" /> {t('report.proj.legend')}</p>
       )}
     </div>
   )

@@ -1,0 +1,71 @@
+/* App bar + bottom tab bar for menu screens (spec §A.2 q8, §E.4, mockups/mock.css .appbar/.tabbar).
+   Colours only via tokens. Breakpoint "desktop" = (min-width: 1024px) and (min-height: 600px). */
+
+/* ---------- App bar (60px, sticky, safe-area top) ---------- */
+.appbar {
+  position: sticky; top: 0; z-index: var(--z-sticky);
+  display: flex; align-items: center; gap: var(--sp-3);
+  min-height: calc(var(--appbar-h) + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) var(--gutter) 0;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.appbar__spacer { flex: 1; min-width: 0; }
+.appbar__home { display: inline-flex; align-items: center; min-height: var(--tap-min); flex: none; }
+.appbar__home .wordmark { min-height: var(--tap-min); }
+.appbar__actions { display: flex; align-items: center; gap: var(--sp-3); flex: none; }
+
+/* Desktop nav pills (hidden on phones / tablets / landscape: the tab bar takes over) */
+.appbar__nav { display: none; gap: var(--sp-2); margin-left: var(--sp-7); }
+.appbar__pill {
+  display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap-min); padding: 0 14px;
+  border-radius: var(--r-pill); text-decoration: none; color: var(--text-muted);
+  font: 600 15px/1.2 var(--font-body);
+  transition: background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+.appbar__pill:hover { color: var(--text); }
+.appbar__pill.is-active { background: var(--brand-soft); color: var(--brand); }
+
+/* Avatar link → Profile (44px hit area around the 40px avatar) */
+.appbar__me { display: inline-grid; place-items: center; width: var(--tap-min); height: var(--tap-min); border-radius: 50%; text-decoration: none; flex: none; }
+.appbar__me .avatar { box-shadow: 0 0 0 2px var(--brand); }
+.appbar__me.is-active .avatar { background: var(--brand); color: var(--white); }
+
+/* Landing "Sign in" ghost link */
+.appbar__link { min-height: var(--tap-min); }
+
+@media (max-width: 374px) {
+  .appbar { gap: var(--sp-2); }
+  .appbar .wordmark { font-size: 22px; }
+}
+
+/* ---------- Bottom tab bar (68px, 56px in landscape) ---------- */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-tabbar);
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background: var(--surface); border-top: 1px solid var(--line);
+}
+.tabbar__item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-1);
+  min-width: 0; min-height: var(--tap-min); text-decoration: none; color: var(--text-muted);
+  font: 600 var(--fs-caption)/1.2 var(--font-body);
+  -webkit-tap-highlight-color: transparent;
+}
+.tabbar__item > span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 var(--sp-1); }
+.tabbar__pill { display: grid; place-items: center; width: 56px; height: 30px; border-radius: var(--r-pill); transition: background-color var(--dur-fast) var(--ease-standard); }
+.tabbar__item.is-active { color: var(--brand); }
+.tabbar__item.is-active .tabbar__pill { background: var(--brand-soft); }
+.tabbar__item:focus-visible { outline-offset: -3px; }
+
+/* Phone landscape: 56px bar, icon and label side by side */
+@media (max-height: 499px) {
+  .tabbar__item { flex-direction: row; gap: var(--sp-3); }
+  .tabbar__pill { width: 48px; height: 28px; }
+}
+
+/* Desktop: pills in the app bar, no tab bar */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .tabbar { display: none; }
+  .appbar__nav { display: flex; }
+}

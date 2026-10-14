@@ -1,17 +1,33 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { Trash2 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
+import { Button, Input, Modal } from './ui'
+import '../pages/menus.css'
 
 const CONFIRM_WORD = 'DELETE'
 
-/** "Delete my account" link + confirmation dialog. Calls the `delete_own_account` RPC. */
-export function DeleteAccountButton() {
+interface DeleteAccountButtonProps {
+  /** Dev gallery: start with the dialog open */
+  initialOpen?: boolean
+  /** Dev gallery: replace the real `delete_own_account` call */
+  onDelete?: () => Promise<void>
+}
+
+/**
+ * "Delete account" (spec §E.22): outline button with danger text in Profile → Danger zone,
+ * opening a confirm dialog (type DELETE). Calls the `delete_own_account` RPC via useAuth().
+ */
+export function DeleteAccountButton({ initialOpen = false, onDelete }: DeleteAccountButtonProps = {}) {
+  const { t } = useTranslation()
   const { deleteAccount } = useAuth()
   const navigate = useNavigate()
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(initialOpen)
   const [typed, setTyped] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const matched = typed.trim().toUpperCase() === CONFIRM_WORD
 
   const close = () => {
     if (busy) return
@@ -21,14 +37,15 @@ export function DeleteAccountButton() {
   }
 
   const confirm = async () => {
+    if (!matched) return
     setBusy(true)
     setError('')
     try {
-      await deleteAccount()
+      await (onDelete ?? deleteAccount)()
       setOpen(false)
       navigate('/', { replace: true })
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not delete your account. Please try again or email support@daanik.com.')
+    } catch {
+      setError(t('profile.delete.error'))
     } finally {
       setBusy(false)
     }
@@ -36,53 +53,43 @@ export function DeleteAccountButton() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        style={{ background: 'none', border: 'none', color: '#B91C1C', fontSize: 14, fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit', padding: 8 }}
-      >
-        Delete my account
-      </button>
+      <Button variant="outline" className="btn--danger-text" icon={<Trash2 size={20} aria-hidden="true" />} onClick={() => setOpen(true)}>
+        {t('profile.delete.button')}
+      </Button>
 
-      {open && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-account-title"
-          onClick={close}
-          style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-        >
-          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 16, padding: 24, width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.3)', color: '#111827' }}>
-            <h2 id="delete-account-title" style={{ margin: '0 0 8px', fontSize: 20 }}>Delete your account?</h2>
-            <p style={{ margin: '0 0 12px', fontSize: 14, color: '#4B5563', lineHeight: 1.5 }}>
-              This permanently deletes your BHAO account, profile, coins, stats, leaderboard entry and contract progress.
-              This cannot be undone.
-            </p>
-            <label htmlFor="delete-confirm" style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
-              Type <strong>{CONFIRM_WORD}</strong> to confirm
-            </label>
-            <input
-              id="delete-confirm"
-              value={typed}
-              onChange={e => setTyped(e.target.value)}
-              autoComplete="off"
-              style={{ width: '100%', marginTop: 6, padding: '10px 12px', borderRadius: 8, border: '1px solid #D1D5DB', fontSize: 15, fontFamily: 'inherit', boxSizing: 'border-box' }}
-            />
-            {error && <p role="alert" style={{ color: '#B91C1C', fontSize: 13, margin: '10px 0 0' }}>{error}</p>}
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 18, flexWrap: 'wrap' }}>
-              <button onClick={close} disabled={busy} style={{ padding: '10px 16px', borderRadius: 8, border: '1px solid #D1D5DB', background: '#fff', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-                Cancel
-              </button>
-              <button
-                onClick={confirm}
-                disabled={busy || typed.trim().toUpperCase() !== CONFIRM_WORD}
-                style={{ padding: '10px 16px', borderRadius: 8, border: 'none', background: '#DC2626', color: '#fff', fontWeight: 700, fontFamily: 'inherit', cursor: busy ? 'wait' : 'pointer', opacity: busy || typed.trim().toUpperCase() !== CONFIRM_WORD ? 0.5 : 1 }}
-              >
-                {busy ? 'Deleting…' : 'Delete permanently'}
-              </button>
-            </div>
-          </div>
+      <Modal
+        open={open}
+        onClose={close}
+        title={t('profile.delete.title')}
+        className="delete-modal"
+        actions={<>
+          <Button variant="danger" loading={busy} disabled={!matched} onClick={confirm}>
+            {busy ? t('profile.delete.deleting') : t('profile.delete.confirm')}
+          </Button>
+          <Button variant="outline" onClick={close} disabled={busy}>{t('common.cancel')}</Button>
+        </>}
+      >
+        <div className="delete-modal__body">
+          <p>{t('profile.delete.intro')}</p>
+          <ul>
+            <li>{t('profile.delete.item1')}</li>
+            <li>{t('profile.delete.item2')}</li>
+            <li>{t('profile.delete.item3')}</li>
+          </ul>
+          <p className="delete-modal__warn">{t('profile.delete.permanent')}</p>
         </div>
-      )}
+        <form onSubmit={e => { e.preventDefault(); void confirm() }}>
+          <Input
+            label={t('profile.delete.typeLabel', { word: CONFIRM_WORD })}
+            value={typed}
+            onChange={e => setTyped(e.target.value)}
+            autoComplete="off"
+            autoCapitalize="characters"
+            spellCheck={false}
+            error={error || undefined}
+          />
+        </form>
+      </Modal>
     </>
   )
 }

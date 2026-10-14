@@ -1,19 +1,11 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
-import enTranslations from './locales/en.json'
-import hiTranslations from './locales/hi.json'
-import hinglishTranslations from './locales/hinglish.json'
+import { LOCALE_TREES } from './resources'
 
 const resources = {
-  en: {
-    translation: enTranslations
-  },
-  hi: {
-    translation: hiTranslations
-  },
-  hinglish: {
-    translation: hinglishTranslations
-  }
+  en: { translation: LOCALE_TREES.en },
+  hi: { translation: LOCALE_TREES.hi },
+  hinglish: { translation: LOCALE_TREES.hinglish },
 }
 
 export const SUPPORTED_LANGUAGES = Object.keys(resources)
@@ -54,7 +46,7 @@ i18n
 function applyLanguage(lng: string, remember = true) {
   if (typeof document !== 'undefined') {
     const root = document.documentElement
-    root.lang = lng === 'hi' ? 'hi' : lng === 'hinglish' ? 'en-IN' : 'en'
+    root.lang = lng === 'hi' ? 'hi' : 'en'
     root.classList.toggle('lang-hi', lng === 'hi')
     root.classList.toggle('lang-hinglish', lng === 'hinglish')
   }

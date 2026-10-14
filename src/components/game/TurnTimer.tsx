@@ -1,72 +1,51 @@
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { playSound } from '../../lib/audio'
-import { Timer } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useTurnRemaining } from './boardUtils'
 
-interface TurnTimerProps {
+interface TurnRingProps {
   turnStartTime: number
   timeLimit: number
-  onTimeout: () => void
-  active: boolean
+  /** Announce 10 s / 5 s warnings (only on your own turn) */
+  announce?: boolean
+  className?: string
 }
 
-export function TurnTimer({ turnStartTime, timeLimit, onTimeout, active }: TurnTimerProps) {
-  const [timeLeft, setTimeLeft] = useState(timeLimit)
-  
+const R = 20
+const C = 2 * Math.PI * R
+
+/**
+ * Turn timer ring (spec §D.16): 44 px, 4 px stroke, haldi; ≤ 10 s turns attack-on-dark and the
+ * number pulses (opacity only — the one infinite animation allowed in a match). role="timer";
+ * the live region speaks only at 10 s and 5 s.
+ */
+export function TurnRing({ turnStartTime, timeLimit, announce = false, className = '' }: TurnRingProps) {
+  const { t } = useTranslation()
+  const remaining = useTurnRemaining(turnStartTime, timeLimit)
+  const secs = Math.ceil(remaining / 1000)
+  const danger = remaining <= 10000
+  const frac = timeLimit > 0 ? Math.max(0, Math.min(1, remaining / timeLimit)) : 0
+
+  const [spoken, setSpoken] = useState('')
+  const said = useRef<Set<number>>(new Set())
+  useEffect(() => { said.current = new Set() }, [turnStartTime])
   useEffect(() => {
-    if (!active) return
-
-    const checkTime = () => {
-      const elapsed = Date.now() - turnStartTime
-      const remaining = Math.max(0, timeLimit - elapsed)
-      setTimeLeft(remaining)
-      
-      // Play a ticking sound when time is running out (under 5 seconds)
-      if (remaining > 0 && remaining <= 5000) {
-        playSound('play') // tick
-      }
-
-      if (remaining <= 0) {
-        onTimeout()
+    if (!announce) return
+    for (const mark of [10, 5]) {
+      if (secs === mark && !said.current.has(mark)) {
+        said.current.add(mark)
+        setSpoken(t('board.timerAria', { n: mark }))
       }
     }
-
-    const timer = setInterval(checkTime, 1000)
-    checkTime()
-    return () => clearInterval(timer)
-  }, [turnStartTime, timeLimit, active, onTimeout])
-
-  if (!active) return null
-
-  const pct = Math.max(0, Math.min(100, (timeLeft / timeLimit) * 100))
-  const isDanger = timeLeft <= 10000
+  }, [secs, announce, t])
 
   return (
-    <div style={{ marginBottom: 16 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: isDanger ? '#ef4444' : '#64748b', fontSize: 12, fontWeight: 700 }}>
-          <Timer size={14} className={isDanger ? 'animate-pulse' : ''} />
-          {isDanger ? 'HURRY UP!' : 'TIME REMAINING'}
-        </div>
-        <div style={{ color: isDanger ? '#ef4444' : '#94a3b8', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)' }}>
-          {Math.ceil(timeLeft / 1000)}s
-        </div>
-      </div>
-      <div style={{
-        width: '100%', height: 8, background: 'rgba(0,0,0,0.05)',
-        borderRadius: 4, overflow: 'hidden',
-        border: '1px solid rgba(0,0,0,0.05)'
-      }}>
-        <motion.div
-          animate={{ 
-            width: `${pct}%`, 
-            backgroundColor: isDanger ? '#ef4444' : '#10b981',
-            boxShadow: isDanger ? '0 0 8px rgba(239,68,68,0.5)' : 'none'
-          }}
-          transition={{ duration: 1, ease: 'linear' }}
-          style={{ height: '100%', borderRadius: 3 }}
-        />
-      </div>
+    <div className={`turn-ring${danger ? ' is-danger' : ''} ${className}`.trim()} role="timer" aria-label={t('board.timerAria', { n: secs })}>
+      <svg viewBox="0 0 44 44" aria-hidden="true">
+        <circle className="turn-ring__track" cx="22" cy="22" r={R} />
+        <circle className="turn-ring__arc" cx="22" cy="22" r={R} strokeDasharray={C} strokeDashoffset={C * (1 - frac)} />
+      </svg>
+      <b className="turn-ring__num" aria-hidden="true">{secs}</b>
+      <span className="sr-only" aria-live="polite">{spoken}</span>
     </div>
   )
 }

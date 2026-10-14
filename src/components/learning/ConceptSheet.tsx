@@ -1,104 +1,62 @@
-import { useEffect, useRef } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { BookOpen, Lightbulb } from 'lucide-react'
 import type { ConceptId } from '../../types/learning'
-import { conceptView } from './conceptInfo'
+import { Sheet } from '../ui'
+import { RupeeText } from './RupeeText'
+import { CONCEPT_ICON, CONCEPT_TOPIC, conceptView } from './conceptInfo'
 import './learning.css'
 
 /**
- * Detail view for one Gyaan Library concept: explanation, ₹ example, action tip.
- * Bottom sheet on phones, centred dialog on wider screens. Pass conceptId=null to close.
+ * One Gyaan Library idea (spec §E.8): title, "In one line", explanation, ₹ example,
+ * "Try in real life" callout. Uses the shared Sheet (bottom sheet / side panel).
+ * Pass conceptId=null to close.
  */
 export function ConceptSheet({ conceptId, onClose }: { conceptId: ConceptId | null; onClose: () => void }) {
   const { t, i18n } = useTranslation()
-  const closeRef = useRef<HTMLButtonElement>(null)
-  const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
-
-  useEffect(() => {
-    if (!conceptId) return
-    const previouslyFocused = document.activeElement as HTMLElement | null
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCloseRef.current() }
-    window.addEventListener('keydown', onKey)
-    closeRef.current?.focus()
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      previouslyFocused?.focus?.()
-    }
-  }, [conceptId])
-
   const c = conceptId ? conceptView(conceptId, i18n.language) : null
+  const Icon = conceptId ? CONCEPT_ICON[conceptId] ?? BookOpen : BookOpen
+  const topic = conceptId ? CONCEPT_TOPIC[conceptId] : 'saving'
 
   return (
-    <AnimatePresence>
-      {c && (
-        <motion.div
-          key="concept-overlay"
-          className="concept-sheet-overlay"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          onClick={onClose}
-        >
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="concept-sheet-title"
-            className="concept-sheet"
-            initial={{ y: 40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 40, opacity: 0 }}
-            transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
-              <span style={{ fontSize: 40, lineHeight: 1 }} aria-hidden="true">{c.emoji}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--green-bright)' }}>
-                  {t('library.title')}
-                </div>
-                <h2 id="concept-sheet-title" style={{ fontSize: 24, color: 'var(--green-primary)', margin: '2px 0 0' }}>{c.title}</h2>
-              </div>
-              <button
-                ref={closeRef}
-                onClick={onClose}
-                aria-label={t('common.close')}
-                style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border-soft)', background: '#fff', fontSize: 18, color: 'var(--text-soft-black)', flexShrink: 0 }}
-              >
-                ✕
-              </button>
-            </div>
-
-            {c.hasDetails ? (
-              <>
-                {c.oneLiner && <p style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-dark)', margin: '0 0 10px', lineHeight: 1.4 }}>{c.oneLiner}</p>}
-                {c.explanation && <p style={{ fontSize: 15, color: 'var(--text-soft-black)', margin: '0 0 14px', lineHeight: 1.55 }}>{c.explanation}</p>}
-                {c.example && (
-                  <div style={{ background: 'var(--gold-light)', border: '1px solid #f3d27a', borderRadius: 12, padding: '12px 14px', marginBottom: 10 }}>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--coin-shadow)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
-                      ₹ {t('concept.example')}
-                    </div>
-                    <div style={{ fontSize: 15, color: '#3b2a05', lineHeight: 1.5 }}>{c.example}</div>
-                  </div>
-                )}
-                {c.actionTip && (
-                  <div style={{ background: 'var(--green-light)', border: '1px solid #b7dcb7', borderRadius: 12, padding: '12px 14px' }}>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--green-action)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
-                      ✅ {t('concept.tryThis')}
-                    </div>
-                    <div style={{ fontSize: 15, color: 'var(--green-primary)', lineHeight: 1.5 }}>{c.actionTip}</div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <p style={{ fontSize: 15, color: 'var(--text-muted)', margin: 0 }}>
-                {t('concept.comingSoon')}
-              </p>
-            )}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <Sheet
+      open={!!c}
+      onClose={onClose}
+      title={c?.title}
+      header={c ? (
+        <div className="concept__head">
+          <span className={`concept__icon topic--${topic}`} aria-hidden="true"><Icon size={26} strokeWidth={2.25} /></span>
+          <div className="concept__titles">
+            <p className="caption">{t('library.title')}</p>
+            <p className="concept__title" aria-hidden="true">{c.title}</p>
+          </div>
+        </div>
+      ) : undefined}
+    >
+      {c && (c.hasDetails ? (
+        <div className="concept">
+          {c.oneLiner && (
+            <section>
+              <h3 className="concept__label caption">{t('concept.inOneLine')}</h3>
+              <p className="concept__oneliner">{c.oneLiner}</p>
+            </section>
+          )}
+          {c.explanation && <p className="concept__body">{c.explanation}</p>}
+          {c.example && (
+            <section className="concept__box concept__box--example">
+              <h3 className="concept__label caption">{t('concept.example')}</h3>
+              <p className="concept__body"><RupeeText text={c.example} /></p>
+            </section>
+          )}
+          {c.actionTip && (
+            <section className="concept__box concept__box--tip">
+              <h3 className="concept__label caption"><Lightbulb size={16} aria-hidden="true" /> {t('concept.tryThis')}</h3>
+              <p className="concept__body">{c.actionTip}</p>
+            </section>
+          )}
+        </div>
+      ) : (
+        <p className="concept__body muted">{t('concept.comingSoon')}</p>
+      ))}
+    </Sheet>
   )
 }

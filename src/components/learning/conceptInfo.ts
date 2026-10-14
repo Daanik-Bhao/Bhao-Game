@@ -1,3 +1,7 @@
+import {
+  Bitcoin, CalendarClock, ChartLine, ChartPie, CreditCard, Droplets, Gauge, Gem, HeartPulse, Hourglass, House, Landmark,
+  LifeBuoy, LockKeyhole, PiggyBank, Receipt, Scale, ShieldAlert, ShoppingBag, Sprout, TrendingUp, Umbrella, type LucideIcon,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { Concept, ConceptId } from '../../types/learning'
 import { CONCEPTS } from '../../data/concepts'
@@ -10,6 +14,29 @@ const FALLBACK_EMOJI: Record<ConceptId, string> = {
   scams: '🚨', crypto_risk: '🪙', lifestyle_creep: '🛍️', pay_yourself_first: '🐷', health_insurance: '🏥',
   term_insurance: '☂️', credit_card_debt: '💳', good_vs_bad_debt: '⚖️', tax_saving: '🧾', cyber_safety: '🔐',
   real_estate: '🏠', gold: '🥇',
+}
+
+/** Library filter topics (spec §E.8). Each topic has a semantic colour (band, chip). */
+export type ConceptTopic = 'saving' | 'investing' | 'risk' | 'tax' | 'protection'
+export const CONCEPT_TOPICS: ConceptTopic[] = ['saving', 'investing', 'risk', 'tax', 'protection']
+
+export const CONCEPT_TOPIC: Record<ConceptId, ConceptTopic> = {
+  inflation: 'saving', emergency_fund: 'saving', fd_vs_inflation: 'saving', liquidity: 'saving',
+  lifestyle_creep: 'saving', pay_yourself_first: 'saving',
+  compounding: 'investing', sip: 'investing', index_funds: 'investing', diversification: 'investing',
+  market_patience: 'investing', real_estate: 'investing', gold: 'investing',
+  asset_risk: 'risk', scams: 'risk', crypto_risk: 'risk', credit_card_debt: 'risk', good_vs_bad_debt: 'risk',
+  tax_saving: 'tax',
+  health_insurance: 'protection', term_insurance: 'protection', cyber_safety: 'protection',
+}
+
+/** Lucide icon per concept (replaces the catalog emoji in the UI). */
+export const CONCEPT_ICON: Record<ConceptId, LucideIcon> = {
+  inflation: TrendingUp, compounding: Sprout, emergency_fund: LifeBuoy, sip: CalendarClock, index_funds: ChartLine,
+  diversification: ChartPie, asset_risk: Gauge, fd_vs_inflation: Landmark, liquidity: Droplets, market_patience: Hourglass,
+  scams: ShieldAlert, crypto_risk: Bitcoin, lifestyle_creep: ShoppingBag, pay_yourself_first: PiggyBank,
+  health_insurance: HeartPulse, term_insurance: Umbrella, credit_card_debt: CreditCard, good_vs_bad_debt: Scale,
+  tax_saving: Receipt, cyber_safety: LockKeyhole, real_estate: House, gold: Gem,
 }
 
 /** "fd_vs_inflation" -> "FD vs Inflation" */
@@ -58,18 +85,4 @@ export function conceptView(id: ConceptId, lang: string): ConceptView {
 export function useIsHindi(): boolean {
   const { i18n } = useTranslation()
   return i18n.language === 'hi'
-}
-
-/** Real-money rupees, Indian style: ₹4,500 · ₹1.2 lakh · ₹2.35 crore (लाख / करोड़ in Hindi) */
-export function formatRupees(amount: number, hindi = false): string {
-  const n = Math.round(amount)
-  const sign = n < 0 ? '-' : ''
-  const abs = Math.abs(n)
-  if (abs >= 1_00_00_000) return `${sign}₹${trim(abs / 1_00_00_000)} ${hindi ? 'करोड़' : 'crore'}`
-  if (abs >= 1_00_000) return `${sign}₹${trim(abs / 1_00_000)} ${hindi ? 'लाख' : 'lakh'}`
-  return `${sign}₹${abs.toLocaleString('en-IN')}`
-}
-
-function trim(x: number): string {
-  return x.toFixed(2).replace(/\.?0+$/, '')
 }

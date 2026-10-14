@@ -29,7 +29,7 @@ export interface StepCtx {
 }
 
 /** Where the spotlight goes: CSS selectors (first visible match wins) or a card in your hand. */
-export type StepTarget = { selectors: string[] } | { card: string } | null
+export type StepTarget = { selectors: string[] } | { card: string; preferSelectors?: string[] } | null
 
 export interface StepDef {
   id: StepId
@@ -73,9 +73,11 @@ const line = (gs: GameState, re: RegExp): RegExpMatchArray | null => {
 }
 const pct = (n: number | undefined) => (n === undefined ? '?' : `${n >= 0 ? '+' : ''}${n}%`)
 
-const PORTFOLIO = { selectors: ['.dk-rail .econ-portfolio', '.mb-wallet .econ-wallet-chip', '.mb-statusbar .econ-wallet-chip'] }
-const PLAYERS = { selectors: ['.desktop-players-strip', '.mb-players'] }
-const HAND = { selectors: ['.dk-hand', '.mb-hand'] }
+const PORTFOLIO = { selectors: ['[data-tour="hud"]', '.dk-rail .econ-portfolio', '.mb-wallet .econ-wallet-chip'] }
+const PLAYERS = { selectors: ['[data-tour="rivals"]', '.desktop-players-strip', '.mb-players'] }
+const HAND = { selectors: ['[data-tour="hand"]', '.dk-hand', '.mb-hand'] }
+/** An open card sheet: its choice tiles, else its main button */
+const SHEET = ['[data-tour="choices"]', '.sheet .sheet__footer .btn--primary']
 
 export const STEPS: StepDef[] = [
   {
@@ -109,7 +111,7 @@ export const STEPS: StepDef[] = [
     id: 'preview', lesson: 2, kind: 'next',
     title: () => t('preview.title'),
     body: () => t('preview.body'),
-    target: () => ({ selectors: ['.econ-dopts'] }),
+    target: () => ({ selectors: ['[data-tour="choices"]', '.econ-dopts'] }),
   },
   {
     id: 'invest', lesson: 2, kind: 'action',
@@ -120,7 +122,7 @@ export const STEPS: StepDef[] = [
       return amount ? t('invest.body', { amount: formatINR(amount) }) : t('invest.bodyPart')
     },
     todo: () => t('invest.todo'),
-    target: () => ({ selectors: ['.econ-dopt-invest'] }),
+    target: () => ({ selectors: ['[data-tour="choice-invest"]', '.econ-dopt-invest'] }),
     done: ({ gs }) => gs.currentPlayerIndex !== 0 || (gs.round ?? 1) > 1,
   },
   {
@@ -160,7 +162,7 @@ export const STEPS: StepDef[] = [
     body: ({ gs }) => t('pickSave.body', { cash: formatINR(getCash(you(gs))) }),
     todo: ({ uiPhase }) => (uiPhase === 'decision' ? t('pickSave.todoSave') : t('pickSave.todoCard', { card: tutorialCardTitle(CARD_IDS.buffer) })),
     target: ({ gs, uiPhase }) => {
-      if (uiPhase === 'decision') return { selectors: ['.econ-dopt-save'] }
+      if (uiPhase === 'decision') return { selectors: ['[data-tour="choice-save"]', '.econ-dopt-save'] }
       const c = you(gs).hand.find(h => isCard(h, CARD_IDS.buffer))
       return c ? { card: c.id } : HAND
     },
@@ -193,7 +195,7 @@ export const STEPS: StepDef[] = [
     todo: () => t('equip.todo', { card: tutorialCardTitle(CARD_IDS.insurance) }),
     target: ({ gs }) => {
       const c = you(gs).hand.find(h => isCard(h, CARD_IDS.insurance))
-      return c ? { card: c.id } : HAND
+      return c ? { card: c.id, preferSelectors: ['.sheet .sheet__footer .btn--primary'] } : HAND
     },
     done: ({ gs }) => you(gs).activeDefenses.some(d => isCard(d, CARD_IDS.insurance)),
   },
@@ -202,7 +204,7 @@ export const STEPS: StepDef[] = [
     title: () => t('freePlay.title'),
     body: () => t('freePlay.body'),
     todo: () => t('freePlay.todo'),
-    target: () => HAND,
+    target: () => ({ selectors: [...SHEET, ...HAND.selectors] }),
     done: ({ gs }) => gs.currentPlayerIndex !== 0 || (gs.round ?? 1) > 3,
   },
   {
@@ -221,7 +223,7 @@ export const STEPS: StepDef[] = [
       const blocked = lines(gs).some(l => l.includes('Health Insurance blocked'))
       return t(wiped ? 'scam.wiped' : 'scam.crashing') + (blocked ? ' ' + t('scam.blocked') : '')
     },
-    target: () => ({ selectors: ['.econ-year-strip', '.dk-rail .econ-defenses', '.desktop-players-strip', '.mb-players'] }),
+    target: () => ({ selectors: ['[data-tour="year"]', '[data-tour="shields"]', ...PLAYERS.selectors] }),
   },
 ]
 

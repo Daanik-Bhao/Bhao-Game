@@ -1,0 +1,23 @@
+/* Dev-only gallery chrome (/__ux). */
+.uxg-bar { position: sticky; top: 0; z-index: var(--z-sticky); display: flex; align-items: center; gap: var(--sp-4); min-height: 60px; padding: 0 var(--gutter); background: var(--bg); border-bottom: 1px solid var(--line); }
+.uxg-bar__title { flex: 1; font: 600 var(--fs-ui)/1.2 var(--font-body); color: var(--text-muted); }
+.uxg-group { margin-top: var(--sp-7); }
+.uxg-list { margin: var(--sp-3) 0 0 var(--sp-6); display: flex; flex-direction: column; gap: var(--sp-3); }
+.uxg-list a { display: inline-block; min-height: 44px; line-height: 44px; font-weight: 600; }
+.uxg-home { position: fixed; left: 8px; bottom: 8px; z-index: var(--z-system); min-height: 44px; min-width: 44px; display: grid; place-items: center; padding: 0 10px; border-radius: var(--r-pill); background: var(--ink-900); color: var(--white); font: 600 12px/1 var(--font-body); text-decoration: none; opacity: .55; }
+.uxg-home:hover { opacity: 1; }
+.uxg-section { margin-top: var(--sp-8); }
+.uxg-section > h2 { font: 700 var(--fs-title)/var(--lh-title) var(--font-display); margin-bottom: var(--sp-2); }
+.uxg-section > p { color: var(--text-muted); margin-bottom: var(--sp-4); }
+.uxg-row { display: flex; flex-wrap: wrap; gap: var(--sp-4); align-items: flex-end; margin-bottom: var(--sp-4); }
+.uxg-table { border-radius: var(--r-xl); padding: var(--sp-7); }
+.uxg-grid2 { display: grid; gap: var(--sp-6); grid-template-columns: 1fr; }
+@media (min-width: 1024px) { .uxg-grid2 { grid-template-columns: 1fr 1fr; } }
+.uxg-moods { display: flex; flex-wrap: wrap; gap: var(--sp-5); }
+.uxg-moods figure { margin: 0; text-align: center; font: 600 13px/1.3 var(--font-body); color: var(--text-muted); }
+.uxg-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: var(--sp-3); }
+.uxg-swatch { border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--line); background: var(--white); font: 600 12px/1.3 var(--font-body); }
+.uxg-swatch i { display: block; height: 52px; }
+.uxg-swatch span { display: block; padding: 6px 8px; }
+.uxg-cards .gcard[data-overflow="true"] { outline: 3px solid var(--attack-on-dark); outline-offset: 2px; }
+.uxg-dock-demo { display: flex; gap: var(--sp-3); padding: var(--sp-5); }

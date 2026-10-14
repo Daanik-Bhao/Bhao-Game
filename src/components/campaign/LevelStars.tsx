@@ -1,68 +1,60 @@
 import { useTranslation } from 'react-i18next'
+import { motion } from 'framer-motion'
+import { Check, Star, X } from 'lucide-react'
 import type { StarCriterion } from '../../lib/levelRules'
+import './campaign.css'
 
 export interface LevelStarsProps {
   /** 0..3 earned (pass 0 to show empty stars) */
   stars: number
   /** Criteria to list under the stars. `met` undefined = not played yet (shown neutral). */
   criteria?: (Omit<StarCriterion, 'met'> & { met?: boolean })[]
-  /** Star size in px (default 28) */
+  /** Star size in px (default 32 on the result screen) */
   size?: number
-  /** Animate the earned stars popping in (result screen) */
+  /** Stars pop in one after another (result screen) */
   animate?: boolean
-  /** Text colour for the checklist (default dark) */
-  color?: string
+  /** Left-aligned row instead of centred (intro sheet, campaign card) */
+  align?: 'center' | 'start'
+  className?: string
 }
 
-const STAR_ON = '#f59e0b'
-const STAR_OFF = '#d1d5db'
-
-/** Three stars + optional criteria checklist. Reusable on the campaign map, intro and result screen. */
-export function LevelStars({ stars, criteria, size = 28, animate = false, color = '#1f2937' }: LevelStarsProps) {
+/** Three stars + optional criteria checklist (spec §E.7). Haldi filled / sand empty, check or cross per criterion. */
+export function LevelStars({ stars, criteria, size = 32, animate = false, align = 'center', className = '' }: LevelStarsProps) {
   const { t } = useTranslation()
   const n = Math.max(0, Math.min(3, Math.floor(stars)))
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'stretch' }}>
-      <div
-        role="img"
-        aria-label={t('campaign.stars.earned', { n })}
-        style={{ display: 'flex', justifyContent: 'center', gap: Math.round(size / 5) }}
-      >
+    <div className={`lvl-stars lvl-stars--${align} ${className}`.trim()}>
+      <div className="lvl-stars__row" role="img" aria-label={t('campaign.stars.earned', { n })}>
         {[0, 1, 2].map(i => (
-          <span
+          <motion.span
             key={i}
+            className={`lvl-star${i < n ? ' is-on' : ''}`}
             aria-hidden="true"
-            style={{
-              fontSize: size,
-              lineHeight: 1,
-              color: i < n ? STAR_ON : STAR_OFF,
-              textShadow: i < n ? '0 2px 6px rgba(245, 158, 11, 0.45)' : 'none',
-              transform: i === 1 ? `translateY(-${Math.round(size / 6)}px)` : undefined,
-              animation: animate && i < n ? `bhaoStarPop 0.45s ${0.25 + i * 0.3}s both` : undefined,
-            }}
+            initial={animate && i < n ? { scale: 0.3, opacity: 0 } : false}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: animate ? 0.2 + i * 0.15 : 0, duration: 0.32, ease: [0.34, 1.56, 0.64, 1] }}
           >
-            ★
-          </span>
+            <Star size={size} strokeWidth={2} />
+          </motion.span>
         ))}
       </div>
       {criteria && criteria.length > 0 && (
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {criteria.map((c, i) => {
-            const mark = c.met === undefined ? '☆' : c.met ? '✅' : '⬜'
-            return (
-              <li key={c.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 13, color, lineHeight: 1.35 }}>
-                <span aria-hidden="true" style={{ flexShrink: 0, width: 20, textAlign: 'center' }}>{mark}</span>
-                <span style={{ flex: 1, opacity: c.met === false ? 0.7 : 1 }}>
-                  <strong style={{ marginRight: 4 }}>{'★'.repeat(i + 1)}</strong>
-                  {t(c.labelKey, { ...(c.params ?? {}), defaultValue: c.label })}
+        <ul className="lvl-criteria">
+          {criteria.map((c, i) => (
+            <li key={c.id} className={`lvl-criterion${c.met === false ? ' is-missed' : ''}${c.met ? ' is-met' : ''}`}>
+              <span className="lvl-criterion__mark" aria-hidden="true">
+                {c.met === undefined ? <Star size={18} strokeWidth={2.25} /> : c.met ? <Check size={18} strokeWidth={2.75} /> : <X size={18} strokeWidth={2.75} />}
+              </span>
+              <span className="lvl-criterion__text">
+                <span className="sr-only">
+                  {c.met === undefined ? '' : c.met ? t('campaign.stars.met') : t('campaign.stars.missed')}
                 </span>
-              </li>
-            )
-          })}
+                <span className="lvl-criterion__n" aria-hidden="true">{t('campaign.stars.nth', { n: i + 1 })}</span>
+                {t(c.labelKey, { ...(c.params ?? {}), defaultValue: c.label })}
+              </span>
+            </li>
+          ))}
         </ul>
-      )}
-      {animate && (
-        <style>{'@keyframes bhaoStarPop{0%{opacity:0;transform:scale(0.2) rotate(-30deg)}70%{opacity:1;transform:scale(1.25)}100%{opacity:1;transform:scale(1)}}'}</style>
       )}
     </div>
   )

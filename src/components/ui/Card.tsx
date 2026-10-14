@@ -1,46 +1,25 @@
-import type { ReactNode, CSSProperties } from 'react'
+import type { CSSProperties, HTMLAttributes, ReactNode } from 'react'
+import './ui.css'
 
-interface CardProps {
+export interface PanelProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode
-  style?: CSSProperties
-  className?: string
-  onClick?: () => void
-  hoverable?: boolean
-  glow?: 'blue' | 'gold' | 'green' | 'red'
+  /** default 16px padding; 'tile' = home tile (14px, min-height 118); 'none' = no padding */
+  pad?: 'default' | 'tile' | 'none'
+  sunken?: boolean
+  as?: 'div' | 'section' | 'article'
 }
 
-export function Card({ children, style, className, onClick, hoverable, glow }: CardProps) {
-  const glowColors = {
-    blue: 'var(--shadow-glow-blue)',
-    gold: 'var(--shadow-glow-gold)',
-    green: 'var(--shadow-glow-green)',
-    red: 'var(--shadow-glow-orange)',
-  }
+/** Panel / card container (spec §D.4). Light: white + hairline + e-1. On the table: table surface, no shadow. */
+export function Panel({ children, pad = 'default', sunken, as: Tag = 'div', className = '', ...rest }: PanelProps) {
+  const cls = ['panel', pad === 'default' ? 'panel--pad' : pad === 'tile' ? 'panel--tile' : '', sunken ? 'panel--sunken' : '', className]
+    .filter(Boolean).join(' ')
+  return <Tag className={cls} {...rest}>{children}</Tag>
+}
 
-  return (
-    <div
-      onClick={onClick}
-      className={`glass-panel ${className ?? ''}`}
-      style={{
-        borderRadius: '20px',
-        padding: '24px',
-        cursor: onClick ? 'pointer' : 'default',
-        transition: 'all 0.3s ease',
-        boxShadow: glow ? glowColors[glow] : '0 8px 32px rgba(0, 0, 0, 0.2)',
-        ...style,
-      }}
-      onMouseEnter={hoverable && onClick ? (e) => {
-        const el = e.currentTarget as HTMLDivElement
-        el.style.borderColor = 'rgba(255,255,255,0.16)'
-        el.style.transform = 'translateY(-2px)'
-      } : undefined}
-      onMouseLeave={hoverable && onClick ? (e) => {
-        const el = e.currentTarget as HTMLDivElement
-        el.style.borderColor = 'rgba(255,255,255,0.08)'
-        el.style.transform = 'translateY(0)'
-      } : undefined}
-    >
-      {children}
-    </div>
-  )
+/** @deprecated use Panel. Kept so older screens compile while they are migrated. */
+export function Card({ children, className, style, onClick }: {
+  children: ReactNode; className?: string; style?: CSSProperties; onClick?: () => void
+  hoverable?: boolean; glow?: 'blue' | 'gold' | 'green' | 'red'
+}) {
+  return <Panel className={className} style={style} onClick={onClick}>{children}</Panel>
 }

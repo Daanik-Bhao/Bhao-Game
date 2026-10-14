@@ -129,6 +129,27 @@ export function vibrate(pattern: number | number[]): void {
   })()
 }
 
+/**
+ * Short haptic tap for feedback tiers (spec §B.7): 'light' for medium gains,
+ * 'medium' for large gains / attacks on you. Web: a short vibration if supported.
+ */
+export function hapticImpact(level: 'light' | 'medium'): void {
+  if (!isNative()) {
+    try {
+      navigator.vibrate?.(level === 'light' ? 10 : 25)
+    } catch { /* not supported */ }
+    return
+  }
+  void (async () => {
+    try {
+      const { Haptics, ImpactStyle } = await import('@capacitor/haptics')
+      await Haptics.impact({ style: level === 'light' ? ImpactStyle.Light : ImpactStyle.Medium })
+    } catch (e) {
+      warn('Haptics.impact', e)
+    }
+  })()
+}
+
 // ---------------------------------------------------------------------------
 // Keep the screen awake
 // ---------------------------------------------------------------------------
