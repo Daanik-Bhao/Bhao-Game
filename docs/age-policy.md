@@ -1,6 +1,8 @@
 # Minimum age: decision note
 
-**Status: open. The owner decides.** This note compares the two realistic options and what each one
+**Status (2026-10-14): owner chose to keep 13+ for now, with no age check or parental-consent flow yet.**
+This leaves the DPDP risk described below open; revisit before the wide launch (Option B is the
+compliant way to keep 13+). This note compares the two realistic options and what each one
 needs in code, in Play Console and in the legal text. It is an engineering summary, **not legal advice**:
 have a lawyer who knows India's Digital Personal Data Protection Act, 2023 (DPDP Act) and the DPDP
 Rules review the choice before the wider launch.
