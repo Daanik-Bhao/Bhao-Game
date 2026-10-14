@@ -314,9 +314,37 @@ export function Game() {
     prevWealthRef.current = humanPlayer.wealth
   }, [gameState, uiPhase, enqueuePopup])
 
+  // App in the background (Android home / phone call / app switch; hidden tab on the web):
+  // freeze the match. Timers keep running in a backgrounded WebView, so without this the
+  // turn timer runs out and the bots play on while the player is away.
+  const [appHidden, setAppHidden] = useState(() => typeof document !== 'undefined' && document.visibilityState === 'hidden')
+  const hiddenAtRef = useRef<number | null>(null)
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        if (hiddenAtRef.current === null) hiddenAtRef.current = Date.now()
+        setAppHidden(true)
+        return
+      }
+      const hiddenAt = hiddenAtRef.current
+      hiddenAtRef.current = null
+      setAppHidden(false)
+      if (hiddenAt === null) return
+      const away = Date.now() - hiddenAt
+      // An open outcome banner already pauses the turn timer; don't count the time away twice.
+      if (popupOpenedAtRef.current !== null) popupOpenedAtRef.current += away
+      setGameState(gs => {
+        if (!gs || gs.phase === 'game_over') return gs
+        return { ...gs, startTime: gs.startTime + away, turnStartTime: gs.turnStartTime + away }
+      })
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [])
+
   // Bot turn handler
   useEffect(() => {
-    if (!gameState || uiPhase !== 'playing' || gameState.phase === 'game_over' || popupInfo !== null) return
+    if (!gameState || uiPhase !== 'playing' || gameState.phase === 'game_over' || popupInfo !== null || appHidden) return
     const currentPlayer = gameState.players[gameState.currentPlayerIndex]
     if (!currentPlayer.isBot) return
 
@@ -332,7 +360,7 @@ export function Game() {
     }, 2500)
 
     return () => { if (botTimerRef.current) clearTimeout(botTimerRef.current) }
-  }, [gameState, uiPhase, handleGameOver, popupInfo])
+  }, [gameState, uiPhase, handleGameOver, popupInfo, appHidden])
 
   const handleTimeout = useCallback(() => {
     const gs = gameStateRef.current
@@ -345,7 +373,7 @@ export function Game() {
 
   // Human player turn timer
   useEffect(() => {
-    if (!gameState || gameState.phase === 'game_over' || popupInfo !== null) return
+    if (!gameState || gameState.phase === 'game_over' || popupInfo !== null || appHidden) return
     if (gameState.currentPlayerIndex !== humanPlayerIndex) return
 
     const elapsed = Date.now() - gameState.turnStartTime
@@ -356,7 +384,7 @@ export function Game() {
     }, remaining)
 
     return () => clearTimeout(timer)
-  }, [gameState, handleTimeout, popupInfo])
+  }, [gameState, handleTimeout, popupInfo, appHidden])
 
   const handleDrawCard = () => {
     if (!gameState || animating) return
