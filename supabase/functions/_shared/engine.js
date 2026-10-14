@@ -5612,7 +5612,7 @@ var DECISION_CARDS = [
     flavor: "Your bank account balance dropped below the minimum. The bank deducts a ₹1,000 penalty.",
     flavorHi: "आपके बैंक खाते का शेष न्यूनतम से नीचे चला गया। बैंक ₹1,000 का जुर्माना काटता है।",
     options: [
-      { type: "spend", label: "Spend", description: "Ignore the text message.", mentorInsight: "Ignoring bank charges lets them repeat every month. Small fees quietly eat your savings.", effect: { type: "wealth_pct", value: -8, target: "self" } },
+      { type: "spend", label: "Spend", description: "Ignore the bank's penalty SMS and keep spending as usual.", mentorInsight: "Ignoring bank charges lets them repeat every month. Small fees quietly eat your savings.", effect: { type: "wealth_pct", value: -8, target: "self" } },
       { type: "save", label: "Save", description: "Transfer ₹1,000 from savings to restore the balance immediately.", mentorInsight: "Restoring the balance stops more penalties. Check your bank's minimum balance rule so it doesn't happen again.", effect: { type: "wealth_pct", value: 4, target: "self" } },
       { type: "invest", asset: "fd", label: "Invest", description: "Call the bank manager, demand a refund, and instantly upgrade to a zero-balance account!", mentorInsight: "Zero-balance savings accounts exist and avoid such penalties. Pick an account that suits how you actually use it.", effect: { type: "wealth_pct", value: 10, target: "self" }, investRisk: 30, failEffect: { type: "wealth_pct", value: -5, target: "self" } }
     ]
