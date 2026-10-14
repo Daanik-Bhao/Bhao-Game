@@ -176,7 +176,7 @@ export function GameCard({
       </span>
       <i className={`gcard__gem gem--${card.tier}`} aria-hidden="true" />
       {state === 'locked' && <Lock className="gcard__lock" size={12} strokeWidth={2.5} aria-hidden="true" />}
-      <CardName title={title} className={`gcard__name${isLong ? ' is-long' : ''}${size === 'full' && title.length > 18 ? ' is-long-name' : ''}`} fit={size === 'hand' && !isLong} />
+      <CardName title={title} className={`gcard__name${isLong ? ' is-long' : ''}${size === 'full' && title.length > 18 ? ' is-long-name' : ''}`} fit={(size === 'hand' && !isLong) || size === 'sheet'} />
       {size === 'full' && !noFlavor && <span className="gcard__flavor" aria-hidden="true">{cardFlavor(card, lang)}</span>}
       <span className={`gcard__value tone-${headline.tone}`} aria-hidden="true">
         {headline.kind === 'choose'

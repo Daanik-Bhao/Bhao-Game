@@ -54,6 +54,7 @@ button.gcard { cursor: pointer; appearance: none; }
 html.lang-hi .gcard__name { line-height: 1.18; }
 .gcard__name.is-fit { font-size: 12px; }
 .gcard--sheet .gcard__name, .gcard--mini .gcard__name { font-size: 14px; padding: 6px 7px 0; }
+.gcard--sheet .gcard__name.is-fit { font-size: 12px; }
 .gcard--full .gcard__name { flex: none; font-size: 18px; line-height: 1.1; padding: 8px 10px 0; }
 .gcard--full .gcard__name.is-long-name + .gcard__flavor { -webkit-line-clamp: 2; }
 html.lang-hi .gcard--full .gcard__name { line-height: 1.25; }
