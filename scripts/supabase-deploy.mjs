@@ -89,6 +89,10 @@ for (const k of ['SUPABASE_ACCESS_TOKEN', 'SUPABASE_DB_PASSWORD']) {
 // ---------------------------------------------------------------- what to deploy
 const migrationsDir = join(root, 'supabase', 'migrations')
 const functionsDir = join(root, 'supabase', 'functions')
+// Called without a user JWT (the parent's consent page has no login), and with
+// sb_publishable_ keys the gateway's JWT check would reject every call. The function
+// checks the caller's JWT itself where it needs one (the child's request).
+const NO_VERIFY_JWT = new Set(['parent-consent'])
 const migrations = existsSync(migrationsDir)
   ? readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort()
   : []
@@ -140,7 +144,8 @@ const steps = [
   },
   ...functions.map(name => ({
     title: `Deploy edge function "${name}"`,
-    args: ['functions', 'deploy', name, '--project-ref', ref || '<ref>', '--use-api'],
+    args: ['functions', 'deploy', name, '--project-ref', ref || '<ref>', '--use-api',
+      ...(NO_VERIFY_JWT.has(name) ? ['--no-verify-jwt'] : [])],
   })),
   ...(Object.keys(secrets).length
     ? [{ title: `Set ${Object.keys(secrets).length} function secret(s)`, args: ['secrets', 'set', '--env-file', tmpEnvFile, '--project-ref', ref || '<ref>'], secretsFile: true }]
