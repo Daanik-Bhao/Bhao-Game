@@ -1,5 +1,11 @@
 {
-  "lastVersionCode": 0,
-  "lastVersionName": null,
-  "builds": []
+  "lastVersionCode": 1000,
+  "lastVersionName": "0.1.0",
+  "builds": [
+    {
+      "versionCode": 1000,
+      "versionName": "0.1.0",
+      "builtAt": "2026-10-15T12:08:19.360Z"
+    }
+  ]
 }
