@@ -79,11 +79,6 @@ function askHidden(question) {
   })
 }
 
-/** keytool -dname needs commas and a few other characters escaped. */
-function dnValue(s) {
-  return s.replace(/([,+"\\<>;=])/g, '\\$1')
-}
-
 function insideRepo(p) {
   const rel = path.relative(REPO_ROOT, path.resolve(p))
   return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel))
