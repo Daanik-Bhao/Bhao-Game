@@ -67,12 +67,6 @@ function getRl() {
   return rl
 }
 
-function ask(question, def = '') {
-  return new Promise(resolve => {
-    getRl().question(def ? `${question} [${def}]: ` : `${question}: `, answer => resolve(answer.trim() || def))
-  })
-}
-
 function askHidden(question) {
   return new Promise(resolve => {
     const r = getRl()
@@ -135,7 +129,9 @@ async function main() {
     ])
   }
 
-  let keystore = args.keystore || (interactive ? await ask('Keystore file', DEFAULT_UPLOAD_KEYSTORE) : DEFAULT_UPLOAD_KEYSTORE)
+  // Path, alias and certificate name use safe defaults (override with --keystore / --alias /
+  // --dname): owners kept typing their password into the first prompt. Only the password is asked.
+  let keystore = args.keystore || DEFAULT_UPLOAD_KEYSTORE
   keystore = path.resolve(keystore)
   if (insideRepo(keystore)) fail(`${keystore} is inside the git repo. Keep the keystore OUTSIDE the repo.`)
   if (fs.existsSync(keystore)) {
@@ -143,19 +139,12 @@ async function main() {
       'Choose another path, or point android/keystore.properties at the existing file.')
   }
 
-  const alias = args.alias || (interactive ? await ask('Key alias', DEFAULT_ALIAS) : DEFAULT_ALIAS)
+  const alias = args.alias || DEFAULT_ALIAS
   if (!/^[A-Za-z0-9._-]+$/.test(alias)) fail('Alias may only contain letters, digits, dot, dash and underscore.')
 
   let dname = args.dname
   if (!dname) {
-    if (interactive) {
-      const cn = await ask('Your name or company name (shown in the certificate)', 'BHAO')
-      const org = await ask('Organisation', 'Daanik')
-      const country = (await ask('Two-letter country code', 'IN')).toUpperCase()
-      dname = `CN=${dnValue(cn)}, O=${dnValue(org)}, C=${dnValue(country)}`
-    } else {
-      dname = 'CN=BHAO, O=Daanik, C=IN'
-    }
+    dname = 'CN=BHAO, O=Daanik, C=IN'
   }
 
   let password = process.env.BHAO_KEYSTORE_PASSWORD || ''
