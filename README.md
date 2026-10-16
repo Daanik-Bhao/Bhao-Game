@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 💸 BHAO
 
 **BHAO** is a fast-paced, competitive financial card game based on real Indian money decisions. 
@@ -97,3 +98,6 @@ node scripts/generate-icons.js
 
 ## 📜 License
 This project is built for entertainment and financial literacy purposes.
+=======
+# Bhao-Game
+>>>>>>> 485f329157967779332d893eff337d8a1d85b412
