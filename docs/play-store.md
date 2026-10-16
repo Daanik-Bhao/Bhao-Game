@@ -262,7 +262,7 @@ Sentry; WebRTC voice is always encrypted).
   or about the user). Takes effect immediately.
 - By email: support@daanik.com, completed within 30 days (the public page promises this: someone must
   own the inbox and do it, via Supabase → Authentication → Users → Delete user).
-- **Web deletion link (required by Play):** `https://game-final-xi.vercel.app/delete-account`
+- **Web deletion link (required by Play):** `https://bhao-game-r2nw.vercel.app/delete-account`
   (replace the domain if production moves). Public, no sign-in, served by the SPA rewrite in
   `vercel.json`. It explains the in-app steps (labels taken from the real UI strings), the email option,
   what is deleted, the timelines, and what stays on the device.
@@ -395,9 +395,9 @@ Practical plan for a personal account:
 ## 9. Pre-submission checklist
 
 - [ ] Privacy policy URL entered in Play Console and reachable without login:
-      `https://game-final-xi.vercel.app/privacy` (replace the domain if production moves).
+      `https://bhao-game-r2nw.vercel.app/privacy` (replace the domain if production moves).
 - [ ] Account deletion URL entered (Data safety → "Delete account URL"):
-      `https://game-final-xi.vercel.app/delete-account`. Open it in a private window to confirm it loads
+      `https://bhao-game-r2nw.vercel.app/delete-account`. Open it in a private window to confirm it loads
       without signing in.
 - [ ] Account deletion works in-app on the Android build (Profile → Danger zone → Delete account), and
       someone owns support@daanik.com deletion requests (the public page promises 30 days).

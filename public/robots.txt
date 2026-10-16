@@ -4,4 +4,4 @@ Disallow: /dashboard
 Disallow: /game
 Disallow: /multiplayer
 
-Sitemap: https://game-final-xi.vercel.app/sitemap.xml
+Sitemap: https://bhao-game-r2nw.vercel.app/sitemap.xml
